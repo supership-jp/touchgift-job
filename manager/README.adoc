@@ -1,0 +1,98 @@
+= touchgift 配信データ管理
+:TOC:
+
+== Getting Started
+
+* 準備
++
+[source,bash]
+----
+# asdf version >= 0.7.8
+
+asdf install golang 1.20.6
+asdf global golang 1.20.6
+
+// クーロン手順
+git clone https://github.com/supership-jp/touchgift-job.git
+
+// magagerディレクトリに移動
+cd touchgift-job/manager/
+
+# mockを使ったユニットテストを実行するためにインストールしておく
+go install github.com/golang/mock/mockgen@v1.6.0
+----
+
+* touchgift-dm方からDDLを取得する
++
+[source,bash]
+----
+# DBを起動
+# touchgift-dmのものを使用する
+## クローン
+git clone https://github.com/supership-jp/touchgift-dm.git
+## ディレクトリ移動
+cd touchgift-dm/backend/
+# packageインストール
+npm install
+# DB起動
+npm run start:db
+# マイグレーション実行
+npm run typeorm migration:run # 他のターミナル
+# DDLを出力する (テスト等に使用する)
+cd touchgfit-job/manager
+docker exec -it touchgift-db mysqldump -uretail --password=test --no-data retail > rdb/init/1_all.sql
+----
+
+* テスト
++
+[source,bash]
+----
+cd touchgift-job/manager
+
+# RDBを起動する (起動時に↑のDDLが実行される)
+make start-db
+
+# SQS,SNS,DynamoDBを起動
+make start-localstack
+
+# SQSのキュー作成
+make create-sqs-all-queue
+
+# SNSのトピックとサブスクライブ作成
+make create-sns-all
+
+# DynamoDBのテーブル作成
+make create-all-table
+
+# unitテスト用のmock作成 (新たに必要になった場合や、該当クラスのシグネチャを変更した場合)
+make generate
+# mockパッケージ以下にmockが作成される
+# mock作成対象はファイル最上部にコメントのあるもの
+# コメントは、domain/repository/delivery_data_repository.goを参考に
+# コメントの -destination に指定するパスは、mock作成対象ファイルの位置により変更する必要あり
+#   domain/repository/delivery_data_repository.go -> ../../mock/$GOPACKAGE/$GOFILE
+#   infra/region.go -> ../mock/$GOPACKAGE/$GOFILE
+# generate後に、以下が必要なケースがある (特にエラーや警告等なければ不要)
+
+# キャッシュ削除
+make clean-testcache
+
+# テスト
+make test
+# テスト対象を絞る場合
+make test TEST_TARGET="--run DeliveryScheduleUsecase ./..."
+# vscodeの場合、editorから個別にテストを起動できる (デバッグも)
+
+make delete-all-table
+make stop-localstack
+make stop-db
+----
+
+[source,bash]
+----
+# commit前には確認する
+make mod-tidy
+make lint
+----
+
+
