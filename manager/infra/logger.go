@@ -3,7 +3,7 @@ package infra
 import (
 	"os"
 	"time"
-	"touchgift-job-manager/manager/config"
+	"touchgift-job-manager/config"
 
 	"github.com/rs/zerolog"
 )

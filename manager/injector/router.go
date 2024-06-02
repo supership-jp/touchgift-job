@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"sync"
-	"touchgift-job-manager/manager/config"
-	"touchgift-job-manager/manager/infra"
-	"touchgift-job-manager/manager/infra/metrics"
+	"touchgift-job-manager/config"
+	"touchgift-job-manager/infra"
+	"touchgift-job-manager/infra/metrics"
 )
 
 type Initialize func() error

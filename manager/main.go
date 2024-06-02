@@ -9,9 +9,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	"touchgift-job-manager/manager/config"
-	"touchgift-job-manager/manager/infra"
-	"touchgift-job-manager/manager/injector"
+	"touchgift-job-manager/config"
+	"touchgift-job-manager/infra"
+	"touchgift-job-manager/injector"
 )
 
 func SignalContext(ctx context.Context, logger *infra.Logger) (context.Context, context.CancelFunc) {

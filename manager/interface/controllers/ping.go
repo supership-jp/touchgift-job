@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"net/http"
-	"touchgift-job-manager/manager/usecase"
+	"touchgift-job-manager/usecase"
 )
 
 type ping struct {

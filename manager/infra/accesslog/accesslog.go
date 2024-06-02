@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"touchgift-job-manager/manager/infra/requestid"
+	"touchgift-job-manager/infra/requestid"
 	"unsafe"
 
 	"github.com/gin-gonic/gin"

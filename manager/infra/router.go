@@ -3,9 +3,8 @@ package infra
 import (
 	"github.com/gin-gonic/gin"
 	"io"
-	"touchgift-job-manager/manager/infra/accesslog"
-	"touchgift-job-manager/manager/infra/metrics"
-	"touchgift-job-manager/manager/infra/requestid"
+	"touchgift-job-manager/infra/metrics"
+	"touchgift-job-manager/infra/requestid"
 )
 
 func NewRouter(log *Logger) *gin.Engine {
@@ -14,11 +13,13 @@ func NewRouter(log *Logger) *gin.Engine {
 	errorSupport := NewErrorSupport(log, validatorSupport)
 
 	router := gin.New()
+	mw := middleware{}
 
 	monitor := metrics.GetMonitor()
 	router.Use(monitor.Middleware())
 	router.Use(requestid.New())
-	router.Use(accesslog.New())
+	router.Use(mw.accessLog(log))
+	router.Use(mw.useCors())
 	router.Use(errorSupport.middleware())
 	router.Use(recovery(log))
 	return router

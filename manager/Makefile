@@ -95,3 +95,6 @@ aws_account_id: ## current aws_account_id
 help: ## Help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort |\
 		awk 'BEGIN {FS = ":[^:]*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+lint: ## lint
+	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.54.2 golangci-lint run -v
