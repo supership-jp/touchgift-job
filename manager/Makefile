@@ -75,3 +75,23 @@ ifneq (,$(findstring rc,$(ENVIRONMENT_SUFFIX)))
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-control-$(ENVIRONMENT_SUFFIX)
 endif
+
+run: ## Start dev server
+	@go build -o main && \
+		GIN_MODE=release \
+		LOG_LEVEL=info \
+		SQS_ENDPOINT=$(SQS_ENDPOINT) \
+		DYNAMODB_ENDPOINT=$(DYNAMODB_ENDPOINT) \
+		TABLE_NAME_SUFFIX= \
+		AWS_PROFILE=$(AWS_PROFILE) \
+		./main || exit 0
+
+generate:
+	@go generate ./...
+
+aws_account_id: ## current aws_account_id
+	$(eval AWS_ACCOUNT_ID := $(shell $(AWS_VAULT_CMD) aws sts get-caller-identity --query 'Account' --output text))
+
+help: ## Help
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort |\
+		awk 'BEGIN {FS = ":[^:]*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
