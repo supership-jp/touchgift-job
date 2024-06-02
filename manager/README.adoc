@@ -28,7 +28,7 @@ go install github.com/golang/mock/mockgen@v1.6.0
 ----
 # DBを起動
 # touchgift-dmのものを使用する
-## クローン
+## (DM)クローン
 git clone https://github.com/supership-jp/touchgift-dm.git
 ## ディレクトリ移動
 cd touchgift-dm/backend/

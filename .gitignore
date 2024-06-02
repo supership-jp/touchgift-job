@@ -1,0 +1,17 @@
+.project
+.classpath
+.idea
+.cache
+.DS_Store
+.vscode
+*.im?
+target
+work
+*.tgz
+.asciidoctor
+_*.json
+flink-1.8.3-src.tgz
+flink-1.8.3
+__pycache__
+.metals
+.tmp*
