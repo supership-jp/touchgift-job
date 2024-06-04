@@ -1,3 +1,5 @@
+include ./localstack/Makefile
+
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
 
