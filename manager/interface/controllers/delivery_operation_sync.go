@@ -111,6 +111,7 @@ func (d *deliveryOperationSync) process(ctx context.Context, startTime time.Time
 				current := time.Now()
 				campaign := deliveryOperationLog.CampaignLogs[i]
 
+				// TODO: メトリクスちゃんととる
 				//d.monitor.Metrics.GetCounter(metricDeliveryOperationSyncTotal).
 				//	WithLabelValues(campaign.Event).Inc()
 				if err := d.deliveryOperationUsecase.Process(ctx, current, &campaign); err != nil {
