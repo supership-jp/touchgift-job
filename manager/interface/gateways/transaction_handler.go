@@ -3,7 +3,7 @@ package gateways
 
 import (
 	"context"
-	"touchgift-job-manager/domain/models/repository"
+	"touchgift-job-manager/domain/repository"
 )
 
 type TransactionHandler interface {

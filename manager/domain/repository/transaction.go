@@ -3,7 +3,7 @@ package repository
 import "context"
 
 type TransactionHandler interface {
-	Begin(ctx context.Context) error
+	Begin(ctx context.Context) (Transaction, error)
 }
 
 type Transaction interface {
