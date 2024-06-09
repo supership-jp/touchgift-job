@@ -1,4 +1,4 @@
-mysqldump: [Warning] Using a password on the command line interface can be insecure.
+-- mysqldump: [Warning] Using a password on the command line interface can be insecure.
 -- MySQL dump 10.13  Distrib 8.0.34, for Linux (x86_64)
 --
 -- Host: localhost    Database: retail
@@ -15,7 +15,7 @@ mysqldump: [Warning] Using a password on the command line interface can be insec
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-mysqldump: Error: 'Access denied; you need (at least one of) the PROCESS privilege(s) for this operation' when trying to dump tablespaces
+-- mysqldump: Error: 'Access denied; you need (at least one of) the PROCESS privilege(s) for this operation' when trying to dump tablespaces
 
 --
 -- Table structure for table `banner`
@@ -74,7 +74,7 @@ CREATE TABLE `creative` (
   `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
   `name` varchar(255) NOT NULL COMMENT 'クリエイティブ名',
   `status` enum('0','1','2','3','4') NOT NULL DEFAULT '0' COMMENT '審査ステータス。0: 審査前(下書き), 1: 審査中, 2: 審査OK(公開中), 3: NG, 4: 停止中',
-  `click_url` varchar(255) NOT NULL COMMENT '遷移先URL',
+  `click_url` varchar(255) DEFAULT NULL COMMENT '遷移先URL',
   `creative_type` enum('banner','video') NOT NULL COMMENT 'クリエイティブ種別',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
@@ -150,6 +150,27 @@ CREATE TABLE `gimmick` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `location`
+--
+
+DROP TABLE IF EXISTS `location`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `location` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `origin_id` varchar(255) NOT NULL,
+  `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
+  `name` varchar(255) DEFAULT NULL COMMENT '管理名',
+  `width` int DEFAULT NULL COMMENT '枠の横幅',
+  `height` int DEFAULT NULL COMMENT '枠の縦幅',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_66440ed6cb1acd0240ba6cc947` (`origin_id`,`organization_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `migrations`
 --
 
@@ -161,7 +182,7 @@ CREATE TABLE `migrations` (
   `timestamp` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -289,4 +310,4 @@ CREATE TABLE `video` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-28  7:33:11
+-- Dump completed on 2024-06-09 12:05:06

@@ -100,3 +100,21 @@ help: ## Help
 
 lint: ## lint
 	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.54.2 golangci-lint run -v
+
+start-db: ## start db (mysql)
+	@cd ./rdb && docker run --rm -it \
+		-p 3306:3306 \
+		-e MYSQL_ROOT_PASSWORD=test \
+		-e MYSQL_DATABASE=touchgift \
+		-e MYSQL_USER=touchgift \
+		-e MYSQL_PASSWORD=test \
+		-e TZ=Asia/Tokyo \
+		-v $$(PWD)/init:/docker-entrypoint-initdb.d \
+		--name touchgift-job-db \
+		mysql:8.0
+stop-db:
+	docker stop touchgift-job-db
+
+cleanup-db:
+	make stop-db && \
+	make start-db
