@@ -18,12 +18,12 @@ type Server struct {
 }
 
 type Db struct {
-	DriverName      string        `envconfig:"DB_DRIVER_NAME" default:"pgx"`
-	User            string        `envconfig:"DB_USER" default:"dm"`
+	DriverName      string        `envconfig:"DB_DRIVER_NAME" default:"mysql"`
+	User            string        `envconfig:"DB_USER" default:"touchgift"`
 	Password        string        `envconfig:"DB_PASSWORD" default:"test"`
-	Database        string        `envconfig:"DB_DATABASE" default:"dm"`
+	Database        string        `envconfig:"DB_DATABASE" default:"touchgift-db"`
 	Host            string        `envconfig:"DB_HOST" default:"localhost"`
-	Port            int           `envconfig:"DB_PORT" default:"6432"`
+	Port            int           `envconfig:"DB_PORT" default:"3306"`
 	ConnectTimeout  int           `envconfig:"DB_CONNECT_TIMEOUT_SEC" default:"60"`
 	MaxOpenConns    int           `envconfig:"DB_MAX_OPEN_CONNS" default:"5"`
 	MaxIdleConns    int           `envconfig:"DB_MAX_IDLE_CONNS" default:"5"`
