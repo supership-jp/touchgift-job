@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/domain/repository"
@@ -25,8 +26,8 @@ type sqlHandler struct {
 }
 
 func NewSQLHandler(logger *Logger) SQLHandler {
-	connectionString := fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable connect_timeout=%d",
-		config.Env.Db.User, config.Env.Db.Password, config.Env.Db.Host, config.Env.Db.Port, config.Env.Db.Database, config.Env.Db.ConnectTimeout)
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
+		config.Env.Db.User, config.Env.Db.Password, config.Env.Db.Host, config.Env.Db.Port, config.Env.Db.Database)
 	db, err := sqlx.Open(config.Env.Db.DriverName, connectionString)
 	if err != nil {
 		panic(err.Error)

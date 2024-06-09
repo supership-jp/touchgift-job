@@ -21,7 +21,7 @@ type Db struct {
 	DriverName      string        `envconfig:"DB_DRIVER_NAME" default:"mysql"`
 	User            string        `envconfig:"DB_USER" default:"touchgift"`
 	Password        string        `envconfig:"DB_PASSWORD" default:"test"`
-	Database        string        `envconfig:"DB_DATABASE" default:"touchgift-db"`
+	Database        string        `envconfig:"DB_DATABASE" default:"touchgift"`
 	Host            string        `envconfig:"DB_HOST" default:"localhost"`
 	Port            int           `envconfig:"DB_PORT" default:"3306"`
 	ConnectTimeout  int           `envconfig:"DB_CONNECT_TIMEOUT_SEC" default:"60"`
