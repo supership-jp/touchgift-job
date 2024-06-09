@@ -2,7 +2,6 @@ package injector
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"sync"
 	"touchgift-job-manager/config"
@@ -29,10 +28,10 @@ func AdminRoute(ctx context.Context, router *gin.Engine) (*gin.Engine, Initializ
 	monitor.AddRoute(router, config.Env.Server.MetricsPath)
 
 	deliveryOperationSync := InjectDeliveryOperationSyncController(logger)
-	fmt.Println(&deliveryOperationSync)
 
 	var wg sync.WaitGroup
 	initialize := func() error {
+		deliveryOperationSync.Start(ctx, &wg)
 		return nil
 	}
 	terminate := func() error {
