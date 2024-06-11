@@ -1,7 +1,13 @@
 include ./localstack/Makefile
+include ./dynamodb/Makefile
 
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
+
+# Dynamo設定まわり
+DYNAMODB_ENDPOINT = http://localhost:8000
+DYNAMODB_ENDPOINT_OPTS = --endpoint-url $(DYNAMODB_ENDPOINT)
+DYNAMODB_OPTIONS = $(DYNAMODB_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
 # TODO: アプリケーション名, ecsクラスター, サービス名を設定
 APPLICATION =
