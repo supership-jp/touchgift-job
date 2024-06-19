@@ -12,11 +12,11 @@ type Delivery interface {
 	// UpdateStatus 配信状態を更新する
 	UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int64, time.Time, error)
 	// DeliveryControlEvent 配信制御イベントを発行する
-	DeliveryControlEvent(ctx context.Context, campaign *models.CampaignData, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string)
+	DeliveryControlEvent(ctx context.Context, campaign *models.Campaign, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string)
 	// StartOrSync データの同期or配信を開始する
-	StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.CampaignData) error
+	StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error
 	// Stop 配信を停止する
-	Stop(ctx context.Context, tx repository.Transaction, campaign *models.CampaignData, status string) error
+	Stop(ctx context.Context, tx repository.Transaction, campaign *models.Campaign, status string) error
 }
 
 type delivery struct {
@@ -34,9 +34,9 @@ func NewDelivery(
 	}
 }
 
-func (d *delivery) StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.CampaignData) error {
+func (d *delivery) StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error {
 	// TODO: campaign.statusの更新
-	_, _, err := d.UpdateStatus(ctx, tx, campaign.ID, "started", campaign.UpdatedAt)
+	_, _, err := d.UpdateStatus(ctx, tx, campaign.ID, "started", time.Now())
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (d *delivery) StartOrSync(ctx context.Context, tx repository.Transaction, c
 	return nil
 }
 
-func (d *delivery) Stop(ctx context.Context, tx repository.Transaction, campaign *models.CampaignData, status string) error {
+func (d *delivery) Stop(ctx context.Context, tx repository.Transaction, campaign *models.Campaign, status string) error {
 	return nil
 }
 
@@ -56,6 +56,6 @@ func (d *delivery) UpdateStatus(ctx context.Context, tx repository.Transaction, 
 	return 0, time.Now(), nil
 }
 
-func (d *delivery) DeliveryControlEvent(ctx context.Context, campaign *models.CampaignData, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string) {
+func (d *delivery) DeliveryControlEvent(ctx context.Context, campaign *models.Campaign, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string) {
 	// メソッドの実装
 }

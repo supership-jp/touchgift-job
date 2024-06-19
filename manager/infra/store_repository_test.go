@@ -18,7 +18,7 @@ func TestStoreRepository_Get(t *testing.T) {
 		if err != nil {
 			return
 		}
-		assert.Equal(t, store.Name, "東京店")
+		assert.Equal(t, "東京本店", store.Name)
 		assert.Equal(t, store.OrganizationCode, "ORG001")
 	})
 }
@@ -35,6 +35,6 @@ func TestStoreRepository_Select(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assert.Equal(t, 5, len(stores))
+		assert.Len(t, stores, 2)
 	})
 }

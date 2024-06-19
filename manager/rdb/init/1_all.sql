@@ -182,7 +182,7 @@ CREATE TABLE `migrations` (
   `timestamp` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -204,6 +204,42 @@ CREATE TABLE `store` (
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_f5393e62c0378af2a73664e520` (`store_id`,`organization_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `store_group`
+--
+
+DROP TABLE IF EXISTS `store_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `store_group` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
+  `name` varchar(255) NOT NULL COMMENT 'グループ名',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
+  `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `store_map`
+--
+
+DROP TABLE IF EXISTS `store_map`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `store_map` (
+  `store_group_id` int NOT NULL,
+  `store_id` int NOT NULL,
+  PRIMARY KEY (`store_group_id`,`store_id`),
+  KEY `IDX_682ba18da8bf98364103efa09a` (`store_group_id`),
+  KEY `IDX_d46f492111ec565caa1c91b88f` (`store_id`),
+  CONSTRAINT `FK_682ba18da8bf98364103efa09ab` FOREIGN KEY (`store_group_id`) REFERENCES `store_group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_d46f492111ec565caa1c91b88fa` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -310,4 +346,4 @@ CREATE TABLE `video` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-09 12:05:06
+-- Dump completed on 2024-06-18  1:12:30
