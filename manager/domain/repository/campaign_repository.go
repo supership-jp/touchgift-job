@@ -18,13 +18,7 @@ type CampaignToStartCondition struct {
 	Limit  int
 }
 
-type CampaignIDCondition struct {
-	GroupID int
-}
-
 type CampaignRepository interface {
 	// GetCampaignDataToStart 開始するキャンペーン情報を取得する
-	GetCampaignToStart(ctx context.Context, args *CampaignToStartCondition) ([]*models.Campaign, error)
-	// GetTouchPointDataByTouchPointID touch_pointIDからtouch_pointテーブルを取得する
-	GetTouchPointByGroupID(ctx context.Context, args *CampaignIDCondition) ([]*models.TouchPoint, error)
+	GetCampaignToStart(ctx context.Context, tx Transaction, args *CampaignToStartCondition) ([]*models.Campaign, error)
 }

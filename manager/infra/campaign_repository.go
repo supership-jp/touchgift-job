@@ -6,13 +6,13 @@ import (
 	"touchgift-job-manager/domain/repository"
 )
 
-type CampaignDataRepository struct {
+type CampaignRepository struct {
 	logger     *Logger
 	sqlHandler SQLHandler
 }
 
-func NewCampaignDataRepository(logger *Logger, sqlHandler SQLHandler) repository.CampaignRepository {
-	campaignRepository := &CampaignDataRepository{
+func NewCampaignRepository(logger *Logger, sqlHandler SQLHandler) repository.CampaignRepository {
+	campaignRepository := &CampaignRepository{
 		logger:     logger,
 		sqlHandler: sqlHandler,
 	}
@@ -20,7 +20,7 @@ func NewCampaignDataRepository(logger *Logger, sqlHandler SQLHandler) repository
 }
 
 // GetCampaignDataToStart 配信開始時間になったらキャンペーン対象のキャンペーン情報を取得する
-func (c *CampaignDataRepository) GetCampaignToStart(ctx context.Context, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
+func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, tx repository.Transaction, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
     sg.id as group_id,
@@ -34,7 +34,7 @@ WHERE
     c.start_at <= :to AND
 	c.status = :status
 LIMIT :limit`
-	stmt, err := c.sqlHandler.PrepareNamedContext(ctx, query)
+	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +49,4 @@ LIMIT :limit`
 		return nil, err
 	}
 	return campaigns, nil
-}
-
-func (c *CampaignDataRepository) GetTouchPointByGroupID(ctx context.Context, args *repository.CampaignIDCondition) ([]*models.TouchPoint, error) {
-	//query := fmt.Sprintf(`SELECT
-	//id
-	//FROM touch_point`, args)
-	//fmt.Println(query)
-	return nil, nil
 }

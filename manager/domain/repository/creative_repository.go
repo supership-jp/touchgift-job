@@ -5,6 +5,11 @@ import (
 	"touchgift-job-manager/domain/models"
 )
 
-type creativeRepository interface {
-	GetDeliveryData(ctx context.Context) ([]*models.Delivery, error)
+type CreativeByCampaignIDCondition struct {
+	CampaignID int
+	Limit      int
+}
+
+type CreativeRepository interface {
+	GetCreativeByCampaignID(ctx context.Context, args *CreativeByCampaignIDCondition) ([]*models.Creative, error)
 }
