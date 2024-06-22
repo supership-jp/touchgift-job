@@ -64,6 +64,7 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		// キャンペーン情報登録
 		campaign_id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -73,6 +74,7 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 
 		// video
@@ -83,11 +85,13 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			"endcard_xid",                     // endcard_xid
 			100,                               // height
 			200,                               // width
-			"video/mp4",                       // extension
+			"mp4",                             // extension
 			100,                               // endcard_height
 			200,                               // endcard_width
-			"image/jpeg",                      // endcard_extension
+			"jpg",                             // endcard_extension
 			1,                                 // last_updated_by
+			10,
+			"https://example.com/endcard.jpg",
 		)
 
 		// creative

@@ -69,6 +69,9 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
+		// ギミック登録
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
+
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -78,6 +81,7 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 		assert.NotNil(t, id)
 
@@ -118,6 +122,8 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
+
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -127,6 +133,7 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 
 		assert.NotNil(t, id)
@@ -166,6 +173,8 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 		rdbUtil.InsertStore("ORG001", "S001", "東京本店", "100-0001", "13", "東京都千代田区丸の内1-1-1")
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
+
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -175,6 +184,7 @@ func TestCampaignDataRepository_GetCampaignToStart(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 
 		assert.NotNil(t, id)

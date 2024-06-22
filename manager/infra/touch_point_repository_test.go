@@ -9,7 +9,7 @@ import (
 	mock_infra "touchgift-job-manager/mock/infra"
 )
 
-func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
+func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 	logger := GetLogger()
 	sqlHandler := NewSQLHandler(logger)
 	defer sqlHandler.Close()
@@ -34,7 +34,7 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
 		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, tx, &repository.TouchPointByGroupIDCondition{
 			GroupID: 1,
-			Limit:   1,
+			Limit:   10,
 		})
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(actuals))
@@ -65,6 +65,8 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
+
 		// キャンペーン情報登録
 		rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -74,6 +76,7 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 
 		rdbUtil.InsertTouchPoint(
@@ -95,7 +98,7 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
 		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, tx, &repository.TouchPointByGroupIDCondition{
 			GroupID: store_group_id,
-			Limit:   1,
+			Limit:   10,
 		})
 
 		if assert.NoError(t, err) {
@@ -128,6 +131,7 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		//	store_group情報登録
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
+		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		//　キャンペーン情報登録
 		rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -137,6 +141,7 @@ func TestNewTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
+			gimmick_id,
 		)
 
 		rdbUtil.InsertTouchPoint(

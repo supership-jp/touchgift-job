@@ -137,7 +137,88 @@ func (r *RDBUtil) InsertStoreMap(store_group_id int, store_id int) (int, error) 
 
 }
 
-func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name string, startAt string, endAt string, lastUpdatedBy int, storeGroupId int) (int, error) {
+func (r *RDBUtil) InsertCoupon(name string, organizationCode string, status string, code string, imgUrl string, xid string, lastUpdatedBy int) int {
+	_, err := r.tx.ExecContext(r.ctx,
+		`INSERT INTO coupon (
+            name,
+            organization_code,
+            status,
+            code,
+            img_url,
+            xid
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+		name,
+		organizationCode,
+		status,
+		code,
+		imgUrl,
+		xid,
+	)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+
+	var id int
+	err = r.tx.QueryRowxContext(r.ctx, `SELECT LAST_INSERT_ID()`).Scan(&id)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+	return id
+}
+
+func (r *RDBUtil) InsertGimmick(name string, imgUrl string, organizationCode string, status string, xid string, lastUpdatedBy int) int {
+	_, err := r.tx.ExecContext(r.ctx,
+		`INSERT INTO gimmick (
+            name,
+            img_url,
+            organization_code,
+            status,
+            xid,
+            last_updated_by
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+		name,
+		imgUrl,
+		organizationCode,
+		status,
+		xid,
+		lastUpdatedBy,
+	)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+
+	var id int
+	err = r.tx.QueryRowxContext(r.ctx, `SELECT LAST_INSERT_ID()`).Scan(&id)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+	return id
+}
+
+func (r *RDBUtil) InsertCampaignCoupon(campaignID int, couponID int, deliveryRate int) int {
+	_, err := r.tx.ExecContext(r.ctx,
+		`INSERT INTO campaign_coupon (
+            campaign_id,
+            coupon_id,
+            delivery_rate
+        ) VALUES (?, ?, ?)`,
+		campaignID,
+		couponID,
+		deliveryRate,
+	)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+
+	var id int
+	err = r.tx.QueryRowxContext(r.ctx, `SELECT LAST_INSERT_ID()`).Scan(&id)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+	return id
+}
+
+func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name string, startAt string, endAt string, lastUpdatedBy int, storeGroupId int, gimmick_id int) (int, error) {
 	query := `
         INSERT INTO campaign (
             organization_code,
@@ -148,8 +229,9 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
             created_at,
             updated_at,
             last_updated_by,
-            store_group_id
-        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`
+            store_group_id,
+		  	gimmick_id
+        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)`
 
 	// ExecContext を使用して SQL を実行
 	result, err := r.tx.ExecContext(r.ctx, query,
@@ -160,6 +242,7 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
 		endAt,
 		lastUpdatedBy,
 		storeGroupId,
+		gimmick_id,
 	)
 	if err != nil {
 		return 0, err // エラーを呼び出し元に返す
@@ -175,7 +258,7 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
 }
 
 func (r *RDBUtil) InsertVideo(video_url string, endcard_url string, video_xid string, endcard_xid string,
-	height int, width int, extension string, endcard_height int, endcard_width int, endcard_extension string, last_updated_by int) (int, error) {
+	height int, width int, extension string, endcard_height int, endcard_width int, endcard_extension string, last_updated_by int, duration int, endcard_link string) (int, error) {
 	query := `
         INSERT INTO video (
             video_url,
@@ -188,8 +271,10 @@ func (r *RDBUtil) InsertVideo(video_url string, endcard_url string, video_xid st
             endcard_height,
             endcard_width,
 		    endcard_extension,
-			last_updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			last_updated_by,
+		    duration,
+		    endcard_link
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	// ExecContext を使用して SQL を実行
 	result, err := r.tx.ExecContext(r.ctx, query,
@@ -204,6 +289,8 @@ func (r *RDBUtil) InsertVideo(video_url string, endcard_url string, video_xid st
 		endcard_width,
 		endcard_extension,
 		last_updated_by,
+		duration,
+		endcard_link,
 	)
 	if err != nil {
 		return 0, err // エラーを呼び出し元に返す

@@ -30,12 +30,81 @@ CREATE TABLE `banner` (
   `xid` varchar(32) NOT NULL COMMENT 'img_url内に含むユニーク文字列',
   `height` int NOT NULL,
   `width` int NOT NULL,
-  `extension` enum('image/png','image/jpeg') NOT NULL COMMENT '拡張子のタイプ。pngの場合image/png、jpegの場合image/jpeg',
+  `extension` enum('png','jpg') NOT NULL COMMENT '拡張子。png, jpg',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_beaf7c371ddbfd3aec513671e7` (`xid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `campaign`
+--
+
+DROP TABLE IF EXISTS `campaign`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `campaign` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
+  `name` varchar(255) NOT NULL COMMENT 'キャンペーン名',
+  `status` enum('suspend','configured','warmup','started','pause','paused','resume','stop','stopped','terminate','ended') NOT NULL COMMENT 'ステータス',
+  `start_at` timestamp NOT NULL COMMENT '開始日時',
+  `end_at` timestamp NULL DEFAULT NULL COMMENT '終了日時',
+  `daily_coupon_limit_per_user` int DEFAULT NULL COMMENT '同一ユーザーへのクーポン配信上限数 / 日',
+  `store_group_id` int NOT NULL COMMENT '店舗グループID',
+  `gimmick_id` int DEFAULT NULL COMMENT 'ギミックID',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
+  `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  PRIMARY KEY (`id`),
+  KEY `FK_1a7e86c9b3f114a1eb49bde233f` (`store_group_id`),
+  KEY `FK_012b823cab2fd6b19816931b805` (`gimmick_id`),
+  CONSTRAINT `FK_012b823cab2fd6b19816931b805` FOREIGN KEY (`gimmick_id`) REFERENCES `gimmick` (`id`),
+  CONSTRAINT `FK_1a7e86c9b3f114a1eb49bde233f` FOREIGN KEY (`store_group_id`) REFERENCES `store_group` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `campaign_coupon`
+--
+
+DROP TABLE IF EXISTS `campaign_coupon`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `campaign_coupon` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `campaign_id` int NOT NULL,
+  `coupon_id` int NOT NULL,
+  `delivery_rate` int NOT NULL COMMENT '配信割合',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_38f54ac1d553e6e8e6944220b3` (`campaign_id`,`coupon_id`),
+  KEY `FK_6b22c97dbe4c270565c1bee6900` (`coupon_id`),
+  CONSTRAINT `FK_6b22c97dbe4c270565c1bee6900` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_e3b5ed839d922737d7a5bb946ce` FOREIGN KEY (`campaign_id`) REFERENCES `campaign` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `campaign_creative`
+--
+
+DROP TABLE IF EXISTS `campaign_creative`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `campaign_creative` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `campaign_id` int NOT NULL,
+  `creative_id` int NOT NULL,
+  `skip_offset` int DEFAULT NULL COMMENT 'スキップオフセット',
+  `delivery_rate` int NOT NULL COMMENT '配信割合',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_4c974663da5e7919063d0fd302` (`campaign_id`,`creative_id`),
+  KEY `FK_33591be12b9fb2e943137853de0` (`creative_id`),
+  CONSTRAINT `FK_33591be12b9fb2e943137853de0` FOREIGN KEY (`creative_id`) REFERENCES `creative` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_4f86c4bf43634c065862890041f` FOREIGN KEY (`campaign_id`) REFERENCES `campaign` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -50,7 +119,7 @@ CREATE TABLE `coupon` (
   `id` int NOT NULL AUTO_INCREMENT,
   `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
   `name` varchar(255) NOT NULL COMMENT 'クーポン名',
-  `status` enum('0','1') NOT NULL DEFAULT '0' COMMENT '審査ステータス。0: 審査前(下書き), 1: OK',
+  `status` enum('0','1','2','3','4') NOT NULL DEFAULT '0' COMMENT '審査ステータス。0: 審査前(下書き), 1: 審査中, 2: 審査OK(公開中), 3: NG, 4: 停止中',
   `code` varchar(255) DEFAULT NULL COMMENT 'クーポンコード',
   `img_url` varchar(255) NOT NULL COMMENT 'クーポン画像URL',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
@@ -75,55 +144,17 @@ CREATE TABLE `creative` (
   `name` varchar(255) NOT NULL COMMENT 'クリエイティブ名',
   `status` enum('0','1','2','3','4') NOT NULL DEFAULT '0' COMMENT '審査ステータス。0: 審査前(下書き), 1: 審査中, 2: 審査OK(公開中), 3: NG, 4: 停止中',
   `click_url` varchar(255) DEFAULT NULL COMMENT '遷移先URL',
-  `creative_type` enum('banner','video') NOT NULL COMMENT 'クリエイティブ種別',
+  `creative_type` enum('banner','video') NOT NULL COMMENT 'クリエイティブタイプ。banner: バナー, video: 動画',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `creative_banner`
---
-
-DROP TABLE IF EXISTS `creative_banner`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `creative_banner` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `creative_id` int NOT NULL COMMENT 'クリエイティブID',
-  `banner_id` int NOT NULL COMMENT 'バナーID',
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
-  `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  `banner_id` int DEFAULT NULL,
+  `video_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `REL_71154171edaeca0de953b088f4` (`creative_id`),
-  UNIQUE KEY `REL_075f52f6fa73f1d964d76e4f84` (`banner_id`),
-  CONSTRAINT `FK_075f52f6fa73f1d964d76e4f847` FOREIGN KEY (`banner_id`) REFERENCES `banner` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_71154171edaeca0de953b088f4f` FOREIGN KEY (`creative_id`) REFERENCES `creative` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `creative_video`
---
-
-DROP TABLE IF EXISTS `creative_video`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `creative_video` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `creative_id` int NOT NULL COMMENT 'クリエイティブID',
-  `video_id` int NOT NULL COMMENT 'ビデオID',
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
-  `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `REL_bb754ed848cc7ee4b17a341ce1` (`creative_id`),
-  UNIQUE KEY `REL_4f31b5c357a04ff557e987d945` (`video_id`),
-  CONSTRAINT `FK_4f31b5c357a04ff557e987d9453` FOREIGN KEY (`video_id`) REFERENCES `video` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_bb754ed848cc7ee4b17a341ce11` FOREIGN KEY (`creative_id`) REFERENCES `creative` (`id`) ON DELETE CASCADE
+  UNIQUE KEY `REL_bfde2222b384a1ae499c9f3e18` (`banner_id`),
+  UNIQUE KEY `REL_465c6af2fef9a0b3ce529055b1` (`video_id`),
+  CONSTRAINT `FK_465c6af2fef9a0b3ce529055b1e` FOREIGN KEY (`video_id`) REFERENCES `video` (`id`),
+  CONSTRAINT `FK_bfde2222b384a1ae499c9f3e188` FOREIGN KEY (`banner_id`) REFERENCES `banner` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -182,7 +213,7 @@ CREATE TABLE `migrations` (
   `timestamp` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -322,15 +353,17 @@ CREATE TABLE `video` (
   `endcard_url` varchar(255) NOT NULL COMMENT 'エンドカード画像URL',
   `video_xid` varchar(32) NOT NULL COMMENT 'video_url内に含むユニーク文字列',
   `endcard_xid` varchar(32) NOT NULL COMMENT 'endcard_url内に含むユニーク文字列',
-  `height` int NOT NULL,
-  `width` int NOT NULL,
-  `extension` enum('video/quicktime','video/mp4') NOT NULL,
-  `endcard_height` int NOT NULL,
-  `endcard_width` int NOT NULL,
-  `endcard_extension` enum('image/png','image/jpeg') NOT NULL COMMENT 'エンドカードの拡張子。pngの場合image/png、jpegの場合image/jpeg',
+  `height` int NOT NULL COMMENT '動画の高さ',
+  `width` int NOT NULL COMMENT '動画の幅',
+  `extension` enum('mov','mp4') NOT NULL COMMENT '動画の拡張子。mov, mp4',
+  `endcard_height` int NOT NULL COMMENT 'エンドカードの高さ',
+  `endcard_width` int NOT NULL COMMENT 'エンドカードの幅',
+  `endcard_extension` enum('png','jpg') NOT NULL COMMENT 'エンドカードの拡張子。png, jpg',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  `endcard_link` varchar(255) DEFAULT NULL COMMENT 'エンドカードの遷移先URL',
+  `duration` int NOT NULL COMMENT '動画の再生時間',
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_e66ade2997af86b2270b537132` (`video_xid`),
   UNIQUE KEY `IDX_747a5c13abca59b4e7e1b130da` (`endcard_xid`)
@@ -346,4 +379,4 @@ CREATE TABLE `video` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-18  1:12:30
+-- Dump completed on 2024-06-22 11:23:35
