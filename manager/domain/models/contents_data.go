@@ -8,7 +8,7 @@ type Coupon struct {
 	Rate     string `db:"coupon_rate" json:"rate"`
 }
 
-type ContentsData struct {
+type Contents struct {
 	CampaignID int      `db:"campaign_id" json:"campaign_id"`
 	Coupons    []Coupon `json:"coupons"`
 	GimmickURL string   `db:"gimmick_url" json:"gimmick_url"`
