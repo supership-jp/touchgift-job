@@ -58,7 +58,7 @@ func TestEnvConfig(t *testing.T) {
 		assert.Equal(t, "mysql", env.Db.DriverName)
 		assert.Equal(t, "touchgift", env.Db.User)
 		assert.Equal(t, "test", env.Db.Password)
-		assert.Equal(t, "touchgift-db", env.Db.Database)
+		assert.Equal(t, "touchgift", env.Db.Database)
 		assert.Equal(t, "localhost", env.Db.Host)
 		assert.Equal(t, 3306, env.Db.Port)
 		assert.Equal(t, 60, env.Db.ConnectTimeout)

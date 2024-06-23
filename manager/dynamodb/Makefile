@@ -6,20 +6,24 @@ TN_PREFIX=
 
 TBL_TOUCH_POINT = $(TN_PREFIX)touch_point
 TBL_CAMPAIGN = $(TN_PREFIX)campaign
-TBL_CONTENTS= $(TN_PREFIX)contents
+TBL_CONTENTS = $(TN_PREFIX)contents
+TBL_CREATIVE = $(TN_PREFIX)creative
 
 create-all-table: ## create all table
 	$(MAKE) create-touch_point-table && \
 	$(MAKE) create-campaign-table && \
-	$(MAKE) create-contents-table
+	$(MAKE) create-contents-table && \
+	$(MAKE) create-creative-table
 get-all-table: ## get all table
 	$(MAKE) get-touch_point && \
 	$(MAKE) get-campaign && \
-	$(MAKE) get-content
+	$(MAKE) get-contents && \
+	$(MAKE) get-creatives
 delete-all-table: ## delete all table
 	$(MAKE) delete-touch_point && \
 	$(MAKE) delete-campaign && \
-	$(MAKE) delete-contents
+	$(MAKE) delete-contents && \
+	$(MAKE) delete-creatives
 
 list-tables: ## dynamoのテーブルリスト一覧を表示します
 	aws dynamodb list-tables $(DYNAMODB_OPTIONS)
@@ -40,7 +44,7 @@ delete-touch_point: ## タッチポイントテーブルの削除
 
 create-campaign-table: ## キャンペーンテーブルを作成する
 	aws dynamodb create-table --table-name $(TBL_CAMPAIGN) \
-		--attribute-definitions AttributeName=id,AttributeType=N \
+		--attribute-definitions AttributeName=id,AttributeType=S \
 		--key-schema AttributeName=id,KeyType=HASH \
 		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
 get-campaign: ## キャンペーン情報の取得
@@ -57,3 +61,13 @@ get-contents: ## コンテンツ情報の取得
 	aws dynamodb scan --table-name $(TBL_CONTENTS) $(DYNAMODB_OPTIONS)
 delete-contents: ## コンテンツテーブルの削除
 	aws dynamodb delete-table --table-name $(TBL_CONTENTS) $(DYNAMODB_OPTIONS)
+
+create-creative-table: ## クリエイティブテーブルを作成する
+	aws dynamodb create-table --table-name $(TBL_CREATIVE) \
+		--attribute-definitions AttributeName=campaign_id,AttributeType=S \
+		--key-schema AttributeName=campaign_id,KeyType=HASH \
+		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
+get-creatives:
+	aws dynamodb scan --table-name $(TBL_CREATIVE) $(DYNAMODB_OPTIONS)
+delete-creatives:
+	aws dynamodb delete-table --table-name $(TBL_CREATIVE) $(DYNAMODB_OPTIONS)

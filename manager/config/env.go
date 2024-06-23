@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/kelseyhightower/envconfig"
 	"log"
+	"os"
 	"time"
 )
 
@@ -38,11 +39,11 @@ type DeliveryStart struct {
 }
 
 type DynamoDB struct {
-	EndPoint                string `envconfig:"DYNAMODB_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
-	TableNamePrefix         string `envconfig:"TABLE_NAME_PREFIX" default:""`                      // デフォルトはローカル/CI用
-	DeliveryTableName       string `envconfig:"CAMPAIGN_TABLE_NAME" default:"campaign_data"`
-	CreativeTableName       string `envconfig:"TOUCH_POINT_TABLE_NAME" default:"touch_point_data"`
-	DeliveryBudgetTableName string `envconfig:"CONTENTS_TABLE_NAME" default:"contents_data"`
+	EndPoint            string `envconfig:"DYNAMODB_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
+	TableNamePrefix     string `envconfig:"TABLE_NAME_PREFIX" default:""`                      // デフォルトはローカル/CI用
+	CampaignTableName   string `envconfig:"CAMPAIGN_TABLE_NAME" default:"campaign"`
+	CreativeTableName   string `envconfig:"CREATIVE_TABLE_NAME" default:"creative"`
+	TouchPointTableName string `envconfig:"TOUCH_POINT_TABLE_NAME" default:"touch_point"`
 }
 
 type SQS struct {
@@ -58,7 +59,8 @@ type SQS struct {
 var Env = EnvConfig{}
 
 type EnvConfig struct {
-	RegionFromEC2Metadata bool `envconfig:"REGION_FROM_EC2METADATA" default:"false"`
+	RegionFromEC2Metadata bool   `envconfig:"REGION_FROM_EC2METADATA" default:"false"`
+	AwsProfile            string `envconfig:"AWS_PROFILE" default:"dummy"` // デフォルトはローカル用
 	App
 	DeliveryStart
 	Server
@@ -71,5 +73,8 @@ func init() {
 	err := envconfig.Process("", &Env)
 	if err != nil {
 		log.Fatalf("Fail to load env config : %v", err)
+	}
+	if len(Env.AwsProfile) > 0 {
+		os.Setenv("AWS_PROFILE", Env.AwsProfile)
 	}
 }
