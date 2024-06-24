@@ -31,6 +31,11 @@ type Db struct {
 	ConnMaxLifetime time.Duration `envconfig:"DB_CONN_MAX_LIFETIME" default:"1h"`
 }
 
+type SNS struct {
+	EndPoint           string `envconfig:"SNS_ENDPOINT" default:"http://localhost:4566"`                                                                 // デフォルトはローカル用
+	ControlLogTopicArn string `envconfig:"SNS_CONTROL_LOG_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-delivery-control-local"` // デフォルトはローカル用
+}
+
 type DeliveryStart struct {
 	TaskInterval       time.Duration `envconfig:"DELIVERY_START_TASK_INTERVAL" default:"1m"`
 	TaskLimit          int           `envconfig:"DELIVERY_START_WORKER_TASK_LIMIT" default:"10"` // 1回のSQLで取得する数
@@ -67,6 +72,7 @@ type EnvConfig struct {
 	SQS
 	Db
 	DynamoDB
+	SNS
 }
 
 func init() {

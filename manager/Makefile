@@ -1,5 +1,6 @@
 include ./localstack/Makefile
 include ./dynamodb/Makefile
+include ./sns/Makefile
 
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
