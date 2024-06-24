@@ -5,6 +5,9 @@ include ./sns/Makefile
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
 
+AWS_PROFILE = dummy
+AWS_REGION=ap-northeast-1
+
 # Dynamo設定まわり
 DYNAMODB_ENDPOINT = http://localhost:8000
 DYNAMODB_ENDPOINT_OPTS = --endpoint-url $(DYNAMODB_ENDPOINT)
@@ -28,9 +31,6 @@ REGISTRY =
 
 CREDENTIAL = tpo-$(ENV)
 AWS_VAULT_CMD = aws-vault exec $(CREDENTIAL) --
-
-AWS_PROFILE = dummy
-AWS_REGION=ap-northeast-1
 
 # DynamoDB環境変数
 DYNAMODB_ENDPOINT = http://localhost:4566
