@@ -57,10 +57,10 @@ list-all-subscriptions:
 ###
 # SQS
 ###
-create-sqs-delivery-operation-queue: ## create queue at sqs mock (elasticmq)
+create-sqs-delivery-operation-queue: ## delivery-operationキューを作成
 	aws sqs create-queue --queue-name $(DELIVERY_OPERATION_QUEUE) $(SQS_OPTIONS)
 
-create-sqs-delivery-control-queue: ## create queue at sqs mock (elasticmq)
+create-sqs-delivery-control-queue: ## delivery-controlキューを作成
 	aws sqs create-queue --queue-name $(DELIVERY_CONTROL_QUEUE) $(SQS_OPTIONS)
 
 create-sqs-all-queue: ## create queue at sqs mock (elasticmq)
@@ -94,7 +94,16 @@ receive-message-sqs-delivery-operation-queue: ## delivery-operationのメッセ�
 receive-message-sqs-delivery-control-queue:　## delivery-controlのメッセージ確認
 	aws sqs receive-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_CONTROL_QUEUE) $(SQS_OPTIONS)
 
+
+# キュー自体の削除
+delete-sqs-delivery-operation-queue: ## delivery-operation-queueの削除
+	 @aws sqs delete-queue --queue-url http://localhost:4566/000000000000/touchgift-delivery-operation --endpoint-url http://localhost:4566 --profile dummy
+delete-sqs-delivery-control-queue: ## delivery-control-queueの削除
+	@aws sqs delete-queue --queue-url http://localhost:4566/000000000000/touchgift-delivery-control --endpoint-url http://localhost:4566 --profile dummy
+
+#　メッセージの削除
 delete-message-sqs-delivery-operation-queue: ## delivery-operationのメッセージをすべて削除
 	aws sqs purge-queue --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) $(SQS_OPTIONS)
 delete-message-sqs-delivery-control-queue:　## delivery-controlのメッセージをすべて削除
 	aws sqs receive-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_CONTROL_QUEUE) $(SQS_OPTIONS)
+

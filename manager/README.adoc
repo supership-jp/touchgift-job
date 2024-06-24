@@ -98,3 +98,33 @@ make lint
 ----
 
 
+* ローカルテスト(SNS_PUBLISH→SQS)
++
+[source,bash]
+----
+// sns-topicをすべて作成
+nakagawadaiki:~/workspace/touchgift-job/manager]+[PB-688]
+$ [ arm64 ] % make create-sns-all
+
+// topicの内容を確認
+$ make list-sns-topics
+
+// sqsにキューが存在しないことを確認
+$ make list-sqs-queue
+
+// sqsにキューを作成
+make create-sqs-all-queue
+
+// sqsに作成されたキューを確認
+make list-sqs-queue
+
+// 1件もキューが存在しないことを確認
+make receive-message-sqs-delivery-operation-queue
+
+// SNS publishを実施
+make publish-delivery-operation-local
+
+// 正常にキューにメッセージが入っていることを確認
+make receive-message-sqs-delivery-operation-queue
+
+----

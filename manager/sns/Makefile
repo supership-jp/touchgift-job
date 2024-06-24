@@ -16,3 +16,6 @@ publish-delivery-operation: aws_account_id ## Publish delivery operation sns. ex
 	$(AWS_VAULT_CMD) aws sns publish \
 		--topic-arn $(SNS_DELIVERY_OPERATION_LOG_TOPIC_ARN) \
 		--message $(PUBLISH_FILE)
+
+publish-delivery-operation-local: ## ローカルテスト用
+	@aws sns publish --topic-arn arn:aws:sns:ap-northeast-1:000000000000:touchgift-delivery-operation-local --message "Your message here" --endpoint-url http://localhost:4566 --profile dummy
