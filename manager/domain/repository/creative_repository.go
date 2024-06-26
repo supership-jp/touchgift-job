@@ -11,5 +11,6 @@ type CreativeByCampaignIDCondition struct {
 }
 
 type CreativeRepository interface {
+	// GetCreativeByCampaignID クリエイティブの取得をキャンペーンIDから行う
 	GetCreativeByCampaignID(ctx context.Context, args *CreativeByCampaignIDCondition) ([]*models.Creative, error)
 }

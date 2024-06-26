@@ -11,5 +11,6 @@ type TouchPointByGroupIDCondition struct {
 }
 
 type TouchPointRepository interface {
+	// GetTouchPointByGroupID グループIDからタッチポイントデータを取得する
 	GetTouchPointByGroupID(ctx context.Context, tx Transaction, args *TouchPointByGroupIDCondition) ([]*models.TouchPoint, error)
 }

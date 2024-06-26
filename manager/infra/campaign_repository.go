@@ -2,9 +2,7 @@ package infra
 
 import (
 	"context"
-	"database/sql"
-	"time"
-	"touchgift-job-manager/codes"
+	"github.com/jmoiron/sqlx"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
 )
@@ -22,7 +20,7 @@ func NewCampaignRepository(logger *Logger, sqlHandler SQLHandler) repository.Cam
 	return campaignRepository
 }
 
-// GetCampaignDataToStart 配信開始時間になったらキャンペーン対象のキャンペーン情報を取得する
+// GetCampaignToStart 配信開始するキャンペーン情報を取得する
 func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, tx repository.Transaction, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
@@ -52,6 +50,7 @@ WHERE
 	return campaigns, nil
 }
 
+// GetCampaignToEnd 配信が終了するキャンペーン情報を取得する
 func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository.Transaction, args *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
@@ -81,17 +80,24 @@ WHERE
 	return campaigns, nil
 }
 
-func (c *CampaignRepository) UpdateStatus(ctx context.Context, tx repository.Transaction, args *repository.UpdateCondition) (time.Time, error) {
-	var updatedAt time.Time
-	err := tx.(*Transaction).Tx.QueryRowxContext(ctx,
+func (d *CampaignRepository) UpdateStatus(ctx context.Context, tx repository.Transaction, target *repository.UpdateCondition) ([]int, error) {
+	query, args, err := sqlx.In(
 		`UPDATE campaign
-         SET status = ?, updated_at = ?
-         WHERE id = ?`, args.Status, args.UpdatedAt, args.CampaignID).Scan(&updatedAt)
+         SET status = ?, updated_at = NOW()
+         WHERE campaign.id IN (?)`,
+		target.Status, target.CampaignIDs)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return updatedAt, codes.ErrFailedUpdate
-		}
-		return updatedAt, err
+		return nil, err
 	}
-	return updatedAt, nil
+
+	// クエリをデータベースのプレースホルダ形式に再バインドする
+	query = tx.(*Transaction).Tx.Rebind(query)
+
+	// UPDATE文を実行
+	_, err = tx.(*Transaction).Tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return target.CampaignIDs, nil
 }

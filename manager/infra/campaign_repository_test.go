@@ -287,11 +287,67 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 	})
 }
 
-//func TestCampaignRepository_UpdateStatus(t *testing.T) {
-//	// mockを使用する準備
-//	ctrl := gomock.NewController(t)
-//	defer ctrl.Finish()
-//}
+func TestCampaignRepository_UpdateStatus(t *testing.T) {
+	logger := GetLogger()
+	sqlHandler := NewSQLHandler(logger)
+	defer sqlHandler.Close()
+
+	t.Run("正常にステータスがupdateされる", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		_, err = createStartCampaignData(ctx, t, tx)
+		assert.NoError(t, err)
+
+		// リポジトリの取得
+		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+
+		campaigns, err := campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+			To:     time.Now(),
+			Status: "configured",
+		})
+		// IDを格納するための整数型スライスを初期化
+		var campaignIDs []int
+		// campaigns スライスをループで回し、各キャンペーンのIDを抽出
+		for _, campaign := range campaigns {
+			campaignIDs = append(campaignIDs, campaign.ID)
+		}
+
+		if err != nil {
+			assert.NoError(t, err)
+		}
+
+		updatedIDs, err := campaignRepository.UpdateStatus(ctx, tx, &repository.UpdateCondition{
+			CampaignIDs: campaignIDs,
+			Status:      "started",
+			UpdatedAt:   time.Now(),
+		})
+		if err != nil {
+			assert.NoError(t, err)
+		}
+
+		assert.Len(t, updatedIDs, 1)
+
+		campaigns, err = campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+			To:     time.Now(),
+			Status: "started",
+		})
+		assert.NoError(t, err)
+		// startedのキャンペーンが取得できるか
+		assert.Len(t, campaigns, 1)
+	})
+}
 
 // TODO: 時間を現在時刻を基準に
 func createStartCampaignData(ctx context.Context, t testing.TB, tx repository.Transaction) (*int, error) {
