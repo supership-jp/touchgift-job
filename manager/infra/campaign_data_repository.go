@@ -21,7 +21,7 @@ type CampaignDataRepository struct {
 	monitor         *metrics.Monitor
 }
 
-func NewCampaignDataRepository(handler *DynamoDBHandler, logger *Logger, monitor *metrics.Monitor) repository.CampaignDataRepository {
+func NewCampaignDataRepository(handler *DynamoDBHandler, logger *Logger, monitor *metrics.Monitor) repository.DeliveryDataCampaign {
 	tableName := config.Env.DynamoDB.CampaignTableName
 	if len(config.Env.DynamoDB.TableNamePrefix) > 0 {
 		// CIやローカル用
@@ -38,7 +38,7 @@ func NewCampaignDataRepository(handler *DynamoDBHandler, logger *Logger, monitor
 	return &campaignDataRepository
 }
 
-func (c *CampaignDataRepository) Get(ctx context.Context, id *string) (*models.Campaign, error) {
+func (c *CampaignDataRepository) Get(ctx context.Context, id *string) (*models.DeliveryDataCampaign, error) {
 	result, err := c.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: c.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
@@ -54,7 +54,7 @@ func (c *CampaignDataRepository) Get(ctx context.Context, id *string) (*models.C
 	if result.Item == nil {
 		return nil, codes.ErrNoData
 	}
-	item := models.Campaign{}
+	item := models.DeliveryDataCampaign{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (c *CampaignDataRepository) Get(ctx context.Context, id *string) (*models.C
 
 // Put キャンペーン配信データの登録/更新を行う
 // TODO: メトリクス項目を考える(成功時、失敗時)
-func (c *CampaignDataRepository) Put(ctx context.Context, updateData *models.Campaign) error {
+func (c *CampaignDataRepository) Put(ctx context.Context, updateData *models.DeliveryDataCampaign) error {
 
 	item, err := dynamodbattribute.MarshalMap(updateData)
 	if err != nil {
@@ -82,7 +82,7 @@ func (c *CampaignDataRepository) Put(ctx context.Context, updateData *models.Cam
 
 }
 
-func (c *CampaignDataRepository) PutAll(ctx context.Context, updateData *[]models.Campaign) error {
+func (c *CampaignDataRepository) PutAll(ctx context.Context, updateData *[]models.DeliveryDataCampaign) error {
 	for i := range *updateData {
 		updateData := (*updateData)[i]
 		err := c.Put(ctx, &updateData)
@@ -108,7 +108,7 @@ func (c *CampaignDataRepository) Delete(ctx context.Context, campaignID *string)
 	return nil
 }
 
-func (c *CampaignDataRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.Campaign) error {
+func (c *CampaignDataRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataCampaign) error {
 	for i := range *deleteDatas {
 		deleteData := (*deleteDatas)[i]
 		ID := &deleteData.ID

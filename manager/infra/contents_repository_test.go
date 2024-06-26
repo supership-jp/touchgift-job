@@ -33,7 +33,6 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
 		actuals, err := contentsRepository.GetGimmickURLByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: 0,
-			Limit:      10,
 		})
 
 		if assert.NoError(t, err) {
@@ -84,7 +83,6 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 
 		gimmickURL, _ := contentsRepository.GetGimmickURLByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: id,
-			Limit:      1,
 		})
 
 		assert.NotNil(t, gimmickURL)
@@ -117,7 +115,6 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
 		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: 0,
-			Limit:      10,
 		})
 
 		if assert.NoError(t, err) {
@@ -178,7 +175,6 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
 		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: campaignID,
-			Limit:      10,
 		})
 
 		if assert.NoError(t, err) && assert.Equal(t, 1, len(actuals)) {
@@ -240,7 +236,6 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
 		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: campaignID,
-			Limit:      10,
 		})
 
 		if assert.NoError(t, err) && assert.Equal(t, 2, len(actuals)) {

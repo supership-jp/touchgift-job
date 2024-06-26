@@ -68,7 +68,7 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 
 		// キャンペーン情報登録
-		rdbUtil.InsertCampaign(
+		_, err = rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
 			"configured",          // status
 			"Project X",           // name
@@ -78,6 +78,11 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			store_group_id,        // storeGroupId
 			gimmick_id,
 		)
+		if err != nil {
+			if !assert.NoError(t, err) {
+				return
+			}
+		}
 
 		rdbUtil.InsertTouchPoint(
 			"ORG001",
@@ -89,10 +94,14 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			1,
 		)
 
-		rdbUtil.InsertStoreMap(
+		_, err = rdbUtil.InsertStoreMap(
 			store_group_id,
 			store_id,
 		)
+
+		if !assert.NoError(t, err) {
+			return
+		}
 
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
 		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
@@ -133,7 +142,7 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 
 		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		//　キャンペーン情報登録
-		rdbUtil.InsertCampaign(
+		_, err = rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
 			"configured",          // status
 			"Project X",           // name
@@ -143,6 +152,9 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			store_group_id,        // storeGroupId
 			gimmick_id,
 		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
 		rdbUtil.InsertTouchPoint(
 			"ORG001",
@@ -174,10 +186,13 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			1,
 		)
 
-		rdbUtil.InsertStoreMap(
+		_, err = rdbUtil.InsertStoreMap(
 			store_group_id,
 			storeId,
 		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
 		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)

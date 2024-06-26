@@ -20,8 +20,9 @@ type Delivery interface {
 }
 
 type delivery struct {
-	logger  Logger
-	monitor *metrics.Monitor
+	logger             Logger
+	monitor            *metrics.Monitor
+	contentsRepository repository.ContentsRepository
 }
 
 func NewDelivery(
@@ -35,13 +36,27 @@ func NewDelivery(
 }
 
 func (d *delivery) StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error {
+	//campaignID := campaign.ID
 	// TODO: campaign.statusの更新
-	_, _, err := d.UpdateStatus(ctx, tx, campaign.ID, "started", time.Now())
-	if err != nil {
-		return err
-	}
+	//_, _, err = d.UpdateStatus(ctx, tx, campaignID, "started", time.Now())
+	//if err != nil {
+	//	return err
+	//}
+
+	// TODO: IDの型の取り扱いを考える
+	//condition := repository.ContentsByCampaignIDCondition{
+	//	CampaignID: campaignID,
+	//}
 
 	// TODO: コンテンツをそれぞれキャンペーンから取得してメモリに展開
+
+	// ギミックURLの取得
+	//gimmickURL, err := d.contentsRepository.GetGimmickURLByCampaignID(ctx, tx, &condition)
+	//if err != nil {
+	//	return err
+	//}
+	//　クーポン一覧の取得
+	//coupons, err := d.contentsRepository.GetCouponsByCampaignID(ctx, tx, &condition)
 
 	//　TODO: 配信データ(キャンペーン, タッチポイント, コンテンツ)登録
 
@@ -53,6 +68,15 @@ func (d *delivery) Stop(ctx context.Context, tx repository.Transaction, campaign
 }
 
 func (d *delivery) UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int64, time.Time, error) {
+	//condition := repository.UpdateCondition{
+	//	CampaignID: campaignId,
+	//	Status:     status,
+	//	UpdatedAt:  updatedAt,
+	//}
+	//count, executeUpdatedAt, err :=
+	//if err != nil {
+	//	return 0, time.Time{}, err
+	//}
 	return 0, time.Now(), nil
 }
 

@@ -98,6 +98,9 @@ run: ## Start dev server
 generate:
 	@go generate ./...
 
+mod-tidy: ## packageのinstall
+	go mod tidy -v
+
 aws_account_id: ## current aws_account_id
 	$(eval AWS_ACCOUNT_ID := $(shell $(AWS_VAULT_CMD) aws sts get-caller-identity --query 'Account' --output text))
 

@@ -94,6 +94,10 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			"https://example.com/endcard.jpg",
 		)
 
+		if !assert.NoError(t, err) {
+			return
+		}
+
 		// creative
 		creative_id, err := rdbUtil.InsertCreative(
 			"ORG001",
@@ -104,14 +108,20 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			1,
 			video_id,
 		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
 		// campaign_creative
-		rdbUtil.InsertCampaignCreative(
+		_, err = rdbUtil.InsertCampaignCreative(
 			campaign_id,
 			creative_id,
 			100,
 			3,
 		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
 		creativeRepository := NewCreativeRepository(logger, sqlHandler)

@@ -7,7 +7,6 @@ import (
 
 type ContentsByCampaignIDCondition struct {
 	CampaignID int
-	Limit      int
 }
 
 type GenerateContentsCondition struct {

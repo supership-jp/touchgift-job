@@ -28,6 +28,7 @@ type deliveryOperationSync struct {
 	wg                       *sync.WaitGroup
 }
 
+// 　TODO: メトリクスちゃんとやる
 var (
 	metricDeliveryOperationSyncTotal       = "delivery_operation_sync_total"
 	metricDeliveryOperationSyncTotalDesc   = "all delivery operation sync count"

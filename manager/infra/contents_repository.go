@@ -41,7 +41,6 @@ WHERE campaign.id = :campaign_id`
 	var coupons []*models.Coupon
 	err = stmt.SelectContext(ctx, &coupons, map[string]interface{}{
 		"campaign_id": args.CampaignID,
-		"limit":       args.Limit,
 	})
 
 	if err != nil {

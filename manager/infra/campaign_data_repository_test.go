@@ -28,7 +28,7 @@ func TestCampaignDataRepository_Get(t *testing.T) {
 	t.Run("campaign_dataを1件返す", func(t *testing.T) {
 		campaignDataRepository := NewCampaignDataRepository(dynamodbHandler, logger, monitor)
 		ID := "id_get1"
-		expected := models.Campaign{
+		expected := models.DeliveryDataCampaign{
 			ID:      ID,
 			GroupID: 1,
 			OrgID:   "ORG1",
@@ -60,8 +60,8 @@ func TestCampaignDataRepository_Put(t *testing.T) {
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
 
-	createData := func() *models.Campaign {
-		return &models.Campaign{
+	createData := func() *models.DeliveryDataCampaign {
+		return &models.DeliveryDataCampaign{
 			ID:      "1",
 			GroupID: 1,
 			OrgID:   "ORG1",
@@ -126,8 +126,8 @@ func TestCampaignDataRepository_PutAll(t *testing.T) {
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
 
-	createData := func(id string, name string) *models.Campaign {
-		return &models.Campaign{
+	createData := func(id string, name string) *models.DeliveryDataCampaign {
+		return &models.DeliveryDataCampaign{
 			ID:      id,
 			GroupID: 1,
 			OrgID:   "ORG1",
@@ -136,13 +136,13 @@ func TestCampaignDataRepository_PutAll(t *testing.T) {
 		}
 	}
 
-	initialCampaigns := []models.Campaign{
+	initialCampaigns := []models.DeliveryDataCampaign{
 		*createData("1", "キャンペーン初期A"),
 		*createData("2", "キャンペーン初期B"),
 		*createData("3", "キャンペーン初期C"),
 	}
 
-	updatedCampaigns := []models.Campaign{
+	updatedCampaigns := []models.DeliveryDataCampaign{
 		*createData("1", "キャンペーン更新A"),
 		*createData("2", "キャンペーン更新B"),
 		*createData("3", "キャンペーン更新C"),
@@ -196,8 +196,8 @@ func TestCampaignDataRepository_Delete(t *testing.T) {
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
 
-	createData := func(id string, name string) *models.Campaign {
-		return &models.Campaign{
+	createData := func(id string, name string) *models.DeliveryDataCampaign {
+		return &models.DeliveryDataCampaign{
 			ID:      id,
 			GroupID: 1,
 			OrgID:   "ORG1",
@@ -225,7 +225,7 @@ func TestCampaignDataRepository_Delete(t *testing.T) {
 
 	t.Run("複数のcampaign_dataを削除できる", func(t *testing.T) {
 		// Setup - Creating multiple campaigns to delete
-		multipleCampaigns := []models.Campaign{
+		multipleCampaigns := []models.DeliveryDataCampaign{
 			*createData("101", "キャンペーンX"),
 			*createData("102", "キャンペーンY"),
 			*createData("103", "キャンペーンZ"),
