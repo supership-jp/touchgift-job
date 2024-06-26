@@ -15,8 +15,9 @@ type GenerateContentsCondition struct {
 }
 
 type ContentsRepository interface {
-	// GetContentsByCampaignID キャンペーンIDからコンテンツデータを取得する
+	// GetCouponsByCampaignID  キャンペーンIDからクーポンデータを取得する
 	GetCouponsByCampaignID(ctx context.Context, tx Transaction, args *ContentsByCampaignIDCondition) ([]*models.Coupon, error)
+	// GetGimmickURLByCampaignID キャンペーンIDからギミックURLを取得する
 	GetGimmickURLByCampaignID(ctx context.Context, tx Transaction, campaignID *ContentsByCampaignIDCondition) (*string, error)
 }
 
