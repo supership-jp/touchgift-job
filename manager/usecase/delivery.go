@@ -10,7 +10,7 @@ import (
 
 type Delivery interface {
 	// UpdateStatus 配信状態を更新する
-	UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int64, time.Time, error)
+	UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int, error)
 	// DeliveryControlEvent 配信制御イベントを発行する
 	DeliveryControlEvent(ctx context.Context, campaign *models.Campaign, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string)
 	// StartOrSync データの同期or配信を開始する
@@ -22,6 +22,7 @@ type Delivery interface {
 type delivery struct {
 	logger             Logger
 	monitor            *metrics.Monitor
+	campaignRepository repository.CampaignRepository
 	contentsRepository repository.ContentsRepository
 }
 
@@ -36,12 +37,11 @@ func NewDelivery(
 }
 
 func (d *delivery) StartOrSync(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error {
-	//campaignID := campaign.ID
-	// TODO: campaign.statusの更新
-	//_, _, err = d.UpdateStatus(ctx, tx, campaignID, "started", time.Now())
-	//if err != nil {
-	//	return err
-	//}
+	campaignID := campaign.ID
+	_, err := d.UpdateStatus(ctx, tx, campaignID, "started", time.Now())
+	if err != nil {
+		return err
+	}
 
 	// TODO: IDの型の取り扱いを考える
 	//condition := repository.ContentsByCampaignIDCondition{
@@ -67,19 +67,20 @@ func (d *delivery) Stop(ctx context.Context, tx repository.Transaction, campaign
 	return nil
 }
 
-func (d *delivery) UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int64, time.Time, error) {
-	//condition := repository.UpdateCondition{
-	//	CampaignID: campaignId,
-	//	Status:     status,
-	//	UpdatedAt:  updatedAt,
-	//}
-	//count, executeUpdatedAt, err :=
-	//if err != nil {
-	//	return 0, time.Time{}, err
-	//}
-	return 0, time.Now(), nil
+func (d *delivery) UpdateStatus(ctx context.Context, tx repository.Transaction, campaignId int, status string, updatedAt time.Time) (int, error) {
+	condition := &repository.UpdateCondition{
+		CampaignID: campaignId,
+		Status:     status,
+		UpdatedAt:  updatedAt,
+	}
+	updatedCampaignId, err := d.campaignRepository.UpdateStatus(ctx, tx, condition)
+	if err != nil {
+		return 0, err
+	}
+	return updatedCampaignId, nil
 }
 
 func (d *delivery) DeliveryControlEvent(ctx context.Context, campaign *models.Campaign, beforeStatus string, afterStatus string, detail string, deliveryType string, priceType string) {
+
 	// メソッドの実装
 }

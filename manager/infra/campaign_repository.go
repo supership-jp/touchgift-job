@@ -2,7 +2,8 @@ package infra
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
+	"fmt"
+	"time"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
 )
@@ -80,24 +81,36 @@ WHERE
 	return campaigns, nil
 }
 
-func (d *CampaignRepository) UpdateStatus(ctx context.Context, tx repository.Transaction, target *repository.UpdateCondition) ([]int, error) {
-	query, args, err := sqlx.In(
-		`UPDATE campaign
-         SET status = ?, updated_at = NOW()
-         WHERE campaign.id IN (?)`,
-		target.Status, target.CampaignIDs)
+func (c *CampaignRepository) UpdateStatus(ctx context.Context, tx repository.Transaction, target *repository.UpdateCondition) (int, error) {
+	query := `UPDATE campaign
+	SET 
+	    status = ?,
+	    updated_at = ?
+	WHERE id = ?`
+
+	// PrepareContextを使用してステートメントを準備します
+	stmt, err := tx.(*Transaction).Tx.PrepareContext(ctx, query)
 	if err != nil {
-		return nil, err
+		return 0, err
+	}
+	defer stmt.Close()
+
+	// ExecContextを使用してクエリを実行し、結果を確認します
+	result, err := stmt.ExecContext(ctx, target.Status, time.Now(), target.CampaignID)
+	if err != nil {
+		return 0, err
 	}
 
-	// クエリをデータベースのプレースホルダ形式に再バインドする
-	query = tx.(*Transaction).Tx.Rebind(query)
-
-	// UPDATE文を実行
-	_, err = tx.(*Transaction).Tx.ExecContext(ctx, query, args...)
+	// RowsAffectedをチェックして、実際に更新が行われたかを確認します
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return target.CampaignIDs, nil
+	if rowsAffected == 0 {
+		return 0, fmt.Errorf("no rows updated")
+	}
+
+	// 成功した場合、更新されたcampaign_idを戻り値として返します。
+	return target.CampaignID, nil
 }

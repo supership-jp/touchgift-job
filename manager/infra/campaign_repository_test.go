@@ -317,27 +317,18 @@ func TestCampaignRepository_UpdateStatus(t *testing.T) {
 			To:     time.Now(),
 			Status: "configured",
 		})
-		// IDを格納するための整数型スライスを初期化
-		var campaignIDs []int
-		// campaigns スライスをループで回し、各キャンペーンのIDを抽出
-		for _, campaign := range campaigns {
-			campaignIDs = append(campaignIDs, campaign.ID)
-		}
 
-		if err != nil {
-			assert.NoError(t, err)
-		}
+		campaign_id := campaigns[0].ID
 
-		updatedIDs, err := campaignRepository.UpdateStatus(ctx, tx, &repository.UpdateCondition{
-			CampaignIDs: campaignIDs,
-			Status:      "started",
-			UpdatedAt:   time.Now(),
+		updatedID, err := campaignRepository.UpdateStatus(ctx, tx, &repository.UpdateCondition{
+			CampaignID: campaign_id,
+			Status:     "started",
+			UpdatedAt:  time.Now(),
 		})
 		if err != nil {
 			assert.NoError(t, err)
 		}
-
-		assert.Len(t, updatedIDs, 1)
+		assert.Equal(t, campaigns[0].ID, updatedID)
 
 		campaigns, err = campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
@@ -366,13 +357,15 @@ func createStartCampaignData(ctx context.Context, t testing.TB, tx repository.Tr
 		"configured",          // status
 		"Project X",           // name
 		"2024-06-01 18:41:11", // startAt
-		"2024-06-29 18:41:11", // endAt
+		"2030-06-29 18:41:11", // endAt
 		1,                     // lastUpdatedBy
 		store_group_id,        // storeGroupId
 		gimmick_id,
 	)
 	return &id, err
 }
+
+// 終了したキャンペーン作成
 func createEndedCampaignData(ctx context.Context, t testing.TB, tx repository.Transaction) (*int, error) {
 	rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)
 	// 店舗情報('ORG001', 'S001', '東京本店', '100-0001', '13', '東京都千代田区丸の内1-1-1'),

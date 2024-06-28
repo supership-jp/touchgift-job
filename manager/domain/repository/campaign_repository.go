@@ -9,9 +9,9 @@ import (
 //　RDSへの接続操作
 
 type UpdateCondition struct {
-	CampaignIDs []int
-	Status      string
-	UpdatedAt   time.Time
+	CampaignID int
+	Status     string
+	UpdatedAt  time.Time
 }
 
 type CampaignToStartCondition struct {
@@ -35,5 +35,5 @@ type CampaignRepository interface {
 	// GetCampaignToEnd 配信が終了するキャンペーン情報を取得する
 	GetCampaignToEnd(ctx context.Context, tx Transaction, campaign *CampaignDataToEndCondition) ([]*models.Campaign, error)
 	// UpdateStatus キャンペーン情報のステータス更新(status)更新
-	UpdateStatus(ctx context.Context, tx Transaction, campaign *UpdateCondition) ([]int, error)
+	UpdateStatus(ctx context.Context, tx Transaction, campaign *UpdateCondition) (int, error)
 }
