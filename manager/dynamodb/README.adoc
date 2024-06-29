@@ -1,0 +1,2 @@
+## 仕様書
+https://www.notion.so/DynamoDB-3435e38f4ee641a1bdaf7527eb78ab87?pvs=4

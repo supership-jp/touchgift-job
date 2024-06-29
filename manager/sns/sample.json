@@ -1,0 +1,17 @@
+{
+  "time": "2012-03-29T05:12:16.901Z",
+  "type": "delivery_operation",
+  "request_id": "manual_publish",
+  "target": "touchgfit",
+  "campaigns": [
+    {
+      "id": "(Value replaced by Makefile)",
+      "origin_id": "1",
+      "organization_code": "(Value replaced by Makefile)",
+      "service": "default",
+      "advertiser_id": 1,
+      "event": "update",
+      "creatives": []
+    }
+  ]
+}

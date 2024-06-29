@@ -1,5 +1,17 @@
+include ./localstack/Makefile
+include ./dynamodb/Makefile
+include ./sns/Makefile
+
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
+
+AWS_PROFILE = dummy
+AWS_REGION=ap-northeast-1
+
+# Dynamo設定まわり
+DYNAMODB_ENDPOINT = http://localhost:8000
+DYNAMODB_ENDPOINT_OPTS = --endpoint-url $(DYNAMODB_ENDPOINT)
+DYNAMODB_OPTIONS = $(DYNAMODB_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
 # TODO: アプリケーション名, ecsクラスター, サービス名を設定
 APPLICATION =
@@ -19,9 +31,6 @@ REGISTRY =
 
 CREDENTIAL = tpo-$(ENV)
 AWS_VAULT_CMD = aws-vault exec $(CREDENTIAL) --
-
-AWS_PROFILE = dummy
-AWS_REGION=ap-northeast-1
 
 # DynamoDB環境変数
 DYNAMODB_ENDPOINT = http://localhost:4566
@@ -75,3 +84,47 @@ ifneq (,$(findstring rc,$(ENVIRONMENT_SUFFIX)))
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-control-$(ENVIRONMENT_SUFFIX)
 endif
+
+run: ## Start dev server
+	@go build -o main && \
+		GIN_MODE=release \
+		LOG_LEVEL=info \
+		SQS_ENDPOINT=$(SQS_ENDPOINT) \
+		DYNAMODB_ENDPOINT=$(DYNAMODB_ENDPOINT) \
+		TABLE_NAME_SUFFIX= \
+		AWS_PROFILE=$(AWS_PROFILE) \
+		./main || exit 0
+
+generate:
+	@go generate ./...
+
+mod-tidy: ## packageのinstall
+	go mod tidy -v
+
+aws_account_id: ## current aws_account_id
+	$(eval AWS_ACCOUNT_ID := $(shell $(AWS_VAULT_CMD) aws sts get-caller-identity --query 'Account' --output text))
+
+help: ## Help
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort |\
+		awk 'BEGIN {FS = ":[^:]*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+lint: ## lint
+	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.54.2 golangci-lint run -v
+
+start-db: ## start db (mysql)
+	@cd ./rdb && docker run --rm -it \
+		-p 3306:3306 \
+		-e MYSQL_ROOT_PASSWORD=test \
+		-e MYSQL_DATABASE=touchgift \
+		-e MYSQL_USER=touchgift \
+		-e MYSQL_PASSWORD=test \
+		-e TZ=Asia/Tokyo \
+		-v $$(PWD)/init:/docker-entrypoint-initdb.d \
+		--name touchgift-job-db \
+		mysql:8.0
+stop-db:
+	docker stop touchgift-job-db
+
+cleanup-db:
+	make stop-db && \
+	make start-db

@@ -1,0 +1,20 @@
+= model
+
+RDSから取得したデータの構造体をまとめたファイル
+
+- campaign.go
+- contents.go
+- creative.go
+- touch_point.go
+
+Dynamoへのデータ挿入に関する構造体をまとめたファイル
+
+- delivery.go
+
+その他
+
+- delivery_control_log.go
+- delivery_operation_log.go
+
+
+
