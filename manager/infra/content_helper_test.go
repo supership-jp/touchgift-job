@@ -3,11 +3,12 @@ package infra
 import (
 	"context"
 	"errors"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestContentsHelper_GenerateContents(t *testing.T) {
@@ -46,7 +47,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 	contentsHelper := NewContentsHelper(logger)
 
 	t.Run("正常な条件でのコンテンツ生成（複数クーポン）", func(t *testing.T) {
-		args := &repository.GenerateContentsCondition{
+		args := &repository.GenerateContentCondition{
 			Coupons:    coupons,
 			GimmickURL: &gimmickURL,
 		}
@@ -88,7 +89,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 	})
 
 	t.Run("クーポンリストが空の場合", func(t *testing.T) {
-		args := &repository.GenerateContentsCondition{
+		args := &repository.GenerateContentCondition{
 			Coupons:    []*models.Coupon{},
 			GimmickURL: &gimmickURL,
 		}
@@ -99,7 +100,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 	})
 
 	t.Run("Gimmick URLがnilの場合", func(t *testing.T) {
-		args := &repository.GenerateContentsCondition{
+		args := &repository.GenerateContentCondition{
 			Coupons:    coupons,
 			GimmickURL: nil,
 		}
@@ -118,7 +119,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 				Rate:     "NaN",         // Non-numeric rate
 			},
 		}
-		args := &repository.GenerateContentsCondition{
+		args := &repository.GenerateContentCondition{
 			Coupons:    invalidCoupons,
 			GimmickURL: &gimmickURL,
 		}

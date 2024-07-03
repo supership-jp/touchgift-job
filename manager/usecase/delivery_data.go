@@ -1,7 +1,10 @@
 //go:generate mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=../mock/$GOPACKAGE/$GOFILE
 package usecase
 
-import "context"
+import (
+	"context"
+	"touchgift-job-manager/domain/repository"
+)
 
 type DeliveryData interface {
 	// Put 配信データを登録する
@@ -11,7 +14,10 @@ type DeliveryData interface {
 }
 
 type deliveryData struct {
-	logger Logger
+	logger               Logger
+	touchPointRepository repository.DeliveryDataTouchPointRepository
+	campaignRepository   repository.DeliveryDataCampaignRepository
+	contentRepository    repository.DeliveryDataContentRepository
 }
 
 func (d *deliveryData) Put(ctx context.Context) error {

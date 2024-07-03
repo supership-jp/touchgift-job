@@ -17,7 +17,7 @@ func NewContentsHelper(logger *Logger) *ContentsHelper {
 	}
 }
 
-func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.GenerateContentsCondition) ([]*models.Contents, error) {
+func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.GenerateContentCondition) ([]*models.Contents, error) {
 	if args == nil {
 		c.logger.Error().Msg("GenerateContentsCondition is nil")
 		return nil, errors.New("generate contents condition must not be nil")

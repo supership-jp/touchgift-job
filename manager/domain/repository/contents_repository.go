@@ -9,12 +9,12 @@ type ContentsByCampaignIDCondition struct {
 	CampaignID int
 }
 
-type GenerateContentsCondition struct {
+type GenerateContentCondition struct {
 	Coupons    []*models.Coupon
 	GimmickURL *string
 }
 
-type ContentsRepository interface {
+type ContentRepository interface {
 	// GetCouponsByCampaignID  キャンペーンIDからクーポンデータを取得する
 	GetCouponsByCampaignID(ctx context.Context, tx Transaction, args *ContentsByCampaignIDCondition) ([]*models.Coupon, error)
 	// GetGimmickURLByCampaignID キャンペーンIDからギミックURLを取得する
@@ -23,5 +23,5 @@ type ContentsRepository interface {
 
 // ContentsHelper gimmick_urlとクーポン一覧からコンテンツを作成する
 type ContentsHelper interface {
-	GenerateContents(ctx context.Context, args *GenerateContentsCondition) ([]*models.Contents, error)
+	GenerateContents(ctx context.Context, args *GenerateContentCondition) ([]*models.Contents, error)
 }

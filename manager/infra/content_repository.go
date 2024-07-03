@@ -51,9 +51,10 @@ WHERE campaign.id = :campaign_id`
 	return coupons, nil
 }
 
-func (c *ContentsRepository) GetGimmickURLByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentsByCampaignIDCondition) (*string, error) {
+func (c *ContentsRepository) GetGimmicksByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentsByCampaignIDCondition) (*string, error) {
 	query := `SELECT
     gimmick.img_url AS gimmick_url
+		gimmick.code AS gimmick_code
 FROM campaign
 JOIN gimmick ON campaign.gimmick_id = gimmick.id
 WHERE campaign.id = :campaign_id`
