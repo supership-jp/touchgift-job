@@ -5,7 +5,7 @@ import (
 	"touchgift-job-manager/domain/models"
 )
 
-type DeliveryDataCampaign interface {
+type DeliveryDataCampaignRepository interface {
 	// 取得する
 	Get(ctx context.Context, id *string) (*models.DeliveryDataCampaign, error)
 	//	登録/更新する
@@ -18,7 +18,7 @@ type DeliveryDataCampaign interface {
 	DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataCampaign) error
 }
 
-type DeliveryDataTouchPoint interface {
+type DeliveryDataTouchPointRepository interface {
 	// 取得する
 	Get(ctx context.Context, id *string) (*models.TouchPoint, error)
 	//	登録/更新する
@@ -31,7 +31,7 @@ type DeliveryDataTouchPoint interface {
 	DeleteAll(ctx context.Context, deleteDatas *[]models.TouchPoint) error
 }
 
-type DeliveryDataCreative interface {
+type DeliveryDataCreativeRepository interface {
 	// 取得する
 	Get(ctx context.Context, id *string) (*models.DeliveryDataCreative, error)
 	//	登録/更新する
@@ -44,7 +44,7 @@ type DeliveryDataCreative interface {
 	DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataCreative) error
 }
 
-type DeliveryDataContent interface {
+type DeliveryDataContentRepository interface {
 	// 取得する
 	Get(ctx context.Context, id *string) (*models.DeliveryDataContent, error)
 	//	登録/更新する

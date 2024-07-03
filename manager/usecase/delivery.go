@@ -23,7 +23,7 @@ type delivery struct {
 	logger             Logger
 	monitor            *metrics.Monitor
 	campaignRepository repository.CampaignRepository
-	contentsRepository repository.ContentsRepository
+	contentsRepository repository.ContentRepository
 }
 
 func NewDelivery(

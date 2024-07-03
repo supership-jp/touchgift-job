@@ -2,14 +2,15 @@ package infra
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
 	"touchgift-job-manager/infra/metrics"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 // TODO: メトリクスの監視項目を精査する
@@ -21,7 +22,7 @@ type CampaignDataRepository struct {
 	monitor         *metrics.Monitor
 }
 
-func NewCampaignDataRepository(handler *DynamoDBHandler, logger *Logger, monitor *metrics.Monitor) repository.DeliveryDataCampaign {
+func NewCampaignDataRepository(handler *DynamoDBHandler, logger *Logger, monitor *metrics.Monitor) repository.DeliveryDataCampaignRepository {
 	tableName := config.Env.DynamoDB.CampaignTableName
 	if len(config.Env.DynamoDB.TableNamePrefix) > 0 {
 		// CIやローカル用
