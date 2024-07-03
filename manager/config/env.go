@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"log"
 	"os"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type App struct {
@@ -43,6 +44,11 @@ type DeliveryStart struct {
 	NumberOfQueue      int           `envconfig:"DELIVERY_START_WORKER_NUMBER_OF_QUEUE" default:"5"`
 }
 
+type DeliveryStartUsecase struct {
+	NumberOfConcurrent int `envconfig:"DELIVERY_START_USECASE_WORKER_NUMBER_OF_CONCURRENT" default:"5"`
+	NumberOfQueue      int `envconfig:"DELIVERY_START_USECASE_WORKER_NUMBER_OF_QUEUE" default:"5"`
+}
+
 type DynamoDB struct {
 	EndPoint            string `envconfig:"DYNAMODB_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
 	TableNamePrefix     string `envconfig:"TABLE_NAME_PREFIX" default:""`                      // デフォルトはローカル/CI用
@@ -66,6 +72,7 @@ var Env = EnvConfig{}
 type EnvConfig struct {
 	RegionFromEC2Metadata bool   `envconfig:"REGION_FROM_EC2METADATA" default:"false"`
 	AwsProfile            string `envconfig:"AWS_PROFILE" default:"dummy"` // デフォルトはローカル用
+	Version               int    `envconfig:"LOG_VERSION" default:"1"`
 	App
 	DeliveryStart
 	Server
