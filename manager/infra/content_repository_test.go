@@ -2,11 +2,12 @@ package infra
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/domain/repository"
 	mock_infra "touchgift-job-manager/mock/infra"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
@@ -31,7 +32,7 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
-		actuals, err := contentsRepository.GetGimmickURLByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		actuals, err := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: 0,
 		})
 
@@ -81,7 +82,7 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 
 		contentsRepository := NewContentsRepository(logger, sqlHandler)
 
-		gimmickURL, _ := contentsRepository.GetGimmickURLByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		gimmickURL, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
 			CampaignID: id,
 		})
 
