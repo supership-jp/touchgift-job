@@ -1,9 +1,9 @@
 -- mysqldump: [Warning] Using a password on the command line interface can be insecure.
--- MySQL dump 10.13  Distrib 8.0.34, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Linux (x86_64)
 --
 -- Host: localhost    Database: retail
 -- ------------------------------------------------------
--- Server version	8.0.34
+-- Server version	8.0.36
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -55,14 +55,11 @@ CREATE TABLE `campaign` (
   `end_at` timestamp NULL DEFAULT NULL COMMENT '終了日時',
   `daily_coupon_limit_per_user` int DEFAULT NULL COMMENT '同一ユーザーへのクーポン配信上限数 / 日',
   `store_group_id` int NOT NULL COMMENT '店舗グループID',
-  `gimmick_id` int DEFAULT NULL COMMENT 'ギミックID',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
   PRIMARY KEY (`id`),
   KEY `FK_1a7e86c9b3f114a1eb49bde233f` (`store_group_id`),
-  KEY `FK_012b823cab2fd6b19816931b805` (`gimmick_id`),
-  CONSTRAINT `FK_012b823cab2fd6b19816931b805` FOREIGN KEY (`gimmick_id`) REFERENCES `gimmick` (`id`),
   CONSTRAINT `FK_1a7e86c9b3f114a1eb49bde233f` FOREIGN KEY (`store_group_id`) REFERENCES `store_group` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -105,6 +102,24 @@ CREATE TABLE `campaign_creative` (
   KEY `FK_33591be12b9fb2e943137853de0` (`creative_id`),
   CONSTRAINT `FK_33591be12b9fb2e943137853de0` FOREIGN KEY (`creative_id`) REFERENCES `creative` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_4f86c4bf43634c065862890041f` FOREIGN KEY (`campaign_id`) REFERENCES `campaign` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `campaign_gimmick`
+--
+
+DROP TABLE IF EXISTS `campaign_gimmick`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `campaign_gimmick` (
+  `campaign_id` int NOT NULL,
+  `gimmick_id` int NOT NULL,
+  PRIMARY KEY (`campaign_id`,`gimmick_id`),
+  KEY `IDX_580f157cb8df1e1f276fdd0520` (`campaign_id`),
+  KEY `IDX_d90a9d6849fe2789946367e301` (`gimmick_id`),
+  CONSTRAINT `FK_580f157cb8df1e1f276fdd05203` FOREIGN KEY (`campaign_id`) REFERENCES `campaign` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_d90a9d6849fe2789946367e301e` FOREIGN KEY (`gimmick_id`) REFERENCES `gimmick` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -169,35 +184,15 @@ CREATE TABLE `gimmick` (
   `id` int NOT NULL AUTO_INCREMENT,
   `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
   `name` varchar(255) NOT NULL COMMENT 'ギミック名',
-  `img_url` varchar(255) NOT NULL COMMENT 'ギミック画像URL',
+  `img_url` varchar(255) DEFAULT NULL COMMENT 'ギミック画像URL',
   `status` enum('0','1','2','3','4') NOT NULL DEFAULT '0' COMMENT '審査ステータス。0: 審査前(下書き), 1: 審査中, 2: 審査OK(公開中), 3: NG, 4: 停止中',
-  `xid` varchar(32) NOT NULL COMMENT 'S3へのアップロード用識別子',
+  `xid` varchar(32) DEFAULT NULL COMMENT 'S3へのアップロード用識別子',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  `code` varchar(255) DEFAULT NULL COMMENT 'ギミックコード',
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_4da2b8bfc4b59dc0ec2468b3b0` (`xid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `location`
---
-
-DROP TABLE IF EXISTS `location`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `location` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `origin_id` varchar(255) NOT NULL,
-  `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
-  `name` varchar(255) DEFAULT NULL COMMENT '管理名',
-  `width` int DEFAULT NULL COMMENT '枠の横幅',
-  `height` int DEFAULT NULL COMMENT '枠の縦幅',
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `IDX_66440ed6cb1acd0240ba6cc947` (`origin_id`,`organization_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -213,7 +208,7 @@ CREATE TABLE `migrations` (
   `timestamp` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -306,17 +301,17 @@ CREATE TABLE `touch_point` (
   `organization_code` varchar(255) NOT NULL COMMENT '組織コード',
   `point_unique_id` varchar(30) NOT NULL COMMENT 'NFC: NFCID, QR: 印字管理ID',
   `print_management_id` varchar(30) NOT NULL COMMENT '印字管理ID',
-  `store_id` varchar(255) NOT NULL COMMENT '店舗ID',
   `type` varchar(255) NOT NULL COMMENT '接触機器の種別',
   `name` varchar(255) DEFAULT NULL COMMENT 'NFC名',
   `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'レコードが作成された日時',
   `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'レコードが更新された日時',
   `last_updated_by` int NOT NULL COMMENT '最終更新者のユーザID',
+  `store_id` int NOT NULL COMMENT '店舗ID(STG DB内採番)',
   PRIMARY KEY (`id`),
   UNIQUE KEY `IDX_b8f52033d364a02db8ac40b40b` (`point_unique_id`),
   UNIQUE KEY `IDX_521605b4828c5311c1921631fd` (`print_management_id`),
   KEY `FK_48e60d26ce1179f9021d5d916ae` (`store_id`),
-  CONSTRAINT `FK_48e60d26ce1179f9021d5d916ae` FOREIGN KEY (`store_id`) REFERENCES `store` (`store_id`) ON DELETE CASCADE
+  CONSTRAINT `FK_48e60d26ce1179f9021d5d916ae` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -379,4 +374,4 @@ CREATE TABLE `video` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-22 11:23:35
+-- Dump completed on 2024-07-30  3:08:39

@@ -2,11 +2,12 @@ package infra
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/infra/metrics"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCampaignDataRepository_Get(t *testing.T) {
@@ -31,8 +32,7 @@ func TestCampaignDataRepository_Get(t *testing.T) {
 		expected := models.DeliveryDataCampaign{
 			ID:      ID,
 			GroupID: 1,
-			OrgID:   "ORG1",
-			Name:    "キャンペーンA",
+			OrgCode: "ORG1",
 			Status:  "warmup",
 		}
 		// データを用意
@@ -64,8 +64,7 @@ func TestCampaignDataRepository_Put(t *testing.T) {
 		return &models.DeliveryDataCampaign{
 			ID:      "1",
 			GroupID: 1,
-			OrgID:   "ORG1",
-			Name:    "キャンペーンA",
+			OrgCode: "ORG1",
 			Status:  "warmup",
 		}
 	}
@@ -101,7 +100,6 @@ func TestCampaignDataRepository_Put(t *testing.T) {
 		}
 		// 更新用データ用意
 		expected2 := *expected
-		expected2.Name = "キャンペーンB"
 		// 更新する
 		err = campaignDataRepository.Put(ctx, &expected2)
 		if !assert.NoError(t, err) {
@@ -130,8 +128,7 @@ func TestCampaignDataRepository_PutAll(t *testing.T) {
 		return &models.DeliveryDataCampaign{
 			ID:      id,
 			GroupID: 1,
-			OrgID:   "ORG1",
-			Name:    name,
+			OrgCode: "ORG1",
 			Status:  "active",
 		}
 	}
@@ -200,8 +197,7 @@ func TestCampaignDataRepository_Delete(t *testing.T) {
 		return &models.DeliveryDataCampaign{
 			ID:      id,
 			GroupID: 1,
-			OrgID:   "ORG1",
-			Name:    name,
+			OrgCode: "ORG1",
 			Status:  "active",
 		}
 	}

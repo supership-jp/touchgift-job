@@ -3,7 +3,7 @@ module touchgift-job-manager
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.53.19
+	github.com/aws/aws-sdk-go v1.41.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.21.0
@@ -11,6 +11,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.1
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.33.0

@@ -78,7 +78,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 		assert.Equal(t, "300", result[0].Coupons[2].Rate)
 
 		// ギミックURLの確認
-		assert.Equal(t, "https://example.com/gimmick.jpg", result[0].GimmickURL)
+		assert.Equal(t, "https://example.com/gimmick.jpg", result[0].Gimmicks[0].URL)
 	})
 
 	t.Run("引数がnilの場合のエラーハンドリング", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestContentsHelper_GenerateContents(t *testing.T) {
 		}
 		result, err := contentsHelper.GenerateContents(context.Background(), args)
 		assert.NoError(t, err)
-		assert.Equal(t, "", result[0].GimmickURL) // Gimmick URL should be empty string
+		assert.Equal(t, "", result[0].Gimmicks[0].URL) // Gimmick URL should be empty string
 	})
 
 	t.Run("クーポン情報に不正なデータが含まれている場合", func(t *testing.T) {

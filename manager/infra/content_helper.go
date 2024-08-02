@@ -17,18 +17,22 @@ func NewContentsHelper(logger *Logger) *ContentsHelper {
 	}
 }
 
-func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.GenerateContentCondition) ([]*models.Contents, error) {
+func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.GenerateContentCondition) ([]*models.Content, error) {
 	if args == nil {
 		c.logger.Error().Msg("GenerateContentsCondition is nil")
 		return nil, errors.New("generate contents condition must not be nil")
 	}
 
-	var contents []*models.Contents
+	var contents []*models.Content
 
 	// Prepare content data
-	content := &models.Contents{
-		Coupons:    make([]models.Coupon, len(args.Coupons)),
-		GimmickURL: "",
+	content := &models.Content{
+		Coupons: make([]models.Coupon, len(args.Coupons)),
+		Gimmicks: []models.Gimmick{
+			{
+				URL: "",
+			},
+		},
 	}
 
 	// Copy coupons data
@@ -44,7 +48,7 @@ func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.
 
 	// Set gimmick URL if available
 	if args.GimmickURL != nil {
-		content.GimmickURL = *args.GimmickURL
+		content.Gimmicks[0].URL = *args.GimmickURL
 	}
 
 	contents = append(contents, content)
