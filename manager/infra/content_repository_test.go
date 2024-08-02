@@ -31,8 +31,8 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 		}()
 
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
-		contentsRepository := NewContentsRepository(logger, sqlHandler)
-		actuals, err := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+		actuals, _, err := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: 0,
 		})
 
@@ -67,8 +67,6 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 		//　store_group情報登録
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "https://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
 			"configured",          // status
@@ -77,12 +75,11 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
-		contentsRepository := NewContentsRepository(logger, sqlHandler)
+		contentsRepository := NewContentRepository(logger, sqlHandler)
 
-		gimmickURL, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		gimmickURL, _, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: id,
 		})
 
@@ -113,8 +110,8 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
-		contentsRepository := NewContentsRepository(logger, sqlHandler)
-		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: 0,
 		})
 
@@ -148,8 +145,6 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 		//　store_group情報登録
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "https://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		couponID := rdbUtil.InsertCoupon(
 			"Summer Sale",                         // name
 			"ORG123",                              // organizationCode
@@ -168,13 +163,12 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		rdbUtil.InsertCampaignCoupon(campaignID, couponID, 100)
 
-		contentsRepository := NewContentsRepository(logger, sqlHandler)
-		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: campaignID,
 		})
 
@@ -211,8 +205,6 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 		rdbUtil.InsertStore("ORG001", "S001", "東京本店", "100-0001", "13", "東京都千代田区丸の内1-1-1")
 		//　store_group情報登録
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "https://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		// 複数のクーポンを登録
 		couponIDs := []int{
 			rdbUtil.InsertCoupon("Summer Sale", "ORG123", "2", "SUMMER2024", "https://example.com/summer-sale.jpg", "XID1234", 1),
@@ -227,15 +219,14 @@ func TestContentsRepository_GetCouponsByCampaignID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		for _, couponID := range couponIDs {
 			rdbUtil.InsertCampaignCoupon(campaignID, couponID, 50)
 		}
 
-		contentsRepository := NewContentsRepository(logger, sqlHandler)
-		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentsByCampaignIDCondition{
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+		actuals, err := contentsRepository.GetCouponsByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: campaignID,
 		})
 

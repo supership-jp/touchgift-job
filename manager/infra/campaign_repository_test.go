@@ -2,12 +2,13 @@ package infra
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 	"touchgift-job-manager/domain/repository"
 	mock_infra "touchgift-job-manager/mock/infra"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
@@ -101,8 +102,6 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -112,7 +111,6 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		assert.NotNil(t, id)
@@ -152,7 +150,6 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -162,7 +159,6 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		assert.NotNil(t, id)
@@ -199,7 +195,7 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 		campaignRepository := NewCampaignRepository(logger, sqlHandler)
 		actuals, err := campaignRepository.GetCampaignToEnd(ctx, tx, &repository.CampaignDataToEndCondition{
 			End:    time.Now(),
-			Status: "configured",
+			Status: []string{"configured"},
 		})
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(actuals))
@@ -229,7 +225,7 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 		campaignRepository := NewCampaignRepository(logger, sqlHandler)
 		actuals, err := campaignRepository.GetCampaignToEnd(ctx, tx, &repository.CampaignDataToEndCondition{
 			End:    time.Now(),
-			Status: "started",
+			Status: []string{"started"},
 		})
 		if assert.NoError(t, err) {
 			assert.Equal(t, 1, len(actuals))
@@ -261,8 +257,6 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		// キャンペーン情報登録
 		id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -272,7 +266,6 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		assert.NotNil(t, id)
@@ -317,6 +310,7 @@ func TestCampaignRepository_UpdateStatus(t *testing.T) {
 			To:     time.Now(),
 			Status: "configured",
 		})
+		assert.NoError(t, err)
 
 		campaign_id := campaigns[0].ID
 
@@ -348,9 +342,6 @@ func createStartCampaignData(ctx context.Context, t testing.TB, tx repository.Tr
 	//　store_group情報登録('グループA', 'ORG001', 1)
 	store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-	// ギミック登録
-	gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
-
 	// キャンペーン情報登録
 	id, err := rdbUtil.InsertCampaign(
 		"ORG001",              // organizationCode
@@ -360,7 +351,6 @@ func createStartCampaignData(ctx context.Context, t testing.TB, tx repository.Tr
 		"2030-06-29 18:41:11", // endAt
 		1,                     // lastUpdatedBy
 		store_group_id,        // storeGroupId
-		gimmick_id,
 	)
 	return &id, err
 }
@@ -373,9 +363,6 @@ func createEndedCampaignData(ctx context.Context, t testing.TB, tx repository.Tr
 	//　store_group情報登録('グループA', 'ORG001', 1)
 	store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-	// ギミック登録
-	gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
-
 	// キャンペーン情報登録
 	id, err := rdbUtil.InsertCampaign(
 		"ORG001",              // organizationCode
@@ -385,7 +372,6 @@ func createEndedCampaignData(ctx context.Context, t testing.TB, tx repository.Tr
 		"2024-06-23 18:41:11", // endAt
 		1,                     // lastUpdatedBy
 		store_group_id,        // storeGroupId
-		gimmick_id,
 	)
 	return &id, err
 }

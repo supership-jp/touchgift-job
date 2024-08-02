@@ -2,10 +2,11 @@ package infra
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/domain/repository"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/stretchr/testify/assert"
 )
 
 type RDBUtil struct {
@@ -31,7 +32,7 @@ func (r *RDBUtil) InsertTouchPoint(organization_code string, point_unique_id str
 				  store_id,
 				  type,
 				  name,
-				  last_updated_by        
+				  last_updated_by
 				) VALUES (
 				    ?, ?, ?, ?, ?, ?, ?
 				)`, organization_code, point_unique_id, print_management_id, store_id, type_param, name, last_updated_by)
@@ -166,20 +167,22 @@ func (r *RDBUtil) InsertCoupon(name string, organizationCode string, status stri
 	return id
 }
 
-func (r *RDBUtil) InsertGimmick(name string, imgUrl string, organizationCode string, status string, xid string, lastUpdatedBy int) int {
+func (r *RDBUtil) InsertGimmick(name string, imgUrl string, organizationCode string, status string, code string, xid string, lastUpdatedBy int) int {
 	_, err := r.tx.ExecContext(r.ctx,
 		`INSERT INTO gimmick (
             name,
             img_url,
             organization_code,
             status,
+						code,
             xid,
             last_updated_by
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		name,
 		imgUrl,
 		organizationCode,
 		status,
+		code,
 		xid,
 		lastUpdatedBy,
 	)
@@ -218,7 +221,28 @@ func (r *RDBUtil) InsertCampaignCoupon(campaignID int, couponID int, deliveryRat
 	return id
 }
 
-func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name string, startAt string, endAt string, lastUpdatedBy int, storeGroupId int, gimmick_id int) (int, error) {
+func (r *RDBUtil) InsertCampaignGimmick(campaignID int, gimmickID int) int {
+	_, err := r.tx.ExecContext(r.ctx,
+		`INSERT INTO campaign_gimmick (
+						campaign_id,
+						gimmick_id
+				) VALUES (?, ?)`,
+		campaignID,
+		gimmickID,
+	)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+
+	var id int
+	err = r.tx.QueryRowxContext(r.ctx, `SELECT LAST_INSERT_ID()`).Scan(&id)
+	if !assert.NoError(r.t, err) {
+		r.t.Fatal(err)
+	}
+	return id
+}
+
+func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name string, startAt string, endAt string, lastUpdatedBy int, storeGroupId int) (int, error) {
 	query := `
         INSERT INTO campaign (
             organization_code,
@@ -229,9 +253,8 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
             created_at,
             updated_at,
             last_updated_by,
-            store_group_id,
-		  	gimmick_id
-        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)`
+            store_group_id
+        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`
 
 	// ExecContext を使用して SQL を実行
 	result, err := r.tx.ExecContext(r.ctx, query,
@@ -242,7 +265,6 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
 		endAt,
 		lastUpdatedBy,
 		storeGroupId,
-		gimmick_id,
 	)
 	if err != nil {
 		return 0, err // エラーを呼び出し元に返す
@@ -311,14 +333,13 @@ func (r *RDBUtil) InsertVideo(video_url string, endcard_url string, video_xid st
 //VALUES
 //('ORG123', 'Example Video Creative', '1', 'https://example.com/click_here', 'video', 1, 2);
 
-func (r *RDBUtil) InsertCreative(organizationCode string, status string, name string, click_url string, creative_type string, last_updated_by int, video_id int) (int, error) {
+func (r *RDBUtil) InsertCreative(organizationCode string, status string, name string, click_url string, last_updated_by int, video_id int) (int, error) {
 	query := `
         INSERT INTO creative (
             organization_code,
             status,
-		    name, 
+						name,
             click_url,
-            creative_type,
             last_updated_by,
             video_id
         ) VALUES (?,?,?,?,?,?,?)`
@@ -329,7 +350,6 @@ func (r *RDBUtil) InsertCreative(organizationCode string, status string, name st
 		status,
 		name,
 		click_url,
-		creative_type,
 		last_updated_by,
 		video_id,
 	)

@@ -56,33 +56,33 @@ ENVIRONMENT_SUFFIX = e
 
 # suffixで環境変数を切り替える
 ifneq (,$(findstring beta,$(ENVIRONMENT_SUFFIX)))
-	DELIVERY_TABLE_NAME=dm_delivery_data.$(ENVIRONMENT_SUFFIX)
-	CREATIVE_TABLE_NAME=dm_creative_data.$(ENVIRONMENT_SUFFIX)
-	DELIVERY_BUDGET_TABLE_NAME=dm_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
-	DM_DB_HOST=/rds/dm-provisioned-beta/endpoint
-	DM_DB_PASSWORD=/rds/dm-provisioned-beta/user/dm/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):dm-delivery-control-$(ENVIRONMENT_SUFFIX)
-	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-operation-$(ENVIRONMENT_SUFFIX)
-	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-control-$(ENVIRONMENT_SUFFIX)
+	DELIVERY_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CREATIVE_TABLE_NAME=touchgift_creative_data.$(ENVIRONMENT_SUFFIX)
+	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
+	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned-beta/endpoint
+	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned-beta/user/touchgift/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
+	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
+	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 else
-	DELIVERY_TABLE_NAME=dm_delivery_data
-	CREATIVE_TABLE_NAME=dm_creative_data
-	DELIVERY_BUDGET_TABLE_NAME=dm_delivery_budget_data
-	DM_DB_HOST=/rds/dm-provisioned/endpoint
-	DM_DB_PASSWORD=/rds/dm-provisioned/user/dm/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):dm-delivery-control
-	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-operation
-	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-control
+	DELIVERY_TABLE_NAME=touchgift_delivery_data
+	CREATIVE_TABLE_NAME=touchgift_creative_data
+	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data
+	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned/endpoint
+	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned/user/touchgift/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control
+	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation
+	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control
 endif
 ifneq (,$(findstring rc,$(ENVIRONMENT_SUFFIX)))
-	DELIVERY_TABLE_NAME=dm_delivery_data.$(ENVIRONMENT_SUFFIX)
-	CREATIVE_TABLE_NAME=dm_creative_data.$(ENVIRONMENT_SUFFIX)
-	DELIVERY_BUDGET_TABLE_NAME=dm_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
-	DM_DB_HOST=/rds/dm-provisioned-rc/endpoint
-	DM_DB_PASSWORD=/rds/dm-provisioned-rc/user/dm/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):dm-delivery-control-$(ENVIRONMENT_SUFFIX)
-	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-operation-$(ENVIRONMENT_SUFFIX)
-	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/adm-delivery-dm-delivery-control-$(ENVIRONMENT_SUFFIX)
+	DELIVERY_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CREATIVE_TABLE_NAME=touchgift_creative_data.$(ENVIRONMENT_SUFFIX)
+	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
+	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned-rc/endpoint
+	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned-rc/user/touchgift/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
+	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
+	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 endif
 
 run: ## Start dev server
@@ -128,3 +128,6 @@ stop-db:
 cleanup-db:
 	make stop-db && \
 	make start-db
+
+create-db-testdata: ## create test data for rdb ex. make create-db-testdata
+	AWS_PROFILE=$(AWS_PROFILE) go test -v ./infra -run TestData -tags=createdata -count 1

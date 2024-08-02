@@ -26,13 +26,13 @@ func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, tx reposito
 	query := `SELECT
     c.id as id,
     sg.id as group_id,
-    c.organization_code as org_id,
-    c.name as name,
+    c.organization_code as org_code,
+		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
     c.status as status,
 	c.updated_at as updated_at
 FROM campaign c
 INNER JOIN store_group sg ON c.store_group_id = sg.id
-WHERE 
+WHERE
     c.start_at <= :to AND
 	c.status = :status`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
@@ -56,13 +56,13 @@ func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository
 	query := `SELECT
     c.id as id,
     sg.id as group_id,
-    c.organization_code as org_id,
-    c.name as name,
+    c.organization_code as org_code,
+    c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
     c.status as status,
 	c.updated_at as updated_at
 FROM campaign c
 INNER JOIN store_group sg ON c.store_group_id = sg.id
-WHERE 
+WHERE
     c.end_at <= :end AND
 	c.status = :status`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
@@ -81,9 +81,84 @@ WHERE
 	return campaigns, nil
 }
 
+func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
+	tx repository.Transaction, args *repository.CampaignCondition,
+) (*models.Campaign, error) {
+	query := `SELECT
+		c.id as id,
+		sg.id as group_id,
+		c.organization_code as org_code,
+		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
+		c.status as status
+	FROM campaign c
+	INNER JOIN store_group sg ON c.store_group_id = sg.id
+	WHERE
+		c.id <= :id AND
+		c.status = :status`
+	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var campaigns *models.Campaign
+	err = stmt.SelectContext(ctx, &campaigns, map[string]interface{}{
+		"id":     args.CampaignID,
+		"status": args.Status,
+	})
+	if err != nil {
+		c.logger.Error().Msgf("Error getting deliveries: %v", err)
+		return nil, err
+	}
+	return campaigns, nil
+}
+
+func (c *CampaignRepository) GetCreativeByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.CreativeByCampaignIDCondition) ([]*models.Creative, error) {
+	query := `
+	SELECT
+		creative.id as id,
+		COALESCE(banner.height, video.height) AS height,
+		COALESCE(banner.width, video.width) AS width,
+		COALESCE(banner.img_url, video.video_url) AS url,
+		CASE
+			WHEN banner.id IS NOT NULL THEN 'banner'
+			WHEN video.id IS NOT NULL THEN 'video'
+		END AS type,
+		CASE
+			WHEN banner.id IS NOT NULL THEN banner.extension
+			WHEN video.id IS NOT NULL THEN video.extension
+		END AS extension,
+		campaign_creative.skip_offset AS skip_offset,
+		video.endcard_url AS end_card_url,
+		video.endcard_width AS end_card_width,
+		video.endcard_height AS end_card_height,
+		video.endcard_extension AS end_card_extension
+	FROM campaign_creative
+			 INNER JOIN  campaign ON campaign_creative.campaign_id = campaign.id
+			 INNER JOIN creative ON campaign_creative.creative_id = creative.id
+			 LEFT JOIN banner ON creative.banner_id = banner.id
+			 LEFT JOIN video ON creative.video_id = video.id
+	WHERE campaign.id = :campaign_id
+	LIMIT :limit
+`
+	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var creatives []*models.Creative
+	err = stmt.SelectContext(ctx, &creatives, map[string]interface{}{
+		"campaign_id": args.CampaignID,
+		"limit":       args.Limit,
+	})
+	if err != nil {
+		c.logger.Error().Msgf("Error getting deliveries: %v", err)
+		return nil, err
+	}
+
+	return creatives, nil
+}
+
 func (c *CampaignRepository) UpdateStatus(ctx context.Context, tx repository.Transaction, target *repository.UpdateCondition) (int, error) {
 	query := `UPDATE campaign
-	SET 
+	SET
 	    status = ?,
 	    updated_at = ?
 	WHERE id = ?`

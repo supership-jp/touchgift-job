@@ -13,14 +13,14 @@ type ContentsRepository struct {
 	sqlHandler SQLHandler
 }
 
-func NewContentsRepository(logger *Logger, sqlHandler SQLHandler) *ContentsRepository {
+func NewContentRepository(logger *Logger, sqlHandler SQLHandler) *ContentsRepository {
 	return &ContentsRepository{
 		logger:     logger,
 		sqlHandler: sqlHandler,
 	}
 }
 
-func (c *ContentsRepository) GetCouponsByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentsByCampaignIDCondition) ([]*models.Coupon, error) {
+func (c *ContentsRepository) GetCouponsByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentByCampaignIDCondition) ([]*models.Coupon, error) {
 	query := `SELECT
     coupon.id AS coupon_id,
     coupon.name AS coupon_name,
@@ -51,7 +51,7 @@ WHERE campaign.id = :campaign_id`
 	return coupons, nil
 }
 
-func (c *ContentsRepository) GetGimmicksByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentsByCampaignIDCondition) (*string, error) {
+func (c *ContentsRepository) GetGimmicksByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.ContentByCampaignIDCondition) (*string, *string, error) {
 	query := `SELECT
     gimmick.img_url AS gimmick_url
 		gimmick.code AS gimmick_code
@@ -62,21 +62,22 @@ WHERE campaign.id = :campaign_id`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var gimmickURL string
+	var gimmickCode string
 	err = stmt.QueryRowxContext(ctx, map[string]interface{}{
 		"campaign_id": args.CampaignID,
-	}).Scan(&gimmickURL)
+	}).Scan(&gimmickURL, &gimmickCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// No rows found, return nil without error
-			return nil, nil
+			return nil, nil, nil
 		}
 		c.logger.Error().Msgf("Error getting gimmick URL: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &gimmickURL, nil
+	return &gimmickURL, &gimmickCode, nil
 }

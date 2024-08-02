@@ -2,11 +2,12 @@ package infra
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/domain/repository"
 	mock_infra "touchgift-job-manager/mock/infra"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
@@ -65,8 +66,6 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
-
 		// キャンペーン情報登録
 		_, err = rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -76,7 +75,6 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 		if err != nil {
 			if !assert.NoError(t, err) {
@@ -140,7 +138,6 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 		//	store_group情報登録
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		//　キャンペーン情報登録
 		_, err = rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -150,7 +147,6 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 		if !assert.NoError(t, err) {
 			return

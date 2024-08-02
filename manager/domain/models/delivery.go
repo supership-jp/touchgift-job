@@ -1,13 +1,26 @@
 package models
 
+import "strconv"
+
 // Dynamoに入れるデータ構造体はここに定義していく
 
 type DeliveryDataCampaign struct {
-	ID      string `json:"id"`
-	GroupID int    `json:"group_id"`
-	OrgID   string `json:"org_id"`
-	Name    string `json:"name"`
-	Status  string `json:"status"`
+	ID         string `json:"id"`
+	GroupID    int    `json:"group_id"`
+	OrgCode    string `json:"org_code"`
+	DailyLimit int    `json:"daily_limit"`
+	Status     string `json:"status"`
+}
+
+func (d *DeliveryDataCampaign) CreateCampaign() *Campaign {
+	ID, _ := strconv.Atoi(d.ID)
+	return &Campaign{
+		ID:                      ID,
+		GroupID:                 d.GroupID,
+		OrgCode:                 d.OrgCode,
+		DailyCouponLimitPerUser: d.DailyLimit,
+		Status:                  d.Status,
+	}
 }
 
 type DeliveryTouchPoint struct {
@@ -35,15 +48,15 @@ type DeliveryDataCreative struct {
 }
 
 type DeliveryDataContent struct {
-	CampaignID string               `json:"campaign_id"`
+	CampaignID int                  `json:"campaign_id"`
 	Coupons    []DeliveryCouponData `json:"coupons"`
-	GimmickURL *string              `json:"gimmick_url,omitempty"`
+	Gimmicks   []Gimmick            `json:"gimmicks"`
 }
 
 type DeliveryCouponData struct {
-	ID       string  `json:"id"`
-	Name     string  `json:"name"`
-	Code     string  `json:"code"`
-	ImageURL string  `json:"image_url"`
-	Rate     float64 `json:"rate"`
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Code     string `json:"code"`
+	ImageURL string `json:"image_url"`
+	Rate     int    `json:"rate"`
 }

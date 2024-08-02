@@ -2,11 +2,12 @@ package infra
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"touchgift-job-manager/domain/repository"
 	mock_infra "touchgift-job-manager/mock/infra"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
@@ -64,7 +65,6 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 		//　store_group情報登録('グループA', 'ORG001', 1)
 		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
 
-		gimmick_id := rdbUtil.InsertGimmick("ギミックA", "htttps://gimmck.jpg", "S001", "0", "xxx", 1)
 		// キャンペーン情報登録
 		campaign_id, _ := rdbUtil.InsertCampaign(
 			"ORG001",              // organizationCode
@@ -74,7 +74,6 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			"2024-06-29 18:41:11", // endAt
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
-			gimmick_id,
 		)
 
 		// video
@@ -104,7 +103,6 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 			"0",
 			"creative_name",
 			"click_url",
-			"video",
 			1,
 			video_id,
 		)

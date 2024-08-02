@@ -49,19 +49,32 @@ type DeliveryStartUsecase struct {
 	NumberOfQueue      int `envconfig:"DELIVERY_START_USECASE_WORKER_NUMBER_OF_QUEUE" default:"5"`
 }
 
+type DeliveryEnd struct {
+	TaskInterval       time.Duration `envconfig:"DELIVERY_END_TASK_INTERVAL" default:"1m"`
+	TaskLimit          int           `envconfig:"DELIVERY_END_WORKER_TASK_LIMIT" default:"10"` // 1回のSQLで取得する数
+	NumberOfConcurrent int           `envconfig:"DELIVERY_END_WORKER_NUMBER_OF_CONCURRENT" default:"5"`
+	NumberOfQueue      int           `envconfig:"DELIVERY_END_WORKER_NUMBER_OF_QUEUE" default:"5"`
+}
+
+type DeliveryEndUsecase struct {
+	NumberOfConcurrent int `envconfig:"DELIVERY_END_USECASE_WORKER_NUMBER_OF_CONCURRENT" default:"5"`
+	NumberOfQueue      int `envconfig:"DELIVERY_END_USECASE_WORKER_NUMBER_OF_QUEUE" default:"5"`
+}
+
 type DynamoDB struct {
 	EndPoint            string `envconfig:"DYNAMODB_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
 	TableNamePrefix     string `envconfig:"TABLE_NAME_PREFIX" default:""`                      // デフォルトはローカル/CI用
 	CampaignTableName   string `envconfig:"CAMPAIGN_TABLE_NAME" default:"campaign"`
 	CreativeTableName   string `envconfig:"CREATIVE_TABLE_NAME" default:"creative"`
 	TouchPointTableName string `envconfig:"TOUCH_POINT_TABLE_NAME" default:"touch_point"`
+	ContentTableName    string `envconfig:"CONTENT_TABLE_NAME" default:"content"`
 }
 
 type SQS struct {
 	Region                    string `envconfig:"AWS_REGION" default:"us-east-1"`
 	EndPoint                  string `envconfig:"SQS_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
-	DeliveryOperationQueueURL string `envconfig:"SQS_DELIVERY_OPERATION_QUEUE_URL" default:"http://localhost:4566/000000000000/delivery-touchgift-operation"`
-	DeliveryControlQueueURL   string `envconfig:"SQS_DELIVERY_CONTROL_QUEUE_URL" default:"http://localhost:4566/000000000000/delivery-touchgift-control"`
+	DeliveryOperationQueueURL string `envconfig:"SQS_DELIVERY_OPERATION_QUEUE_URL" default:"http://localhost:4566/000000000000/touchgift-delivery-operation"`
+	DeliveryControlQueueURL   string `envconfig:"SQS_DELIVERY_CONTROL_QUEUE_URL" default:"http://localhost:4566/000000000000/touchgift-delivery-control"`
 	VisibilityTimeoutSeconds  int64  `envconfig:"SQS_VISIBILITY_TIMEOUT_SECONDS" default:"60"` // 取得したメッセージを処理する時間(これを過ぎると別のアプリがメッセージを取得してしまう)
 	WaitTimeSeconds           int64  `envconfig:"SQS_WAIT_TIME_SECONDS" default:"20"`          // SQSからメッセージを取得する待ち時間
 	MaxMessages               int64  `envconfig:"SQS_MAX_MESSAGES" default:"10"`               // 一度に取得するメッセージ数
@@ -75,6 +88,9 @@ type EnvConfig struct {
 	Version               int    `envconfig:"LOG_VERSION" default:"1"`
 	App
 	DeliveryStart
+	DeliveryStartUsecase
+	DeliveryEnd
+	DeliveryEndUsecase
 	Server
 	SQS
 	Db
