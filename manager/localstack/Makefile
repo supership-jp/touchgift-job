@@ -76,14 +76,14 @@ show-queue-message: ## show queue message
 test-a-a:
 	@echo "$$(make show-queue-message LOG='{"a":"b"}')"
 
-
+# キューへメッセージを送信する
 send-message-sqs-delivery-operation-queue-insert: ## delivery-operationキューへInsertメッセージ作成
 	aws sqs send-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) \
-	--message-body $$(make show-queue-message LOG='{"time":"2020-03-04T09:52:57.804Z","type":"delivery_operation","request_id":"r1","target":"touchgift","campaigns":[{"id":1,"event":"insert","org_code":"code1","creatives":[]}]}') $(SQS_OPTIONS)
+	--message-body $$(make show-queue-message LOG='{"time":"2020-03-04T09:52:57.804Z","type":"delivery_operation","request_id":"r1","target":"touchgift","campaigns":[{"id":1,"event":"insert","org_code":"code1","creatives":[{"id":1,"event":"insert","org_code":"o1"}]}]}') $(SQS_OPTIONS)
 
 send-message-sqs-delivery-operation-queue-update: ## delivery-operationキューへUpdateメッセージ作成
 	aws sqs send-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) \
-	--message-body $$(make show-queue-message LOG='{"time":"2020-03-04T09:52:57.804Z","type":"delivery_operation","request_id":"r2","target":"touchgift","campaigns":[{"id":2,"event":"update","org_code":"code1","creatives":[]}]}') $(SQS_OPTIONS)
+	--message-body $$(make show-queue-message LOG='{"time":"2020-03-04T09:52:57.804Z","type":"delivery_operation","request_id":"r2","target":"touchgift","campaigns":[{"id":2,"event":"update","org_code":"code1","creatives":[{"id":1,"event":"update","org_code":"o1"}]}]}') $(SQS_OPTIONS)
 
 send-message-sqs-delivery-operation-queue-delete: ## delivery-operationキューへDeleteメッセージ作成
 	aws sqs send-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) \
