@@ -253,8 +253,9 @@ func (r *RDBUtil) InsertCampaign(organizationCode string, status string, name st
             created_at,
             updated_at,
             last_updated_by,
-            store_group_id
-        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)`
+            store_group_id,
+						daily_coupon_limit_per_user
+        ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, 1)`
 
 	// ExecContext を使用して SQL を実行
 	result, err := r.tx.ExecContext(r.ctx, query,
