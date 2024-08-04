@@ -1,3 +1,4 @@
+//go:generate mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=../../mock/$GOPACKAGE/$GOFILE
 package repository
 
 import (
@@ -21,7 +22,7 @@ type CampaignToStartCondition struct {
 
 type CampaignDataToEndCondition struct {
 	End    time.Time
-	Status string
+	Status []string
 }
 
 type CampaignCondition struct {
@@ -36,5 +37,5 @@ type CampaignRepository interface {
 	GetCampaignToEnd(ctx context.Context, tx Transaction, campaign *CampaignDataToEndCondition) ([]*models.Campaign, error)
 	// UpdateStatus キャンペーン情報のステータス更新(status)更新
 	UpdateStatus(ctx context.Context, tx Transaction, campaign *UpdateCondition) (int, error)
-	GetDeliveryToStart(ctx context.Context, tx Transaction, args *CampaignCondition) (*models.DeliveryDataCampaign, error)
+	GetDeliveryToStart(ctx context.Context, tx Transaction, args *CampaignCondition) (*models.Campaign, error)
 }

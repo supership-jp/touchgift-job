@@ -30,7 +30,7 @@ type DeliveryTouchPoint struct {
 
 // DeliveryDataCreative dyonamo用に整形するための構造体(クリエイティブ用)
 type DeliveryDataCreative struct {
-	ID               string   `json:"id"` // これはキャンペーンIDです
+	CampaignID       string   `json:"campaign_id"` // これはキャンペーンIDです
 	Link             *string  `json:"link,omitempty"`
 	URL              string   `json:"url"`
 	TTL              int64    `json:"ttl"`
