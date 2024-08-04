@@ -38,7 +38,10 @@ func TestData(t *testing.T) {
 	rdbUtil.InsertCampaignGimmick(campaignID, gimmickID)
 	videoID, _ := rdbUtil.InsertVideo("video_url", "endcard_url", "video_xid", "endcard_xid", 100, 100, "extension", 100, 100, "endcard_extension", 1, 100, "http://example.com")
 	creativeID, _ := rdbUtil.InsertCreative("org_1", "2", "creative1", "http://example.com", 1, videoID)
-	rdbUtil.InsertCampaignCreative(1, creativeID, 100, 1)
+	_, err = rdbUtil.InsertCampaignCreative(1, creativeID, 100, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
 	rdbUtil.InsertTouchPoint("org_1", "point_unique_id", "print_management_id", storeID, "QR", "name", 1)
 
 	/*

@@ -72,7 +72,7 @@ func (c *CreativeRepository) GetCreative(ctx context.Context, tx repository.Tran
 	query := fmt.Sprintf(`SELECT
 	creative.id as id,
 	creative.click_url as link,
-	campaign_creative.weight as weight,
+	campaign_creative.delivery_rate as delivery_rate,
 	%s
 	banner.id as banner_id,
 	COALESCE(banner.height, video.height) AS height,
@@ -94,7 +94,7 @@ FROM campaign_creative
 	LEFT JOIN video ON creative.video_id = video.id
 WHERE creative.id = :creative_id
 GROUP BY
-	creative.id, banner.id, video.id, campaign_creative.weight
+	creative.id, banner.id, video.id, campaign_creative.delivery_rate
 ORDER BY creative.id`, data)
 
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
@@ -108,9 +108,8 @@ ORDER BY creative.id`, data)
 	}()
 	dest := []models.Creative{}
 	err = stmt.SelectContext(ctx, &dest, map[string]interface{}{
-		"creative_id":         args.ID,
-		"status":              args.Status,
-		"job_processed_state": args.JobProcessedState,
+		"creative_id": args.ID,
+		"status":      args.Status,
 	})
 	return dest, err
 }

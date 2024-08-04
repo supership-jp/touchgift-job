@@ -93,22 +93,22 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 	FROM campaign c
 	INNER JOIN store_group sg ON c.store_group_id = sg.id
 	WHERE
-		c.id <= :id AND
-		c.status = :status`
+		c.id = :id`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	var campaigns *models.Campaign
+	// TODO: 修正する(PKでフィルタリングしているため配列ではなく構造体で取得する)
+	campaigns := []models.Campaign{}
 	err = stmt.SelectContext(ctx, &campaigns, map[string]interface{}{
-		"id":     args.CampaignID,
-		"status": args.Status,
+		"id": args.CampaignID,
 	})
 	if err != nil {
 		c.logger.Error().Msgf("Error getting deliveries: %v", err)
 		return nil, err
 	}
-	return campaigns, nil
+	campaign := campaigns[0]
+	return &campaign, nil
 }
 
 func (c *CampaignRepository) GetCreativeByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.CreativeByCampaignIDCondition) ([]*models.Creative, error) {
