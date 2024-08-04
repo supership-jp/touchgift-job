@@ -40,7 +40,7 @@ npm run start:db
 npm run typeorm migration:run # 他のターミナル
 # DDLを出力する (テスト等に使用する)
 cd touchgfit-job/manager
-docker exec -it touchgift-db mysqldump -uretail --password=test --no-data  retail > rdb/init/1_all.sql
+docker exec -it touchgift-db mysqldump -uretail --password=test --no-data retail > rdb/init/1_all.sql
 ## 注意
 ### 1_all.sqlの1行目と18行目をコメントアウトしてください
 ----
@@ -126,5 +126,17 @@ make publish-delivery-operation-local
 
 // 正常にキューにメッセージが入っていることを確認
 make receive-message-sqs-delivery-operation-queue
+
+----
+[source,bash]
+----
+// RDBを起動する (起動時に↑のDDLが実行される)
+make start-db
+
+// テストデータを投入
+make create-db-testdata
+
+// MySQLに接続
+mysql -h 127.0.0.1 -P 3306 -u root
 
 ----
