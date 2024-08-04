@@ -1,3 +1,4 @@
+//go:generate mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=../../mock/$GOPACKAGE/$GOFILE
 package repository
 
 import (
@@ -5,7 +6,7 @@ import (
 	"touchgift-job-manager/domain/models"
 )
 
-type ContentsByCampaignIDCondition struct {
+type ContentByCampaignIDCondition struct {
 	CampaignID int
 }
 
@@ -16,9 +17,9 @@ type GenerateContentCondition struct {
 
 type ContentRepository interface {
 	// GetCouponsByCampaignID  キャンペーンIDからクーポンデータを取得する
-	GetCouponsByCampaignID(ctx context.Context, tx Transaction, args *ContentsByCampaignIDCondition) ([]*models.Coupon, error)
+	GetCouponsByCampaignID(ctx context.Context, tx Transaction, args *ContentByCampaignIDCondition) ([]*models.Coupon, error)
 	// GetGimmickURLByCampaignID キャンペーンIDからギミックURLを取得する
-	GetGimmicksByCampaignID(ctx context.Context, tx Transaction, campaignID *ContentsByCampaignIDCondition) (*string, error)
+	GetGimmicksByCampaignID(ctx context.Context, tx Transaction, campaignID *ContentByCampaignIDCondition) (*string, *string, error)
 }
 
 // ContentsHelper gimmick_urlとクーポン一覧からコンテンツを作成する

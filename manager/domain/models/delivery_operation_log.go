@@ -7,10 +7,16 @@ import (
 // CampaignLog
 // 同期対象配信データログのCampaign情報
 type CampaignLog struct {
-	ID               int    `json:"id"`
-	OrganizationCode string `json:"organization_code"`
-	OriginID         string `json:"origin_id"`
-	Event            string `json:"event"`
+	ID        int    `json:"id"`
+	OrgCode   string `json:"org_code"`
+	Event     string `json:"event"`
+	Creatives []CreativeLog
+}
+
+type CreativeLog struct {
+	ID      int    `json:"id"`
+	OrgCode string `json:"org_code"`
+	Event   string `json:"event"`
 }
 
 // DeliveryOperationLog
