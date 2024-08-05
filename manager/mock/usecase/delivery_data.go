@@ -7,6 +7,7 @@ package mock_usecase
 import (
 	context "context"
 	reflect "reflect"
+	models "touchgift-job-manager/domain/models"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,7 +36,7 @@ func (m *MockDeliveryData) EXPECT() *MockDeliveryDataMockRecorder {
 }
 
 // Delete mocks base method.
-func (m *MockDeliveryData) Delete(ctx context.Context, campaignID int) error {
+func (m *MockDeliveryData) Delete(ctx context.Context, campaignID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, campaignID)
 	ret0, _ := ret[0].(error)
@@ -49,15 +50,15 @@ func (mr *MockDeliveryDataMockRecorder) Delete(ctx, campaignID interface{}) *gom
 }
 
 // Put mocks base method.
-func (m *MockDeliveryData) Put(ctx context.Context) error {
+func (m *MockDeliveryData) Put(ctx context.Context, campaign *models.Campaign, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Put", ctx)
+	ret := m.ctrl.Call(m, "Put", ctx, campaign, creatives, content, touchPoints)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Put indicates an expected call of Put.
-func (mr *MockDeliveryDataMockRecorder) Put(ctx interface{}) *gomock.Call {
+func (mr *MockDeliveryDataMockRecorder) Put(ctx, campaign, creatives, content, touchPoints interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockDeliveryData)(nil).Put), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockDeliveryData)(nil).Put), ctx, campaign, creatives, content, touchPoints)
 }
