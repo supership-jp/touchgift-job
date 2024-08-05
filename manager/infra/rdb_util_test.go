@@ -330,7 +330,7 @@ func (r *RDBUtil) InsertVideo(video_url string, endcard_url string, video_xid st
 
 //
 //INSERT INTO creative
-//(organization_code, name, status, click_url, creative_type, last_updated_by, video_id)
+//(organization_code, name, status, click_url, last_updated_by, video_id)
 //VALUES
 //('ORG123', 'Example Video Creative', '1', 'https://example.com/click_here', 'video', 1, 2);
 
@@ -343,7 +343,7 @@ func (r *RDBUtil) InsertCreative(organizationCode string, status string, name st
             click_url,
             last_updated_by,
             video_id
-        ) VALUES (?,?,?,?,?,?,?)`
+        ) VALUES (?,?,?,?,?,?)`
 
 	// ExecContext を使用して SQL を実行
 	result, err := r.tx.ExecContext(r.ctx, query,

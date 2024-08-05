@@ -59,26 +59,32 @@ func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository
     c.organization_code as org_code,
     c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
     c.status as status,
-	c.updated_at as updated_at
+		c.updated_at as updated_at
 FROM campaign c
 INNER JOIN store_group sg ON c.store_group_id = sg.id
 WHERE
     c.end_at <= :end AND
-	c.status = :status`
-	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	var campaigns []*models.Campaign
-	err = stmt.SelectContext(ctx, &campaigns, map[string]interface{}{
+		c.status IN (:status)`
+	params := map[string]interface{}{
 		"end":    args.End,
 		"status": args.Status,
-	})
+	}
+	_query, _params, err := c.sqlHandler.In(query, params)
 	if err != nil {
-		c.logger.Error().Msgf("Error getting deliveries: %v", err)
 		return nil, err
 	}
-	return campaigns, nil
+	stmt, err := c.sqlHandler.PrepareContext(ctx, *_query)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err = stmt.Close(); err != nil {
+			c.logger.Error().Err(err).Msg("Failed to close statement")
+		}
+	}()
+	var campaigns []*models.Campaign
+	err = stmt.SelectContext(ctx, &campaigns, _params...)
+	return campaigns, err
 }
 
 func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
