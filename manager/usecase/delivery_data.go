@@ -3,34 +3,73 @@ package usecase
 
 import (
 	"context"
+	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
 )
 
 type DeliveryData interface {
 	// Put 配信データを登録する
-	Put(ctx context.Context) error
+	Put(ctx context.Context, campaign *models.Campaign, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint) error
 	// Delete 配信データを1件削除
-	Delete(ctx context.Context, campaignID int) error
+	Delete(ctx context.Context, campaignID string) error
 }
 
 type deliveryData struct {
-	logger               Logger
-	touchPointRepository repository.DeliveryDataTouchPointRepository
-	campaignRepository   repository.DeliveryDataCampaignRepository
-	contentRepository    repository.DeliveryDataContentRepository
+	logger                   Logger
+	touchPointDataRepository repository.DeliveryDataTouchPointRepository
+	campaignDataRepository   repository.DeliveryDataCampaignRepository
+	contentDataRepository    repository.DeliveryDataContentRepository
+	creativeDataRepository   repository.DeliveryDataCreativeRepository
 }
 
-func (d *deliveryData) Put(ctx context.Context) error {
+func NewDeliveryData(
+	logger Logger,
+	touchPointDataRepository repository.DeliveryDataTouchPointRepository,
+	campaignDataRepository repository.DeliveryDataCampaignRepository,
+	contentDataRepository repository.DeliveryDataContentRepository,
+	creativeDataRepository repository.DeliveryDataCreativeRepository,
+) DeliveryData {
+	return &deliveryData{
+		logger:                   logger,
+		touchPointDataRepository: touchPointDataRepository,
+		campaignDataRepository:   campaignDataRepository,
+		contentDataRepository:    contentDataRepository,
+		creativeDataRepository:   creativeDataRepository,
+	}
+}
 
-	// TODO:[Dynamo]TouchPointデータの作成
+func (d *deliveryData) Put(ctx context.Context,
+	campaign *models.Campaign, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint,
+) error {
+	err := d.campaignDataRepository.Put(ctx, campaign.CreateDeliveryDataCampaign(creatives))
+	if err != nil {
+		return err
+	}
 
-	// TODO:[Dynamo]Campaignデータの作成
+	for _, tp := range touchPoints {
+		err := d.touchPointDataRepository.Put(ctx, tp)
+		if err != nil {
+			return err
+		}
+	}
 
-	// TODO:[Dynamo]Contentsデータの作成
+	for _, creative := range creatives {
+		err := d.creativeDataRepository.Put(ctx, creative.CreateDeliveryDataCreative(campaign.ID))
+		if err != nil {
+			return err
+		}
+	}
 
+	err = d.contentDataRepository.Put(ctx, content)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (d *deliveryData) Delete(ctx context.Context, campaignID int) error {
+func (d *deliveryData) Delete(ctx context.Context, campaignID string) error {
+	if err := d.campaignDataRepository.Delete(ctx, &campaignID); err != nil {
+		return err
+	}
 	return nil
 }
