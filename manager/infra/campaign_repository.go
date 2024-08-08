@@ -41,7 +41,7 @@ WHERE
 	}
 	var campaigns []*models.Campaign
 	err = stmt.SelectContext(ctx, &campaigns, map[string]interface{}{
-		"to":     args.To,
+		"to":     args.To.Format("2006-01-02 15:04:05"),
 		"status": args.Status,
 	})
 	if err != nil {
@@ -55,18 +55,17 @@ WHERE
 func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository.Transaction, args *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
-    sg.id as group_id,
+    c.store_group_id as group_id,
     c.organization_code as org_code,
     c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
     c.status as status,
 		c.updated_at as updated_at
 FROM campaign c
-INNER JOIN store_group sg ON c.store_group_id = sg.id
 WHERE
     c.end_at <= :end AND
 		c.status IN (:status)`
 	params := map[string]interface{}{
-		"end":    args.End,
+		"end":    args.End.Format("2006-01-02 15:04:05"),
 		"status": args.Status,
 	}
 	_query, _params, err := c.sqlHandler.In(query, params)
@@ -82,11 +81,12 @@ WHERE
 			c.logger.Error().Err(err).Msg("Failed to close statement")
 		}
 	}()
-	var campaigns []*models.Campaign
+	campaigns := []*models.Campaign{}
 	err = stmt.SelectContext(ctx, &campaigns, _params...)
 	return campaigns, err
 }
 
+// DynamoDBに配信データを作成する際RDBから必要な情報を取得する
 func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 	tx repository.Transaction, args *repository.CampaignCondition,
 ) (*models.Campaign, error) {
@@ -96,8 +96,12 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 		c.organization_code as org_code,
 		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
 		c.status as status
+		cc.creative_id as creative_id,
+		cc.skip_offset as skip_offset,
+		cc.delivery_rate as delivery_rate,
 	FROM campaign c
 	INNER JOIN store_group sg ON c.store_group_id = sg.id
+	INNER JOIN campaign_creative cc ON c.id = cc.campaign_id
 	WHERE
 		c.id = :id`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
