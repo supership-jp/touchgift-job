@@ -9,6 +9,7 @@ import (
 	mock_infra "touchgift-job-manager/mock/infra"
 
 	"github.com/golang/mock/gomock"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -203,11 +204,19 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 			err := tx.Rollback()
 			assert.NoError(t, err)
 		}()
+
+		_sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		_sqlHandler.EXPECT().PrepareContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.Stmt, error) {
+			return tx.(*Transaction).Tx.PreparexContext(ctx, query)
+		}).Times(1)
+		_sqlHandler.EXPECT().In(gomock.Any(), gomock.Any()).DoAndReturn(func(query string, arg interface{}) (*string, []interface{}, error) {
+			return sqlHandler.In(query, arg)
+		}).Times(1)
 		//	end_atが現在時刻から1時間前のテストデータを登録する
 		_, err = createEndedCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(-1)*time.Hour).Format("2006-01-02 15:04:05"))
 		assert.NoError(t, err)
 
-		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+		campaignRepository := NewCampaignRepository(logger, _sqlHandler)
 		actuals, err := campaignRepository.GetCampaignToEnd(ctx, &repository.CampaignDataToEndCondition{
 			End:    time.Now().Local(),
 			Status: []string{"started", "warmup"},
