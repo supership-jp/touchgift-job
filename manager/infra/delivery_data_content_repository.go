@@ -48,8 +48,8 @@ func (r *DeliveryContentRepository) Get(ctx context.Context, id *string) (*model
 	result, err := r.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: id,
+			"campaign_id": {
+				N: id,
 			},
 		},
 		ConsistentRead: aws.Bool(true),
@@ -111,8 +111,8 @@ func (r *DeliveryContentRepository) Delete(ctx context.Context, id *string) erro
 	_, err := r.dynamoDBHandler.Svc.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: id,
+			"campaign_id": {
+				N: id,
 			},
 		},
 	})

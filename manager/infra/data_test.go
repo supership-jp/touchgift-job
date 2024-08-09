@@ -43,6 +43,7 @@ func TestData(t *testing.T) {
 	creativeID, _ := rdbUtil.InsertCreative("org_1", "2", "creative1", "http://example.com", 1, videoID)
 	rdbUtil.InsertCampaignCreative(1, creativeID, 100, 1)
 	rdbUtil.InsertTouchPoint("org_1", "point_unique_id", "print_management_id", storeID, "QR", "name", 1)
+	rdbUtil.InsertStoreMap(groupID, storeID)
 
 	/*
 		// 5分後に始まり、終了日なしキャンペーン。(セグメントあり)

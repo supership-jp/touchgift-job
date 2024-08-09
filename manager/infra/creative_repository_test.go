@@ -80,8 +80,8 @@ func TestCreativeRepository_GetCreativeByCampaignID(t *testing.T) {
 		video_id, err := rdbUtil.InsertVideo(
 			"https://example.com/video.mp4",   // video_url
 			"https://example.com/endcard.jpg", // endcard_url
-			"video_xid",                       // video_xid
-			"endcard_xid",                     // endcard_xid
+			"video_xid01",                     // video_xid
+			"endcard_xid01",                   // endcard_xid
 			100,                               // height
 			200,                               // width
 			"mp4",                             // extension

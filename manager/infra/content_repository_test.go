@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"testing"
+	"time"
 	"touchgift-job-manager/domain/repository"
 	mock_infra "touchgift-job-manager/mock/infra"
 
@@ -76,6 +77,8 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
 		)
+		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "code1", time.Now().Format("15:04:05"), 1)
+		rdbUtil.InsertCampaignGimmick(id, gimmickID)
 
 		contentsRepository := NewContentRepository(logger, sqlHandler)
 

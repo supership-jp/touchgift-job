@@ -47,8 +47,8 @@ func (r *DeliveryTouchPointRepository) Get(ctx context.Context, id *string) (*mo
 	result, err := r.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: id,
+			"group_id": {
+				N: id,
 			},
 		},
 		ConsistentRead: aws.Bool(true),
@@ -110,8 +110,8 @@ func (r *DeliveryTouchPointRepository) Delete(ctx context.Context, id *string) e
 	_, err := r.dynamoDBHandler.Svc.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: id,
+			"group_id": {
+				N: id,
 			},
 		},
 	})

@@ -52,7 +52,7 @@ WHERE
 }
 
 // GetCampaignToEnd 配信が終了するキャンペーン情報を取得する
-func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository.Transaction, args *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
+func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, args *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
     c.store_group_id as group_id,
@@ -62,7 +62,7 @@ func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, tx repository
 		c.updated_at as updated_at
 FROM campaign c
 WHERE
-    c.end_at <= :end AND
+    c.end_at < :end AND
 		c.status IN (:status)`
 	params := map[string]interface{}{
 		"end":    args.End.Format("2006-01-02 15:04:05"),
@@ -81,9 +81,9 @@ WHERE
 			c.logger.Error().Err(err).Msg("Failed to close statement")
 		}
 	}()
-	campaigns := []*models.Campaign{}
-	err = stmt.SelectContext(ctx, &campaigns, _params...)
-	return campaigns, err
+	dest := []*models.Campaign{}
+	err = stmt.SelectContext(ctx, &dest, _params...)
+	return dest, err
 }
 
 // DynamoDBに配信データを作成する際RDBから必要な情報を取得する
@@ -101,7 +101,7 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 		cc.delivery_rate as delivery_rate,
 	FROM campaign c
 	INNER JOIN store_group sg ON c.store_group_id = sg.id
-	INNER JOIN campaign_creative cc ON c.id = cc.campaign_id
+	LEFT OUTER JOIN campaign_creative cc ON c.id = cc.campaign_id
 	WHERE
 		c.id = :id`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)

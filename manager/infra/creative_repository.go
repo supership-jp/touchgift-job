@@ -24,12 +24,13 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 	query := `
 	SELECT
 		creative.id as id,
+		delivery_rate as delivery_rate,
 		COALESCE(banner.height, video.height) AS height,
 		COALESCE(banner.width, video.width) AS width,
 		COALESCE(banner.img_url, video.video_url) AS url,
 		CASE
-			WHEN banner.id IS NOT NULL THEN 'banner'
-			WHEN video.id IS NOT NULL THEN 'video'
+      WHEN banner.id IS NOT NULL THEN 'banner'
+      WHEN video.id IS NOT NULL THEN 'video'
 		END AS type,
 		CASE
 			WHEN banner.id IS NOT NULL THEN banner.extension
@@ -46,6 +47,8 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 			 LEFT JOIN banner ON creative.banner_id = banner.id
 			 LEFT JOIN video ON creative.video_id = video.id
 	WHERE campaign.id = :campaign_id
+	GROUP BY
+	  creative.id, banner.id, video.id, campaign_creative.delivery_rate, campaign_creative.skip_offset, video.endcard_url, video.endcard_width, video.endcard_height, video.endcard_extension
 	LIMIT :limit
 `
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
