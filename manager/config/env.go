@@ -64,10 +64,10 @@ type DeliveryEndUsecase struct {
 type DynamoDB struct {
 	EndPoint            string `envconfig:"DYNAMODB_ENDPOINT" default:"http://localhost:4566"` // デフォルトはローカル用
 	TableNamePrefix     string `envconfig:"TABLE_NAME_PREFIX" default:""`                      // デフォルトはローカル/CI用
-	CampaignTableName   string `envconfig:"CAMPAIGN_TABLE_NAME" default:"campaign"`
-	CreativeTableName   string `envconfig:"CREATIVE_TABLE_NAME" default:"creative"`
-	TouchPointTableName string `envconfig:"TOUCH_POINT_TABLE_NAME" default:"touch_point"`
-	ContentTableName    string `envconfig:"CONTENT_TABLE_NAME" default:"content"`
+	CampaignTableName   string `envconfig:"CAMPAIGN_TABLE_NAME" default:"touchgift_campaign_data"`
+	CreativeTableName   string `envconfig:"CREATIVE_TABLE_NAME" default:"touchgift_creative_data"`
+	TouchPointTableName string `envconfig:"TOUCH_POINT_TABLE_NAME" default:"touchgift_delivery_data"`
+	ContentTableName    string `envconfig:"CONTENT_TABLE_NAME" default:"touchgift_content_data"`
 }
 
 type SQS struct {
