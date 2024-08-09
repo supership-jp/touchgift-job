@@ -82,7 +82,7 @@ make clean-testcache
 # テスト
 make test
 # テスト対象を絞る場合
-make test TEST_TARGET="--run DeliveryScheduleUsecase ./..."
+make test TEST_TARGET="--run DeliveryStartUsecase ./..."
 # vscodeの場合、editorから個別にテストを起動できる (デバッグも)
 
 make delete-all-table
@@ -136,7 +136,7 @@ make start-db
 // テストデータを投入
 make create-db-testdata
 
-// MySQLに接続
-mysql -h 127.0.0.1 -P 3306 -u root
+// MySQLに接続 Password=test
+mysql -h 127.0.0.1 -P 3306 -u root -p
 
 ----

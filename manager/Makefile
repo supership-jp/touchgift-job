@@ -95,6 +95,16 @@ run: ## Start dev server
 		AWS_PROFILE=$(AWS_PROFILE) \
 		./main || exit 0
 
+test: ## Test (キャッシュしたくない場合: clean-testcacheを実行)
+	@AWS_PROFILE=$(AWS_PROFILE) \
+		GIN_MODE=test \
+		TABLE_NAME_PREFIX=$(TABLE_NAME_PREFIX) \
+		DYNAMODB_ENDPOINT=$(DYNAMODB_ENDPOINT) \
+		go test -cover -v $(TEST_TARGET)
+
+clean-testcache: ## clean testcache
+	go clean -testcache
+
 generate:
 	@go generate ./...
 

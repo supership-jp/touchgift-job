@@ -5,11 +5,12 @@ import "strconv"
 // Dynamoに入れるデータ構造体はここに定義していく
 
 type DeliveryDataCampaign struct {
-	ID         string `json:"id"`
-	GroupID    int    `json:"group_id"`
-	OrgCode    string `json:"org_code"`
-	DailyLimit int    `json:"daily_limit"`
-	Status     string `json:"status"`
+	ID         string             `json:"id"`
+	GroupID    int                `json:"group_id"`
+	OrgCode    string             `json:"org_code"`
+	DailyLimit int                `json:"daily_limit"`
+	Status     string             `json:"status"`
+	Creatives  []CampaignCreative `json:"creatives,omitempty"`
 }
 
 func (d *DeliveryDataCampaign) CreateCampaign() *Campaign {
@@ -24,22 +25,23 @@ func (d *DeliveryDataCampaign) CreateCampaign() *Campaign {
 }
 
 type DeliveryTouchPoint struct {
-	TouchPointID string `json:"touch_point_id"`
 	GroupID      int    `json:"group_id"`
+	TouchPointID string `json:"touchpoint_id"`
 }
 
-// DeliveryDataCreative dyonamo用に整形するための構造体(クリエイティブ用)
+// DeliveryDataCreative dynamo用に整形するための構造体(クリエイティブ用)
 type DeliveryDataCreative struct {
-	CampaignID       string   `json:"campaign_id"` // これはキャンペーンIDです
-	Link             *string  `json:"link,omitempty"`
-	URL              string   `json:"url"`
-	TTL              int64    `json:"ttl"`
-	Width            float32  `json:"width"`
-	Height           float32  `json:"height"`
-	Type             string   `json:"type"`
-	Extension        string   `json:"extension"`
-	Duration         *int     `json:"duration"`
-	SkipOffset       *int     `json:"skip_offset"`
+	CampaignID int     `json:"campaign_id"` // これはキャンペーンIDです
+	CreativeID int     `json:"creative_id"`
+	Link       *string `json:"link,omitempty"`
+	URL        string  `json:"url"`
+	TTL        int64   `json:"ttl"`
+	Width      float32 `json:"width"`
+	Height     float32 `json:"height"`
+	Type       string  `json:"type"`
+	Extension  string  `json:"extension"`
+	Duration   *int    `json:"duration"`
+	// SkipOffset       int      `json:"skip_offset"`
 	EndCardURL       *string  `json:"end_card_url,omitempty"`
 	EndCardWidth     *float32 `json:"end_card_width,omitempty"`
 	EndCardHeight    *float32 `json:"end_card_height,omitempty"`
