@@ -49,6 +49,20 @@ func (mr *MockDeliveryStartMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockDeliveryStart)(nil).Close))
 }
 
+// CreateDeliveryDatas mocks base method.
+func (m *MockDeliveryStart) CreateDeliveryDatas(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateDeliveryDatas", ctx, tx, campaign)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateDeliveryDatas indicates an expected call of CreateDeliveryDatas.
+func (mr *MockDeliveryStartMockRecorder) CreateDeliveryDatas(ctx, tx, campaign interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDeliveryDatas", reflect.TypeOf((*MockDeliveryStart)(nil).CreateDeliveryDatas), ctx, tx, campaign)
+}
+
 // CreateWorker mocks base method.
 func (m *MockDeliveryStart) CreateWorker(ctx context.Context) {
 	m.ctrl.T.Helper()
@@ -100,16 +114,17 @@ func (mr *MockDeliveryStartMockRecorder) Reserve(ctx, startAt, Campaign interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reserve", reflect.TypeOf((*MockDeliveryStart)(nil).Reserve), ctx, startAt, Campaign)
 }
 
-// Warmup mocks base method.
-func (m *MockDeliveryStart) Warmup(ctx context.Context, tx repository.Transaction, Campaign *models.Campaign) error {
+// UpdateStatus mocks base method.
+func (m *MockDeliveryStart) UpdateStatus(ctx context.Context, tx repository.Transaction, Campaign *models.Campaign, status string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Warmup", ctx, tx, Campaign)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "UpdateStatus", ctx, tx, Campaign, status)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// Warmup indicates an expected call of Warmup.
-func (mr *MockDeliveryStartMockRecorder) Warmup(ctx, tx, Campaign interface{}) *gomock.Call {
+// UpdateStatus indicates an expected call of UpdateStatus.
+func (mr *MockDeliveryStartMockRecorder) UpdateStatus(ctx, tx, Campaign, status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warmup", reflect.TypeOf((*MockDeliveryStart)(nil).Warmup), ctx, tx, Campaign)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockDeliveryStart)(nil).UpdateStatus), ctx, tx, Campaign, status)
 }
