@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/notification"
@@ -13,7 +14,7 @@ import (
 )
 
 type DeliveryControlEvent interface {
-	Publish(ctx context.Context, CampaignID int, service string, organization string, before string, after string, detail string, deliveryType string, priceType string)
+	Publish(ctx context.Context, CampaignID int, organization string, before string, after string, detail string)
 }
 
 type deliveryControlEvent struct {
@@ -33,24 +34,22 @@ func NewDeliveryControlEvent(
 }
 
 // SNSへPublishを行う
-// CampaignID, service, organization, cacheOperation(サーバー上のキャッシュ操作), before(更新前のCampaign.status), after(更新後のCampaign.status)
+// CampaignID, org_code, cacheOperation(サーバー上のキャッシュ操作), before(更新前のCampaign.status), after(更新後のCampaign.status)
 func (d *deliveryControlEvent) Publish(ctx context.Context,
-	CampaignID int, service string, organization string, before string, after string, detail string, deliveryType string, priceType string) {
-	deliveryControl := d.createDeliveryControlLog(CampaignID, service, organization, before, after, detail, deliveryType, priceType)
+	CampaignID int, organization string, before string, after string, detail string) {
+	deliveryControl := d.createDeliveryControlLog(CampaignID, organization, before, after, detail)
 
 	message, err := json.Marshal(deliveryControl)
 	if err != nil {
-		d.failedToPublishLog(deliveryControl, deliveryType, priceType, err)
+		d.failedToPublishLog(deliveryControl, err)
 	}
 	messageAttributes := map[string]string{
 		"event":           deliveryControl.Event,
 		"cache_operation": deliveryControl.CacheOperation,
-		"delivery_type":   deliveryType,
-		"price_type":      priceType,
 	}
 	messageID, err := d.notificationHandler.Publish(ctx, string(message), messageAttributes)
 	if err != nil {
-		d.failedToPublishLog(deliveryControl, deliveryType, priceType, err)
+		d.failedToPublishLog(deliveryControl, err)
 	} else {
 		d.logger.Info().
 			Str("message_id", *messageID).
@@ -61,16 +60,13 @@ func (d *deliveryControlEvent) Publish(ctx context.Context,
 			Str("event_detail", deliveryControl.EventDetail).
 			Str("cache_operation", deliveryControl.CacheOperation).
 			Str("source", deliveryControl.Source).
-			Str("organization", deliveryControl.Organization).
-			Str("service", deliveryControl.Service).
+			Str("org_code", deliveryControl.OrgCode).
 			Int("campaign_id", deliveryControl.CampaignID).
-			Str("delivery_type", deliveryType).
-			Str("price_type", priceType).
 			Msg("Publish delivery control event")
 	}
 }
 
-func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.DeliveryControlLog, deliveryType string, priceType string, err error) {
+func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.DeliveryControlLog, err error) {
 	// このログが出た場合はcloudwatch logsのmetric alarmでアラートを通知する
 	d.logger.Error().Err(err).
 		Str("trace_id", deliveryControl.TraceID).
@@ -79,18 +75,15 @@ func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.Delive
 		Str("event", deliveryControl.Event).
 		Str("cache_operation", deliveryControl.CacheOperation).
 		Str("source", deliveryControl.Source).
-		Str("organization", deliveryControl.Organization).
-		Str("service", deliveryControl.Service).
+		Str("organization", deliveryControl.OrgCode).
 		Int("campaign_id", deliveryControl.CampaignID).
-		Str("delivery_type", deliveryType).
-		Str("price_type", priceType).
 		Msg("Failed to publish sns event")
 }
 
 // delivery_controlログに整形
 func (d *deliveryControlEvent) createDeliveryControlLog(campaignID int,
-	service string, organization string, before string, after string,
-	eventDetail string, deliveryType string, priceType string) *models.DeliveryControlLog {
+	organization string, before string, after string,
+	eventDetail string) *models.DeliveryControlLog {
 
 	event, operation := d.deliveryEvent(before, after)
 	current := time.Now().Format(time.RFC3339Nano)
@@ -101,12 +94,9 @@ func (d *deliveryControlEvent) createDeliveryControlLog(campaignID int,
 		Event:          event,
 		EventDetail:    eventDetail,
 		CacheOperation: operation,
-		Organization:   organization,
-		Service:        service,
+		OrgCode:        organization,
 		Source:         "touchgift-job-manager",
 		CampaignID:     campaignID,
-		DeliveryType:   deliveryType,
-		PriceType:      priceType,
 	}
 }
 
@@ -117,26 +107,26 @@ func (d *deliveryControlEvent) deliveryEvent(before string, after string) (strin
 		Str("status_before_update", before).
 		Str("status_after_update", after).Msg("Check delivery control event")
 	switch {
-	case before == "configured" && after == "warmup":
-		event = "warmup"
+	case before == codes.StatusConfigured && after == codes.StatusWarmup:
+		event = codes.StatusWarmup
 		operation = "NONE"
-	case before == "warmup" && after == "started":
-		event = "start"
+	case before == codes.StatusWarmup && after == codes.StatusStarted:
+		event = codes.StatusStart
 		operation = "PUT"
-	case before == "resume" && after == "started":
-		event = "resume"
+	case before == codes.StatusResume && after == codes.StatusStarted:
+		event = codes.StatusResume
 		operation = "PUT"
-	case before == "started" && after == "started":
+	case before == codes.StatusStarted && after == codes.StatusStarted:
 		event = "update"
 		operation = "PUT"
-	case before == "stop" && after == "stopped":
-		event = "stop"
+	case before == codes.StatusStop && after == codes.StatusStopped:
+		event = codes.StatusStop
 		operation = "DELETE"
-	case after == "paused":
-		event = "pause"
+	case after == codes.StatusPaused:
+		event = codes.StatusPause
 		operation = "DELETE"
-	case after == "ended":
-		event = "end"
+	case after == codes.StatusEnded:
+		event = codes.StatusEnd
 		operation = "DELETE"
 	default:
 		d.logger.Warn().

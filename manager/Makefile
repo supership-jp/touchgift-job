@@ -24,6 +24,8 @@ ifndef TAG
 override TAG = $(CURRENT_TAG)
 endif
 
+TEST_TARGET=./...
+
 # TODO: リポジトリ名を設定
 REPOSITORY =
 PREFIX = $(REPOSITORY)
@@ -95,7 +97,7 @@ run: ## Start dev server
 		AWS_PROFILE=$(AWS_PROFILE) \
 		./main || exit 0
 
-test: ## Test (キャッシュしたくない場合: clean-testcacheを実行)
+tests: ## Test (キャッシュしたくない場合: clean-testcacheを実行)
 	@AWS_PROFILE=$(AWS_PROFILE) \
 		GIN_MODE=test \
 		TABLE_NAME_PREFIX=$(TABLE_NAME_PREFIX) \
@@ -119,7 +121,7 @@ help: ## Help
 		awk 'BEGIN {FS = ":[^:]*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 lint: ## lint
-	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.54.2 golangci-lint run -v
+	@docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:v1.54.2 golangci-lint run -v --timeout=5m
 
 start-db: ## start db (mysql)
 	@cd ./rdb && docker run --rm -it \
