@@ -18,23 +18,18 @@ type Campaign struct {
 	Status                  string       `db:"status" json:"status"`
 }
 
-func (c *Campaign) CreateDeliveryDataCampaign(creative []*Creative) *DeliveryDataCampaign {
-	creatives := make([]CampaignCreative, 0, len(creative))
-	for _, c := range creative {
-		creatives = append(creatives, *c.CreateCampaignCreative())
-	}
+func (c *Campaign) CreateDeliveryDataCampaign(cc []*CampaignCreative) *DeliveryDataCampaign {
 	return &DeliveryDataCampaign{
 		ID:         strconv.Itoa(c.ID),
 		GroupID:    c.GroupID,
 		OrgCode:    c.OrgCode,
 		DailyLimit: c.DailyCouponLimitPerUser,
-		Status:     c.Status,
-		Creatives:  creatives,
+		Creatives:  cc,
 	}
 }
 
 type CampaignCreative struct {
-	ID         int `json:"id"`
-	Rate       int `json:"rate"`
-	SkipOffset int `json:"skip_offset"`
+	ID         int `db:"id" json:"id"`
+	Rate       int `db:"rate" json:"rate"`
+	SkipOffset int `db:"skip_offset" json:"skip_offset"`
 }

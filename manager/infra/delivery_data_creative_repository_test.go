@@ -36,9 +36,9 @@ func TestCreativeDataRepository_Get(t *testing.T) {
 		ID := 1
 		IDString := strconv.Itoa(ID)
 		expected := models.DeliveryDataCreative{
-			CampaignID: ID,
-			URL:        "id_get1_url",
-			TTL:        time.Now().Unix(),
+			ID:  ID,
+			URL: "id_get1_url",
+			TTL: time.Now().Unix(),
 		}
 		// データを用意
 		if err := creativeDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
@@ -65,14 +65,14 @@ func TestCreativeDataRepository_Put(t *testing.T) {
 	monitor := metrics.GetMonitor()
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
-	campaignID := 1
-	IDString := strconv.Itoa(campaignID)
+	ID := 1
+	IDString := strconv.Itoa(ID)
 
 	createData := func() *models.DeliveryDataCreative {
 		return &models.DeliveryDataCreative{
-			CampaignID: campaignID,
-			URL:        "id_put1_url",
-			TTL:        time.Now().Unix(),
+			ID:  ID,
+			URL: "id_put1_url",
+			TTL: time.Now().Unix(),
 		}
 	}
 
@@ -136,14 +136,14 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 	createData := func() *[]models.DeliveryDataCreative {
 		return &[]models.DeliveryDataCreative{
 			{
-				CampaignID: 1,
-				URL:        "id_put1_url",
-				TTL:        time.Now().Unix(),
+				ID:  1,
+				URL: "id_put1_url",
+				TTL: time.Now().Unix(),
 			},
 			{
-				CampaignID: 2,
-				URL:        "id_put2_url",
-				TTL:        time.Now().Unix(),
+				ID:  2,
+				URL: "id_put2_url",
+				TTL: time.Now().Unix(),
 			},
 		}
 	}
@@ -160,7 +160,7 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range *expected {
 				data := (*expected)[i]
-				IDString := strconv.Itoa(data.CampaignID)
+				IDString := strconv.Itoa(data.ID)
 				if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
 					assert.NoError(t, err)
 				}
@@ -168,7 +168,7 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		}()
 		for i := range *expected {
 			data := (*expected)[i]
-			IDString := strconv.Itoa(data.CampaignID)
+			IDString := strconv.Itoa(data.ID)
 			actual, err := creativeDataRepository.Get(ctx, &IDString)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
@@ -200,7 +200,7 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range updateData {
 				data := (updateData)[i]
-				IDString := strconv.Itoa(data.CampaignID)
+				IDString := strconv.Itoa(data.ID)
 				if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
 					assert.NoError(t, err)
 				}
@@ -208,7 +208,7 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		}()
 		for i := range updateData {
 			data := (updateData)[i]
-			IDString := strconv.Itoa(data.CampaignID)
+			IDString := strconv.Itoa(data.ID)
 			actual, err := creativeDataRepository.Get(ctx, &IDString)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
@@ -229,9 +229,9 @@ func TestCreativeDataRepository_Delete(t *testing.T) {
 		creativeDataRepository := NewDeliveryDataCreativeRepository(dynamodbHandler, logger, monitor)
 		ID := 1
 		expected := models.DeliveryDataCreative{
-			CampaignID: ID,
-			URL:        "id_delete1_url",
-			TTL:        time.Now().Unix(),
+			ID:  ID,
+			URL: "id_delete1_url",
+			TTL: time.Now().Unix(),
 		}
 		if err := creativeDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return

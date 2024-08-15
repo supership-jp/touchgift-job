@@ -63,7 +63,7 @@ func (r *DeliveryDataCreativeRepository) Get(ctx context.Context, id *string) (*
 	result, err := r.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"campaign_id": {
+			"id": {
 				N: id,
 			},
 		},
@@ -126,7 +126,7 @@ func (r *DeliveryDataCreativeRepository) Delete(ctx context.Context, id *string)
 	_, err := r.dynamoDBHandler.Svc.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"campaign_id": {
+			"id": {
 				N: id,
 			},
 		},
@@ -142,7 +142,7 @@ func (r *DeliveryDataCreativeRepository) Delete(ctx context.Context, id *string)
 func (r *DeliveryDataCreativeRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataCreative) error {
 	for i := range *deleteDatas {
 		deleteData := (*deleteDatas)[i]
-		ID := strconv.Itoa(deleteData.CampaignID)
+		ID := strconv.Itoa(deleteData.ID)
 		err := r.Delete(ctx, &ID)
 		if err != nil {
 			return err
@@ -160,7 +160,7 @@ func (r *DeliveryDataCreativeRepository) UpdateTTL(ctx context.Context, id strin
 	_, err := r.dynamoDBHandler.Svc.UpdateItemWithContext(ctx, &dynamodb.UpdateItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"campaign_id": {
+			"id": {
 				N: aws.String(id),
 			},
 		},

@@ -351,7 +351,7 @@ func TestDeliveryOperation_Process_Sync_DeleteDelivery(t *testing.T) {
 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
 			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(campaign, nil),
 			deliveryEndUsecase.EXPECT().Stop(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaign), gomock.Eq(after)).Return(nil),
-			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaignData.ID)).Return(nil),
+			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaign)).Return(nil),
 			creativeUsecase.EXPECT().Process(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(current), gomock.Eq(&CampaignLog.Creatives)).Return(nil),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlEvent.EXPECT().Publish(
@@ -410,7 +410,7 @@ func TestDeliveryOperation_Process_Sync_DeleteDelivery(t *testing.T) {
 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
 			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(campaign, nil),
 			deliveryEndUsecase.EXPECT().Stop(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaign), gomock.Eq(after)).Return(nil),
-			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaignData.ID)).Return(nil),
+			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaign)).Return(nil),
 			creativeUsecase.EXPECT().Process(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(current), gomock.Eq(&CampaignLog.Creatives)).Return(nil),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlEvent.EXPECT().Publish(
@@ -473,7 +473,7 @@ func TestDeliveryOperation_Process_Sync_EndedDelivery(t *testing.T) {
 		gomock.InOrder(
 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
 			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(campaign, nil),
-			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaignData.ID)).Return(nil),
+			deliveryEndUsecase.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(campaign)).Return(nil),
 			creativeUsecase.EXPECT().Process(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(current), gomock.Eq(&CampaignLog.Creatives)).Return(nil),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlEvent.EXPECT().Publish(

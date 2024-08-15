@@ -2,7 +2,6 @@ package models
 
 type Creative struct {
 	ID               int      `db:"id" json:"id"`
-	DeliveryRate     int      `db:"delivery_rate" json:"delivery_rate"`
 	Link             *string  `db:"link" json:"link,omitempty"`
 	URL              string   `db:"url" json:"url"`
 	TTL              int64    `db:"ttl" json:"ttl"`
@@ -19,10 +18,9 @@ type Creative struct {
 	EndCardLink      *string  `db:"end_card_link" json:"end_card_link,omitempty"`
 }
 
-func (c *Creative) CreateDeliveryDataCreative(campaignID int) *DeliveryDataCreative {
+func (c *Creative) CreateDeliveryDataCreative() *DeliveryDataCreative {
 	return &DeliveryDataCreative{
-		CampaignID:       campaignID,
-		CreativeID:       c.ID,
+		ID:               c.ID,
 		Link:             c.Link,
 		URL:              c.URL,
 		TTL:              c.TTL,
@@ -36,13 +34,5 @@ func (c *Creative) CreateDeliveryDataCreative(campaignID int) *DeliveryDataCreat
 		EndCardHeight:    c.EndCardHeight,
 		EndCardExtension: c.EndCardExtension,
 		EndCardLink:      c.EndCardLink,
-	}
-}
-
-func (c *Creative) CreateCampaignCreative() *CampaignCreative {
-	return &CampaignCreative{
-		ID:         c.ID,
-		Rate:       c.DeliveryRate,
-		SkipOffset: c.SkipOffset,
 	}
 }

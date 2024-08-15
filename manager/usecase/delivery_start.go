@@ -246,11 +246,11 @@ func (d *deliveryStart) start(
 }
 
 func (d *deliveryStart) CreateDeliveryDatas(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) error {
-	creatives, content, touchPointDatas, err := d.getDataFromRDB(ctx, tx, campaign)
+	cc, creatives, content, touchPointDatas, err := d.getDataFromRDB(ctx, tx, campaign)
 	if err != nil {
 		return err
 	}
-	err = d.createDeliveryDatas(ctx, campaign, creatives, content, touchPointDatas)
+	err = d.createDeliveryDatas(ctx, campaign, cc, creatives, content, touchPointDatas)
 	if err != nil {
 		return err
 	}
@@ -259,8 +259,14 @@ func (d *deliveryStart) CreateDeliveryDatas(ctx context.Context, tx repository.T
 
 // 配信開始時にRDBからデータを取得する処理
 func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transaction, campaign *models.Campaign) (
-	[]*models.Creative, *models.DeliveryDataContent, []*models.DeliveryTouchPoint, error,
+	[]*models.CampaignCreative, []*models.Creative, *models.DeliveryDataContent, []*models.DeliveryTouchPoint, error,
 ) {
+	cc, err := d.campaignRepository.GetCampaignCreative(ctx, tx, &repository.CampaignCondition{
+		CampaignID: campaign.ID,
+	})
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
 	// TODO: IDの型の取り扱いを考える
 	condition := repository.ContentByCampaignIDCondition{
 		CampaignID: campaign.ID,
@@ -268,22 +274,24 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	// クリエイティブの取得
 	creativeCondition := repository.CreativeByCampaignIDCondition{
 		CampaignID: campaign.ID,
+		// 現状リミットはない想定なので100にしている
+		Limit: 100,
 	}
 	creatives, err := d.creativeRepository.GetCreativeByCampaignID(ctx, tx, &creativeCondition)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	// TODO: コンテンツをそれぞれキャンペーンから取得してメモリに展開
 	// ギミックURLの取得
 	gimmickURL, gimmickCode, err := d.contentRepository.GetGimmicksByCampaignID(ctx, tx, &condition)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	//　クーポン一覧の取得
+	// クーポン一覧の取得
 	coupons, err := d.contentRepository.GetCouponsByCampaignID(ctx, tx, &condition)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	deliveryCouponDatas := make([]models.DeliveryCouponData, 0, len(coupons))
 	for _, coupon := range coupons {
@@ -297,7 +305,7 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	}
 	touchPoints, err := d.touchPointRepository.GetTouchPointByGroupID(ctx, tx, touchPointCondition)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	// content作成
 	content := &models.DeliveryDataContent{
@@ -319,13 +327,13 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 		}
 		touchPointDatas = append(touchPointDatas, &touchPointData)
 	}
-	return creatives, content, touchPointDatas, nil
+	return cc, creatives, content, touchPointDatas, nil
 }
 
 func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
-	campaign *models.Campaign, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint,
+	campaign *models.Campaign, cc []*models.CampaignCreative, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint,
 ) error {
-	err := d.campaignDataRepository.Put(ctx, campaign.CreateDeliveryDataCampaign(creatives))
+	err := d.campaignDataRepository.Put(ctx, campaign.CreateDeliveryDataCampaign(cc))
 	if err != nil {
 		return err
 	}
@@ -338,7 +346,7 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 	}
 
 	for _, creative := range creatives {
-		err := d.creativeDataRepository.Put(ctx, creative.CreateDeliveryDataCreative(campaign.ID))
+		err := d.creativeDataRepository.Put(ctx, creative.CreateDeliveryDataCreative())
 		if err != nil {
 			return err
 		}

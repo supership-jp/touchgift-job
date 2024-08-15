@@ -122,6 +122,8 @@ func InjectDeliveryEndUsecase(logger *infra.Logger) usecase.DeliveryEnd {
 			InjectDeliveryControlEventUsecase(logger),
 			InjectCampaignRepository(logger),
 			InjectCampaignDataRepository(logger),
+			InjectContentDataRepository(logger),
+			InjectTouchPointDataRepository(logger),
 		)
 	}
 	return deliveryEndUsecase
