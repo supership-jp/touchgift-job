@@ -33,7 +33,6 @@ func TestCampaignDataRepository_Get(t *testing.T) {
 			ID:      ID,
 			GroupID: 1,
 			OrgCode: "ORG1",
-			Status:  "warmup",
 		}
 		// データを用意
 		if err := campaignDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
@@ -65,7 +64,6 @@ func TestCampaignDataRepository_Put(t *testing.T) {
 			ID:      "1",
 			GroupID: 1,
 			OrgCode: "ORG1",
-			Status:  "warmup",
 		}
 	}
 
@@ -129,7 +127,6 @@ func TestCampaignDataRepository_PutAll(t *testing.T) {
 			ID:      id,
 			GroupID: 1,
 			OrgCode: "ORG1",
-			Status:  "active",
 		}
 	}
 
@@ -198,7 +195,6 @@ func TestCampaignDataRepository_Delete(t *testing.T) {
 			ID:      id,
 			GroupID: 1,
 			OrgCode: "ORG1",
-			Status:  "active",
 		}
 	}
 

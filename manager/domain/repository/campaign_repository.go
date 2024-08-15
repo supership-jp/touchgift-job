@@ -37,5 +37,10 @@ type CampaignRepository interface {
 	GetCampaignToEnd(ctx context.Context, campaign *CampaignDataToEndCondition) ([]*models.Campaign, error)
 	// UpdateStatus キャンペーン情報のステータス更新(status)更新
 	UpdateStatus(ctx context.Context, tx Transaction, campaign *UpdateCondition) (int, error)
+	// 配信操作するキャンペーン情報を取得する
 	GetDeliveryToStart(ctx context.Context, tx Transaction, args *CampaignCondition) (*models.Campaign, error)
+	// キャンペーンに紐づくクリエイティブの配信レートやスキップオフセットを取得する
+	GetCampaignCreative(ctx context.Context, tx Transaction, args *CampaignCondition) ([]*models.CampaignCreative, error)
+	// groupIDに紐づく配信中のキャンペーン数を取得する
+	GetDeliveryCampaignCountByGroupID(ctx context.Context, groupID int) (int, error)
 }

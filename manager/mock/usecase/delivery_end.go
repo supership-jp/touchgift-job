@@ -62,17 +62,17 @@ func (mr *MockDeliveryEndMockRecorder) CreateWorker(ctx interface{}) *gomock.Cal
 }
 
 // Delete mocks base method.
-func (m *MockDeliveryEnd) Delete(ctx context.Context, campaignID string) error {
+func (m *MockDeliveryEnd) Delete(ctx context.Context, campaign *models.Campaign) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, campaignID)
+	ret := m.ctrl.Call(m, "Delete", ctx, campaign)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockDeliveryEndMockRecorder) Delete(ctx, campaignID interface{}) *gomock.Call {
+func (mr *MockDeliveryEndMockRecorder) Delete(ctx, campaign interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDeliveryEnd)(nil).Delete), ctx, campaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDeliveryEnd)(nil).Delete), ctx, campaign)
 }
 
 // ExecuteNow mocks base method.

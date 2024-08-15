@@ -46,10 +46,9 @@ func TestCreative_Process_Delete(t *testing.T) {
 		creatives := createTestCreatives(
 			sql.NullTime{Time: time.Now(), Valid: true},
 		)
-		campaignID := 1
 		creativeDatas := make([]models.DeliveryDataCreative, len(creatives))
 		for i := range creatives {
-			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative(campaignID)
+			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative()
 		}
 
 		// 何回呼ばれるか (Times)
@@ -151,9 +150,8 @@ func TestCreative_Put(t *testing.T) {
 		ctx := context.Background()
 		creatives := createTestCreatives(sql.NullTime{})
 		creativeDatas := make([]models.DeliveryDataCreative, len(creatives))
-		campaignID := 1
 		for i := range creatives {
-			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative(campaignID)
+			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative()
 		}
 		gomock.InOrder(
 			creativeDataRepository.EXPECT().PutAll(gomock.Eq(ctx), gomock.Eq(&creativeDatas)).Return(nil),
@@ -179,9 +177,8 @@ func TestCreative_Put(t *testing.T) {
 		ctx := context.Background()
 		creatives := createTestCreatives(sql.NullTime{})
 		creativeDatas := make([]models.DeliveryDataCreative, len(creatives))
-		campaignID := 1
 		for i := range creatives {
-			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative(campaignID)
+			creativeDatas[i] = *(creatives)[i].CreateDeliveryDataCreative()
 		}
 		expectedError := errors.New("Failed to put")
 		gomock.InOrder(

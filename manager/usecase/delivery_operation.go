@@ -3,20 +3,12 @@ package usecase
 
 import (
 	"context"
-	"strconv"
 	"time"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/domain/models"
 	"touchgift-job-manager/domain/repository"
 	"touchgift-job-manager/infra/metrics"
 )
-
-/*
-var (
-	metricDeliveryOperationProcess     = "delivery_operation_usecase_process"
-	metricDeliveryOperationProcessDesc = "delivery operation usecase processing metrics"
-)
-*/
 
 type DeliveryOperation interface {
 	// キャンペーンのログを処理する
@@ -171,18 +163,18 @@ func (d *deliveryOperation) sync(
 		if err != nil {
 			return campaign.Status, "", err
 		}
-		return campaign.Status, codes.StatusPaused, d.deliveryEnd.Delete(ctx, strconv.Itoa(campaign.ID))
+		return campaign.Status, codes.StatusPaused, d.deliveryEnd.Delete(ctx, campaign)
 	// 配信停止
 	case codes.StatusStop:
 		err := d.deliveryEnd.Stop(ctx, tx, campaign, codes.StatusStopped)
 		if err != nil {
 			return campaign.Status, "", err
 		}
-		return campaign.Status, codes.StatusStopped, d.deliveryEnd.Delete(ctx, strconv.Itoa(campaign.ID))
+		return campaign.Status, codes.StatusStopped, d.deliveryEnd.Delete(ctx, campaign)
 		// 配信終了済
 	case codes.StatusEnded:
 		// DynamoDBから削除(campaign.statusの更新はしない)
-		return campaign.Status, codes.StatusEnded, d.deliveryEnd.Delete(ctx, strconv.Itoa(campaign.ID))
+		return campaign.Status, codes.StatusEnded, d.deliveryEnd.Delete(ctx, campaign)
 	case codes.StatusSuspend, codes.StatusConfigured:
 		// 未配信のため何もしない
 		return campaign.Status, "", codes.ErrDoNothing

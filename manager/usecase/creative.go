@@ -59,7 +59,7 @@ func (c *creative) Process(ctx context.Context, tx repository.Transaction, curre
 					return err
 				}
 			}
-			// 違うキャンペーン紐づく場合は何もしない (そのキャンペーンの配信データの方で操作される)
+			// 違うキャンペーンに紐づく場合は何もしない (そのキャンペーンの配信データの方で操作される)
 			return nil
 		default:
 			c.logger.Error().Interface("creative_log", creativeLog).Msg("Unknown event")

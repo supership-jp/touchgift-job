@@ -93,15 +93,11 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 	query := `SELECT
 		c.id as id,
 		sg.id as group_id,
+		c.status as status,
 		c.organization_code as org_code,
-		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
-		c.status as status
-		cc.creative_id as creative_id,
-		cc.skip_offset as skip_offset,
-		cc.delivery_rate as delivery_rate,
+		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user
 	FROM campaign c
 	INNER JOIN store_group sg ON c.store_group_id = sg.id
-	LEFT OUTER JOIN campaign_creative cc ON c.id = cc.campaign_id
 	WHERE
 		c.id = :id`
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
@@ -119,6 +115,54 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 	}
 	campaign := campaigns[0]
 	return &campaign, nil
+}
+
+// 指定されたGrouoIDに紐づくキャンペーンの配信数を取得する
+func (c *CampaignRepository) GetDeliveryCampaignCountByGroupID(ctx context.Context, groupID int) (int, error) {
+	query := `SELECT count(*) FROM campaign
+	WHERE
+	  store_group_id = :group_id AND
+		status = "started"`
+	stmt, err := c.sqlHandler.PrepareNamedContext(ctx, query)
+	if err != nil {
+		return 0, err
+	}
+	var count int
+	err = stmt.GetContext(ctx, &count, map[string]interface{}{
+		"group_id": groupID,
+	})
+	if err != nil {
+		c.logger.Error().Msgf("Error getting deliveries: %v", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+// キャンペーンに紐づくクリエイティブの配信レートやスキップオフセットを取得する
+func (c *CampaignRepository) GetCampaignCreative(ctx context.Context,
+	tx repository.Transaction, args *repository.CampaignCondition,
+) ([]*models.CampaignCreative, error) {
+	query := `SELECT
+		cc.creative_id as id,
+		cc.delivery_rate as rate,
+		cc.skip_offset as skip_offset
+	FROM campaign_creative cc
+	WHERE
+		cc.campaign_id = :id`
+	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: 修正する(PKでフィルタリングしているため配列ではなく構造体で取得する)
+	cc := []*models.CampaignCreative{}
+	err = stmt.SelectContext(ctx, &cc, map[string]interface{}{
+		"id": args.CampaignID,
+	})
+	if err != nil {
+		c.logger.Error().Msgf("Error getting deliveries: %v", err)
+		return nil, err
+	}
+	return cc, nil
 }
 
 func (c *CampaignRepository) GetCreativeByCampaignID(ctx context.Context, tx repository.Transaction, args *repository.CreativeByCampaignIDCondition) ([]*models.Creative, error) {

@@ -36,6 +36,21 @@ func (m *MockCampaignRepository) EXPECT() *MockCampaignRepositoryMockRecorder {
 	return m.recorder
 }
 
+// GetCampaignCreative mocks base method.
+func (m *MockCampaignRepository) GetCampaignCreative(ctx context.Context, tx repository.Transaction, args *repository.CampaignCondition) ([]*models.CampaignCreative, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCampaignCreative", ctx, tx, args)
+	ret0, _ := ret[0].([]*models.CampaignCreative)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCampaignCreative indicates an expected call of GetCampaignCreative.
+func (mr *MockCampaignRepositoryMockRecorder) GetCampaignCreative(ctx, tx, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignCreative", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignCreative), ctx, tx, args)
+}
+
 // GetCampaignToEnd mocks base method.
 func (m *MockCampaignRepository) GetCampaignToEnd(ctx context.Context, campaign *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
 	m.ctrl.T.Helper()
@@ -64,6 +79,21 @@ func (m *MockCampaignRepository) GetCampaignToStart(ctx context.Context, tx repo
 func (mr *MockCampaignRepositoryMockRecorder) GetCampaignToStart(ctx, tx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignToStart", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignToStart), ctx, tx, args)
+}
+
+// GetDeliveryCampaignCountByGroupID mocks base method.
+func (m *MockCampaignRepository) GetDeliveryCampaignCountByGroupID(ctx context.Context, groupID int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeliveryCampaignCountByGroupID", ctx, groupID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeliveryCampaignCountByGroupID indicates an expected call of GetDeliveryCampaignCountByGroupID.
+func (mr *MockCampaignRepositoryMockRecorder) GetDeliveryCampaignCountByGroupID(ctx, groupID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeliveryCampaignCountByGroupID", reflect.TypeOf((*MockCampaignRepository)(nil).GetDeliveryCampaignCountByGroupID), ctx, groupID)
 }
 
 // GetDeliveryToStart mocks base method.

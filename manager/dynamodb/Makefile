@@ -23,7 +23,7 @@ get-all-table: ## get all table
 delete-all-table: ## delete all table
 	$(MAKE) delete-touch-point && \
 	$(MAKE) delete-campaign && \
-	$(MAKE) delete-contents && \
+	$(MAKE) delete-content && \
 	$(MAKE) delete-creative
 
 list-tables: ## dynamoのテーブルリスト一覧を表示します
@@ -63,8 +63,8 @@ delete-content: ## コンテンツテーブルの削除
 
 create-creative-table: ## クリエイティブテーブルを作成する
 	aws dynamodb create-table --table-name $(TBL_CREATIVE) \
-		--attribute-definitions AttributeName=campaign_id,AttributeType=N \
-		--key-schema AttributeName=campaign_id,KeyType=HASH \
+		--attribute-definitions AttributeName=id,AttributeType=N \
+		--key-schema AttributeName=id,KeyType=HASH \
 		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
 get-creative:
 	aws dynamodb scan --table-name $(TBL_CREATIVE) $(DYNAMODB_OPTIONS)

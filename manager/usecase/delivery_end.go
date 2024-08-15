@@ -34,7 +34,7 @@ type DeliveryEnd interface {
 	// 配信停止処理
 	Stop(ctx context.Context, tx repository.Transaction, campaign *models.Campaign, status string) error
 	// 配信データ削除
-	Delete(ctx context.Context, campaignID string) error
+	Delete(ctx context.Context, campaign *models.Campaign) error
 	// 終了する
 	Close()
 	// Workerを作成する
@@ -42,16 +42,18 @@ type DeliveryEnd interface {
 }
 
 type deliveryEnd struct {
-	logger                 Logger
-	monitor                *metrics.Monitor
-	config                 *config.DeliveryEnd
-	configUsecase          *config.DeliveryEndUsecase
-	worker                 deliveryEndWorker
-	transaction            repository.TransactionHandler
-	timer                  Timer
-	deliveryControlEvent   DeliveryControlEvent
-	campaignRepository     repository.CampaignRepository
-	campaignDataRepository repository.DeliveryDataCampaignRepository
+	logger                   Logger
+	monitor                  *metrics.Monitor
+	config                   *config.DeliveryEnd
+	configUsecase            *config.DeliveryEndUsecase
+	worker                   deliveryEndWorker
+	transaction              repository.TransactionHandler
+	timer                    Timer
+	deliveryControlEvent     DeliveryControlEvent
+	campaignRepository       repository.CampaignRepository
+	campaignDataRepository   repository.DeliveryDataCampaignRepository
+	contentDataRepository    repository.DeliveryDataContentRepository
+	touchPointDataRepository repository.DeliveryDataTouchPointRepository
 }
 
 type deliveryEndWorker struct {
@@ -70,6 +72,8 @@ func NewDeliveryEnd(
 	deliveryControlEvent DeliveryControlEvent,
 	campaignRepository repository.CampaignRepository,
 	campaignDataRepository repository.DeliveryDataCampaignRepository,
+	contentDataRepository repository.DeliveryDataContentRepository,
+	touchPointDataRepository repository.DeliveryDataTouchPointRepository,
 ) DeliveryEnd {
 	instance := deliveryEnd{
 		logger:        logger,
@@ -80,11 +84,13 @@ func NewDeliveryEnd(
 			wg: &sync.WaitGroup{},
 			q:  make(chan *models.Campaign, config.NumberOfQueue),
 		},
-		transaction:            transaction,
-		timer:                  timer,
-		deliveryControlEvent:   deliveryControlEvent,
-		campaignRepository:     campaignRepository,
-		campaignDataRepository: campaignDataRepository,
+		transaction:              transaction,
+		timer:                    timer,
+		deliveryControlEvent:     deliveryControlEvent,
+		campaignRepository:       campaignRepository,
+		campaignDataRepository:   campaignDataRepository,
+		contentDataRepository:    contentDataRepository,
+		touchPointDataRepository: touchPointDataRepository,
 	}
 	monitor.Metrics.AddHistogram(metricDeliveryEndDuration,
 		metricDeliveryEndDurationDesc,
@@ -156,9 +162,24 @@ func (d *deliveryEnd) Stop(ctx context.Context, tx repository.Transaction, campa
 }
 
 // DynamoDBから配信データを削除する
-func (d *deliveryEnd) Delete(ctx context.Context, campaignID string) error {
+func (d *deliveryEnd) Delete(ctx context.Context, campaign *models.Campaign) error {
+	campaignID := strconv.Itoa(campaign.ID)
 	if err := d.campaignDataRepository.Delete(ctx, &campaignID); err != nil {
 		return err
+	}
+	if err := d.contentDataRepository.Delete(ctx, &campaignID); err != nil {
+		return err
+	}
+	// グループに紐づく配信中のキャンペーンがない場合はタッチポイントデータも削除する
+	count, err := d.campaignRepository.GetDeliveryCampaignCountByGroupID(ctx, campaign.GroupID)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		groupID := strconv.Itoa(campaign.GroupID)
+		if err := d.touchPointDataRepository.Delete(ctx, &groupID); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -251,7 +272,7 @@ func (d *deliveryEnd) handleTerminateStatus(
 	if err := d.Stop(ctx, tx, deliveryData, afterStatus); err != nil {
 		return nil, errors.Wrap(err, "Failed to delete process")
 	}
-	if err := d.Delete(ctx, strconv.Itoa(deliveryData.ID)); err != nil {
+	if err := d.Delete(ctx, deliveryData); err != nil {
 		return nil, errors.Wrap(err, "Failed to delete process")
 	}
 	return &afterStatus, nil

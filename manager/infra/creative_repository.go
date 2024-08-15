@@ -24,7 +24,6 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 	query := `
 	SELECT
 		creative.id as id,
-		delivery_rate as delivery_rate,
 		COALESCE(banner.height, video.height) AS height,
 		COALESCE(banner.width, video.width) AS width,
 		COALESCE(banner.img_url, video.video_url) AS url,
@@ -36,7 +35,6 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 			WHEN banner.id IS NOT NULL THEN banner.extension
 			WHEN video.id IS NOT NULL THEN video.extension
 		END AS extension,
-		campaign_creative.skip_offset AS skip_offset,
 		video.endcard_url AS end_card_url,
 		video.endcard_width AS end_card_width,
 		video.endcard_height AS end_card_height,
@@ -48,7 +46,7 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 			 LEFT JOIN video ON creative.video_id = video.id
 	WHERE campaign.id = :campaign_id
 	GROUP BY
-	  creative.id, banner.id, video.id, campaign_creative.delivery_rate, campaign_creative.skip_offset, video.endcard_url, video.endcard_width, video.endcard_height, video.endcard_extension
+	  creative.id, banner.id, video.id, video.endcard_url, video.endcard_width, video.endcard_height, video.endcard_extension
 	LIMIT :limit
 `
 	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
