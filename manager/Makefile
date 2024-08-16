@@ -5,6 +5,10 @@ include ./sns/Makefile
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
 
+APPLICATION = touchgift-delivery-job
+ECS_CLUSTER = touchgift-job
+SERVICE = $(APPLICATION)
+
 AWS_PROFILE = dummy
 AWS_REGION=ap-northeast-1
 
@@ -27,7 +31,7 @@ endif
 TEST_TARGET=./...
 
 # TODO: リポジトリ名を設定
-REPOSITORY =
+REPOSITORY = touchgift-job/$(APPLICATION)
 PREFIX = $(REPOSITORY)
 REGISTRY =
 
@@ -86,6 +90,17 @@ ifneq (,$(findstring rc,$(ENVIRONMENT_SUFFIX)))
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 endif
+
+build-image: aws_account_id ## Build docker image ex. make build-image ENV=staging TAG=
+	@docker build --tag $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY):$(TAG) .
+
+push-image: aws_account_id ## Push docker image ex. make push-image ENV=staging TAG=
+	@$(AWS_VAULT_CMD) aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY):$(TAG) && \
+	docker logout https://$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+
+output-image: aws_account_id ## output full image name make output-image ENV=staging
+	@echo $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY):$(TAG)
 
 run: ## Start dev server
 	@go build -o main && \
