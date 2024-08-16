@@ -25,6 +25,7 @@ func (c *Campaign) CreateDeliveryDataCampaign(cc []*CampaignCreative) *DeliveryD
 		OrgCode:    c.OrgCode,
 		DailyLimit: c.DailyCouponLimitPerUser,
 		Creatives:  cc,
+		Status:     c.Status,
 	}
 }
 
