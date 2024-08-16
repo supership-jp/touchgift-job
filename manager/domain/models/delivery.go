@@ -9,7 +9,7 @@ type DeliveryDataCampaign struct {
 	GroupID    int                 `json:"group_id"`
 	OrgCode    string              `json:"org_code"`
 	DailyLimit int                 `json:"daily_limit"`
-	Creatives  []*CampaignCreative `json:"creatives"`
+	Creatives  []*CampaignCreative `json:"creatives,omitempty"`
 	Status     string              `json:"status"`
 }
 
