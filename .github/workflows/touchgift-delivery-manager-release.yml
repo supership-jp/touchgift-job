@@ -1,0 +1,45 @@
+name: touchgift-delivery-manager release
+on:
+  push:
+    branches:
+      - main
+      - 'rc/**'
+    paths:
+      - manager/**
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component:
+          - manager
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials (CodeBuild)
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID_PRO }}
+          aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY_PRO }}
+          aws-region: ap-northeast-1
+          role-to-assume: arn:aws:iam::991880925744:role/touchgift-delivery-manager.codebuild.execution
+          role-duration-seconds: 1200
+
+      - name: Run Build
+        run: |
+          aws codebuild start-build \
+            --project-name touchgift-delivery-manager \
+            --source-version ${SOURCE_VERSION} \
+            --buildspec-override ${{ matrix.component }}/buildspecs/production.yml \
+            --environment-variables-override \
+            name=GITHUB_EVENT_NAME,value=${{ github.event_name }},type=PLAINTEXT \
+            name=GITHUB_SHA,value=${{ github.sha }},type=PLAINTEXT \
+            name=GITHUB_REF,value=${{ github.ref }},type=PLAINTEXT \
+            name=GITHUB_RUN_ID,value=${{ github.run_id }},type=PLAINTEXT \
+            name=WORKING_DIR,value=${{ matrix.component }},type=PLAINTEXT \
+            --report-build-status-override
+        env:
+          SOURCE_VERSION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
