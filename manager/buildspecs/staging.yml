@@ -9,8 +9,8 @@ env:
     DB_CONNECT_TIMEOUT_SEC: 600
   parameter-store:
     DB_HOST: /rds/touchgift-main/endpoint
-    DB_PASSWORD: /rds/touchgift-main/user/master/password
-    MYSQL_PASSWORD: /rds/touchgift-main/user/master/password
+    DB_PASSWORD: /rds/touchgift-cicd/user/master/password
+    MYSQL_PASSWORD: /rds/touchgift-cicd/user/master/password
 
 phases:
   install:
