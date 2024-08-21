@@ -31,7 +31,7 @@ jobs:
           aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-          role-to-assume: arn:aws:iam::411776208124:role/touchgift-delivery-manager.codebuild.execution
+          role-to-assume: arn:aws:iam::411776208124:role/touchgift-job.codebuild.execution
           role-duration-seconds: 1200
 
       - name: Run Build
