@@ -1,4 +1,4 @@
-name: touchgift-delivery-manager
+name: touchgift-job
 on:
   pull_request:
     branches:
@@ -37,7 +37,7 @@ jobs:
       - name: Run Build
         run: |
           aws codebuild start-build \
-            --project-name touchgift-delivery-manager \
+            --project-name touchgift-job \
             --source-version ${SOURCE_VERSION} \
             --buildspec-override ${{ matrix.component }}/buildspecs/staging.yml \
             --environment-variables-override \
