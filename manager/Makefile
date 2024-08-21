@@ -53,7 +53,6 @@ SNS_ENDPOINT = http://localhost:4566
 SNS_ENDPOINT_OPTS = --endpoint-url $(SNS_ENDPOINT)
 SNS_OPTIONS = $(SNS_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
-
 ## 本番アカウント
 ### e(本番), rc(リリース前テスト環境)
 ## 検証アカウント
