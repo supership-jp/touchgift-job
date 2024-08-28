@@ -25,8 +25,8 @@ func (d *DeliveryDataCampaign) CreateCampaign() *Campaign {
 }
 
 type DeliveryTouchPoint struct {
-	GroupID      int    `json:"group_id"`
-	TouchPointID string `json:"touchpoint_id"`
+	GroupID int    `json:"group_id"`
+	ID      string `json:"id"`
 }
 
 // DeliveryDataCreative dynamo用に整形するための構造体(クリエイティブ用)

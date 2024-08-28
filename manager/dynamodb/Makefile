@@ -32,9 +32,9 @@ list-tables: ## dynamoのテーブルリスト一覧を表示します
 create-touch-point-table: ## タッチポイントテーブルを作成する
 	aws dynamodb create-table --table-name $(TBL_TOUCH_POINT) \
 		--attribute-definitions \
-			AttributeName=group_id,AttributeType=N \
+			AttributeName=id,AttributeType=S \
 		--key-schema \
-			AttributeName=group_id,KeyType=HASH \
+			AttributeName=id,KeyType=HASH \
 		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
 get-touch-point: ## タッチポイント情報の取得
 	aws dynamodb scan --table-name $(TBL_TOUCH_POINT) $(DYNAMODB_OPTIONS)

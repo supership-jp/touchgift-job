@@ -31,11 +31,12 @@ func TestTouchPointDataRepository_Get(t *testing.T) {
 
 	t.Run("touchpoint_dataを1件返す", func(t *testing.T) {
 		touchPointDataRepository := NewDeliveryDataTouchPointRepository(dynamodbHandler, logger, monitor)
-		ID := 1
-		IDString := strconv.Itoa(ID)
+		ID := "test"
+		groupID := 1
+		groupIDString := strconv.Itoa(groupID)
 		expected := models.DeliveryTouchPoint{
-			GroupID:      ID,
-			TouchPointID: "test1",
+			GroupID: groupID,
+			ID:      ID,
 		}
 		// データを用意
 		if err := touchPointDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
@@ -43,12 +44,12 @@ func TestTouchPointDataRepository_Get(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := touchPointDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := touchPointDataRepository.Delete(ctx, &ID, &groupIDString); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
 		// テスト実行する
-		actual, err := touchPointDataRepository.Get(ctx, &IDString)
+		actual, err := touchPointDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected, *actual)
 		}
@@ -62,13 +63,14 @@ func TestTouchPointDataRepository_Put(t *testing.T) {
 	monitor := metrics.GetMonitor()
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
-	id := 1
-	IDString := strconv.Itoa(id)
+	ID := "test"
+	groupID := 1
+	groupIDString := strconv.Itoa(groupID)
 
 	createData := func() *models.DeliveryTouchPoint {
 		return &models.DeliveryTouchPoint{
-			GroupID:      id,
-			TouchPointID: "test1",
+			GroupID: groupID,
+			ID:      ID,
 		}
 	}
 
@@ -82,11 +84,11 @@ func TestTouchPointDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := touchPointDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := touchPointDataRepository.Delete(ctx, &ID, &groupIDString); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := touchPointDataRepository.Get(ctx, &IDString)
+		actual, err := touchPointDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, *expected, *actual)
 		}
@@ -102,7 +104,7 @@ func TestTouchPointDataRepository_Put(t *testing.T) {
 		}
 		// 更新用データ用意
 		expected2 := *expected
-		expected2.TouchPointID = "test2"
+		expected2.GroupID = 2
 		// 更新する
 		err = touchPointDataRepository.Put(ctx, &expected2)
 		if !assert.NoError(t, err) {
@@ -110,11 +112,11 @@ func TestTouchPointDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := touchPointDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := touchPointDataRepository.Delete(ctx, &ID, &groupIDString); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := touchPointDataRepository.Get(ctx, &IDString)
+		actual, err := touchPointDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected2, *actual)
 		}
@@ -132,12 +134,12 @@ func TestTouchPointDataRepository_PutAll(t *testing.T) {
 	createData := func() *[]models.DeliveryTouchPoint {
 		return &[]models.DeliveryTouchPoint{
 			{
-				GroupID:      1,
-				TouchPointID: "test1",
+				GroupID: 1,
+				ID:      "test1",
 			},
 			{
-				GroupID:      2,
-				TouchPointID: "test2",
+				GroupID: 2,
+				ID:      "test2",
 			},
 		}
 	}
@@ -154,16 +156,17 @@ func TestTouchPointDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range *expected {
 				data := (*expected)[i]
-				IDString := strconv.Itoa(data.GroupID)
-				if err := touchPointDataRepository.Delete(ctx, &IDString); err != nil {
+				ID := data.ID
+				groupID := strconv.Itoa(data.GroupID)
+				if err := touchPointDataRepository.Delete(ctx, &ID, &groupID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range *expected {
 			data := (*expected)[i]
-			IDString := strconv.Itoa(data.GroupID)
-			actual, err := touchPointDataRepository.Get(ctx, &IDString)
+			ID := data.ID
+			actual, err := touchPointDataRepository.Get(ctx, &ID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -194,16 +197,17 @@ func TestTouchPointDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range updateData {
 				data := (updateData)[i]
-				IDString := strconv.Itoa(data.GroupID)
-				if err := touchPointDataRepository.Delete(ctx, &IDString); err != nil {
+				ID := data.ID
+				groupID := strconv.Itoa(data.GroupID)
+				if err := touchPointDataRepository.Delete(ctx, &ID, &groupID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range updateData {
 			data := (updateData)[i]
-			IDString := strconv.Itoa(data.GroupID)
-			actual, err := touchPointDataRepository.Get(ctx, &IDString)
+			ID := data.ID
+			actual, err := touchPointDataRepository.Get(ctx, &ID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -221,18 +225,19 @@ func TestTouchPointDataRepository_Delete(t *testing.T) {
 
 	t.Run("touchpoint_dataを1件削除", func(t *testing.T) {
 		touchPointDataRepository := NewDeliveryDataTouchPointRepository(dynamodbHandler, logger, monitor)
-		ID := 1
+		groupID := 1
+		ID := "test1"
 		expected := models.DeliveryTouchPoint{
-			GroupID:      ID,
-			TouchPointID: "test1",
+			GroupID: groupID,
+			ID:      ID,
 		}
 		if err := touchPointDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return
 		}
-		IDString := strconv.Itoa(ID)
-		err := touchPointDataRepository.Delete(ctx, &IDString)
+		groupIDString := strconv.Itoa(groupID)
+		err := touchPointDataRepository.Delete(ctx, &ID, &groupIDString)
 		if assert.NoError(t, err) {
-			actual, err := touchPointDataRepository.Get(ctx, &IDString)
+			actual, err := touchPointDataRepository.Get(ctx, &ID)
 			if assert.Error(t, err) {
 				assert.Nil(t, actual)
 				assert.EqualError(t, err, codes.ErrNoData.Error())
@@ -242,7 +247,8 @@ func TestTouchPointDataRepository_Delete(t *testing.T) {
 	t.Run("touchpoint_dataの削除は対象がない場合エラーは返さない", func(t *testing.T) {
 		touchPointDataRepository := NewDeliveryDataTouchPointRepository(dynamodbHandler, logger, monitor)
 		ID := "100"
-		err := touchPointDataRepository.Delete(ctx, &ID)
+		groupIDString := "1"
+		err := touchPointDataRepository.Delete(ctx, &ID, &groupIDString)
 		assert.NoError(t, err)
 	})
 }

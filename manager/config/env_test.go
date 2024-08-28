@@ -1,11 +1,12 @@
 package config
 
 import (
-	"github.com/kelseyhightower/envconfig"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnvConfig(t *testing.T) {
@@ -56,9 +57,9 @@ func TestEnvConfig(t *testing.T) {
 		assert.Nil(t, err)
 
 		assert.Equal(t, "mysql", env.Db.DriverName)
-		assert.Equal(t, "touchgift", env.Db.User)
+		assert.Equal(t, "sc2_pn", env.Db.User)
 		assert.Equal(t, "test", env.Db.Password)
-		assert.Equal(t, "touchgift", env.Db.Database)
+		assert.Equal(t, "retail", env.Db.Database)
 		assert.Equal(t, "localhost", env.Db.Host)
 		assert.Equal(t, 3306, env.Db.Port)
 		assert.Equal(t, 60, env.Db.ConnectTimeout)

@@ -54,6 +54,7 @@ type deliveryEnd struct {
 	campaignDataRepository   repository.DeliveryDataCampaignRepository
 	contentDataRepository    repository.DeliveryDataContentRepository
 	touchPointDataRepository repository.DeliveryDataTouchPointRepository
+	touchPointRepository     repository.TouchPointRepository
 }
 
 type deliveryEndWorker struct {
@@ -74,6 +75,7 @@ func NewDeliveryEnd(
 	campaignDataRepository repository.DeliveryDataCampaignRepository,
 	contentDataRepository repository.DeliveryDataContentRepository,
 	touchPointDataRepository repository.DeliveryDataTouchPointRepository,
+	touchPointRepository repository.TouchPointRepository,
 ) DeliveryEnd {
 	instance := deliveryEnd{
 		logger:        logger,
@@ -91,6 +93,7 @@ func NewDeliveryEnd(
 		campaignDataRepository:   campaignDataRepository,
 		contentDataRepository:    contentDataRepository,
 		touchPointDataRepository: touchPointDataRepository,
+		touchPointRepository:     touchPointRepository,
 	}
 	monitor.Metrics.AddHistogram(metricDeliveryEndDuration,
 		metricDeliveryEndDurationDesc,
@@ -176,9 +179,18 @@ func (d *deliveryEnd) Delete(ctx context.Context, campaign *models.Campaign) err
 		return err
 	}
 	if count == 0 {
-		groupID := strconv.Itoa(campaign.GroupID)
-		if err := d.touchPointDataRepository.Delete(ctx, &groupID); err != nil {
+		touchPoints, err := d.touchPointRepository.GetTouchPointByGroupID(ctx, &repository.TouchPointByGroupIDCondition{
+			GroupID: campaign.GroupID,
+			Limit:   100000,
+		})
+		if err != nil {
 			return err
+		}
+		for _, touchPoint := range touchPoints {
+			groupIDStr := strconv.Itoa(touchPoint.GroupID)
+			if err := d.touchPointDataRepository.Delete(ctx, &touchPoint.ID, &groupIDStr); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -186,10 +198,7 @@ func (d *deliveryEnd) Delete(ctx context.Context, campaign *models.Campaign) err
 
 // 配信終了処理
 func (d *deliveryEnd) execute(ctx context.Context) {
-	defer func() {
-		d.logger.Debug().Msg("End execute")
-		d.worker.wg.Done()
-	}()
+	defer d.worker.wg.Done()
 	wg := sync.WaitGroup{}
 	for {
 		select {
@@ -256,7 +265,7 @@ func (d *deliveryEnd) end(ctx context.Context, startTime time.Time, reservedData
 		return errors.Wrap(err, "Failed to commit")
 	}
 	// 配信制御イベントを発行する
-	d.deliveryControlEvent.Publish(ctx, deliveryData.ID, deliveryData.OrgCode, deliveryData.Status, *afterStatus, "")
+	d.deliveryControlEvent.PublishCampaignEvent(ctx, deliveryData.ID, deliveryData.OrgCode, deliveryData.Status, *afterStatus, "")
 	return nil
 }
 

@@ -157,7 +157,7 @@ func TestDeliveryStart_Execute(t *testing.T) {
 		deliveryStartUsecase.EXPECT().UpdateStatus(
 			gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaigns[0]), codes.StatusWarmup).Return(1, nil).Times(1)
 		tx.EXPECT().Commit().Return(nil).Times(1)
-		deliveryControlEvent.EXPECT().Publish(
+		deliveryControlEvent.EXPECT().PublishCampaignEvent(
 			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].OrgCode),
 			gomock.Eq("configured"), gomock.Eq("warmup"), gomock.Eq(""),
 		).Times(1)
@@ -239,7 +239,7 @@ func TestDeliveryStart_Execute(t *testing.T) {
 		deliveryStartUsecase.EXPECT().UpdateStatus(
 			gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaigns[0]), gomock.Eq(codes.StatusWarmup)).Return(1, nil).Times(1)
 		tx.EXPECT().Commit().Return(nil).Times(1)
-		deliveryControlEvent.EXPECT().Publish(
+		deliveryControlEvent.EXPECT().PublishCampaignEvent(
 			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].OrgCode),
 			gomock.Eq("configured"), gomock.Eq("warmup"), gomock.Eq(""),
 		).Times(1)

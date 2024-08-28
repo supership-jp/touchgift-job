@@ -5,7 +5,7 @@ include ./sns/Makefile
 .DEFAULT_GOAL := help
 SHELL=/bin/bash
 
-APPLICATION = touchgift-delivery-job
+APPLICATION = touchgift-job
 ECS_CLUSTER = touchgift-job
 SERVICE = $(APPLICATION)
 
@@ -17,11 +17,6 @@ DYNAMODB_ENDPOINT = http://localhost:8000
 DYNAMODB_ENDPOINT_OPTS = --endpoint-url $(DYNAMODB_ENDPOINT)
 DYNAMODB_OPTIONS = $(DYNAMODB_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
-# TODO: アプリケーション名, ecsクラスター, サービス名を設定
-APPLICATION =
-ECS_CLUSTER =
-SERVICE =
-
 CURRENT_TAG = 1.0.0
 TAG = $(CURRENT_TAG)
 ifndef TAG
@@ -30,8 +25,7 @@ endif
 
 TEST_TARGET=./...
 
-# TODO: リポジトリ名を設定
-REPOSITORY = touchgift-job/$(APPLICATION)
+REPOSITORY = touchgift/job
 PREFIX = $(REPOSITORY)
 REGISTRY =
 
@@ -53,40 +47,50 @@ SNS_ENDPOINT = http://localhost:4566
 SNS_ENDPOINT_OPTS = --endpoint-url $(SNS_ENDPOINT)
 SNS_OPTIONS = $(SNS_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
-
 ## 本番アカウント
-### e(本番), rc(リリース前テスト環境)
+### e1(本番), rc1(リリース前テスト環境)
 ## 検証アカウント
-### e(検証), beta(ベータ環境)
-ENVIRONMENT_SUFFIX = e
+### e1(検証), beta1(ベータ環境)
+ENVIRONMENT_SUFFIX = e1
 
 # suffixで環境変数を切り替える
 ifneq (,$(findstring beta,$(ENVIRONMENT_SUFFIX)))
 	DELIVERY_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CAMPAIGN_TABLE_NAME=touchgift_campaign_data.$(ENVIRONMENT_SUFFIX)
 	CREATIVE_TABLE_NAME=touchgift_creative_data.$(ENVIRONMENT_SUFFIX)
-	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
-	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned-beta/endpoint
-	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned-beta/user/touchgift/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
+	TOUCH_POINT_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CONTENT_TABLE_NAME=touchgift_content_data.$(ENVIRONMENT_SUFFIX)
+	DB_HOST=/rds/touchgift-main-beta/endpoint
+	DB_PASSWORD=/rds/touchgift-main-beta/user/sc2_pn/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-campaign-cache-$(ENVIRONMENT_SUFFIX)
+	SNS_DELIVERY_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-delivery-cache-$(ENVIRONMENT_SUFFIX)
+	SNS_CREATIVE_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-creative-cache-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 else
 	DELIVERY_TABLE_NAME=touchgift_delivery_data
 	CREATIVE_TABLE_NAME=touchgift_creative_data
-	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data
-	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned/endpoint
-	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned/user/touchgift/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control
+	TOUCH_POINT_TABLE_NAME=touchgift_delivery_data
+	CONTENT_TABLE_NAME=touchgift_content_data
+	DB_HOST=/rds/touchgift-main/endpoint
+	DB_PASSWORD=/rds/touchgift-main/user/sc2_pn/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-campaign-cache
+	SNS_DELIVERY_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-delivery-cache
+	SNS_CREATIVE_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-creative-cache
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control
 endif
 ifneq (,$(findstring rc,$(ENVIRONMENT_SUFFIX)))
 	DELIVERY_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CAMPAIGN_TABLE_NAME=touchgift_campaign_data.$(ENVIRONMENT_SUFFIX)
 	CREATIVE_TABLE_NAME=touchgift_creative_data.$(ENVIRONMENT_SUFFIX)
-	DELIVERY_BUDGET_TABLE_NAME=touchgift_delivery_budget_data.$(ENVIRONMENT_SUFFIX)
-	TOUCHGIFT_DB_HOST=/rds/touchgift-provisioned-rc/endpoint
-	TOUCHGIFT_DB_PASSWORD=/rds/touchgift-provisioned-rc/user/touchgift/password
-	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
+	TOUCH_POINT_TABLE_NAME=touchgift_delivery_data.$(ENVIRONMENT_SUFFIX)
+	CONTENT_TABLE_NAME=touchgift_content_data.$(ENVIRONMENT_SUFFIX)
+	DB_HOST=/rds/touchgift-main-rc/endpoint
+	DB_PASSWORD=/rds/touchgift-main-rc/user/sc2_pn/password
+	SNS_CONTROL_LOG_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-campaign-cache-$(ENVIRONMENT_SUFFIX)
+	SNS_DELIVERY_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-delivery-cache-$(ENVIRONMENT_SUFFIX)
+	SNS_CREATIVE_CACHE_TOPIC_ARN=arn:aws:sns:ap-northeast-1:$(AWS_ACCOUNT_ID):touchgift-server-creative-cache-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 endif
@@ -142,8 +146,8 @@ start-db: ## start db (mysql)
 	@cd ./rdb && docker run --rm -it \
 		-p 3306:3306 \
 		-e MYSQL_ROOT_PASSWORD=test \
-		-e MYSQL_DATABASE=touchgift \
-		-e MYSQL_USER=touchgift \
+		-e MYSQL_DATABASE=retail \
+		-e MYSQL_USER=sc2_pn \
 		-e MYSQL_PASSWORD=test \
 		-e TZ=Asia/Tokyo \
 		-v $$(PWD)/init:/docker-entrypoint-initdb.d \
@@ -158,3 +162,39 @@ cleanup-db:
 
 create-db-testdata: ## create test data for rdb ex. make create-db-testdata
 	AWS_PROFILE=$(AWS_PROFILE) go test -v ./infra -run TestData -tags=createdata -count 1
+
+run-deploy: ## run deploy (code deploy) ex. make run-deploy CREDENTIAL=tpo-staging TAG=testtest ENVIRONMENT= ENVIRONMENT_SUFFIX=
+	@REGISTRY=$(REGISTRY) TAG=$(TAG) CREDENTIAL=$(CREDENTIAL) AWS_VAULT_CMD="$(AWS_VAULT_CMD)" \
+		ENVIRONMENT=$(ENVIRONMENT) ECS_CLUSTER=$(ECS_CLUSTER) ENVIRONMENT_SUFFIX=$(ENVIRONMENT_SUFFIX) ./run-deploy-task
+
+register-task-definition: ## register task definition ex. make register-task-definition ENV=staging TASK_DEF_FILE=file://./task-definition.json
+	@$(AWS_VAULT_CMD) aws ecs register-task-definition --cli-input-json $(TASK_DEF_FILE)
+
+rewrite-image-on-task-definition:aws_account_id ## rewrite image on task-definition.json ex. make rewrite-image-on-task-definition ENV= ENVIRONMENT_SUFFIX= TAG=
+	@cat task-definitions/$(ENV).json \
+		| jq ".family|=\"$(SERVICE)-$(ENVIRONMENT_SUFFIX)\"" \
+		| jq ".taskRoleArn|=\"arn:aws:iam::$(AWS_ACCOUNT_ID):role/$(APPLICATION)-$(ENVIRONMENT_SUFFIX).ecs-task-role\"" \
+		| jq ".executionRoleArn|=\"arn:aws:iam::$(AWS_ACCOUNT_ID):role/$(APPLICATION)-$(ENVIRONMENT_SUFFIX).ecs-task-execution-role\"" \
+		| jq ".containerDefinitions[0].image|=\"$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY):$(TAG)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"ENVIRONMENT_SUFFIX\") | .value) |=\"$(ENVIRONMENT_SUFFIX)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"AWS_REGION\") | .value) |=\"$(AWS_REGION)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"CAMPAIGN_TABLE_NAME\") | .value) |=\"$(CAMPAIGN_TABLE_NAME)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"CREATIVE_TABLE_NAME\") | .value) |=\"$(CREATIVE_TABLE_NAME)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"TOUCH_POINT_TABLE_NAME\") | .value) |=\"$(TOUCH_POINT_TABLE_NAME)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"CONTENT_TABLE_NAME\") | .value) |=\"$(CONTENT_TABLE_NAME)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"SNS_CONTROL_LOG_TOPIC_ARN\") | .value) |=\"$(SNS_CONTROL_LOG_TOPIC_ARN)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"SNS_DELIVERY_CACHE_TOPIC_ARN\") | .value) |=\"$(SNS_DELIVERY_CACHE_TOPIC_ARN)\"" \
+		| jq "(.containerDefinitions[0].environment[] | select(.name==\"SNS_CREATIVE_CACHE_TOPIC_ARN\") | .value) |=\"$(SNS_CREATIVE_CACHE_TOPIC_ARN)\"" \
+		| jq "(.containerDefinitions[0].secrets[] | select(.name==\"DB_HOST\") | .valueFrom) |=\"$(DB_HOST)\"" \
+		| jq "(.containerDefinitions[0].secrets[] | select(.name==\"DB_PASSWORD\") | .valueFrom) |=\"$(DB_PASSWORD)\"" \
+		| jq "(.containerDefinitions[0].secrets[] | select(.name==\"SQS_DELIVERY_OPERATION_QUEUE_URL\") | .valueFrom) |=\"$(SQS_DELIVERY_OPERATION_QUEUE_URL)\"" \
+		| jq "(.containerDefinitions[0].secrets[] | select(.name==\"SQS_DELIVERY_CONTROL_QUEUE_URL\") | .valueFrom) |=\"$(SQS_DELIVERY_CONTROL_QUEUE_URL)\""
+
+update-service: ## update service ex. make update-service ENV= ENVIRONMENT_SUFFIX= TASK_DEF_ARN=
+	@$(AWS_VAULT_CMD) aws ecs update-service --cluster $(ECS_CLUSTER)-$(ENVIRONMENT_SUFFIX) --service $(SERVICE)-$(ENVIRONMENT_SUFFIX) --task-definition $(TASK_DEF_ARN)
+
+update-desired-count: ## update ecs desiredCount ex. make update-desired-count ENV=staging ENVIRONMENT_SUFFIX=beta1 COUNT=1
+	@$(AWS_VAULT_CMD) aws ecs update-service \
+		--cluster $(ECS_CLUSTER)-$(ENVIRONMENT_SUFFIX) \
+		--service $(SERVICE)-$(ENVIRONMENT_SUFFIX) \
+		--desired-count $(COUNT)

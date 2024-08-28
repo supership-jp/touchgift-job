@@ -87,7 +87,7 @@ func (d *deliveryOperation) Process(ctx context.Context, current time.Time, camp
 				return err
 			}
 			// 配信制御イベントを発行する
-			d.deliveryControlEvent.Publish(ctx, campaign.ID, campaign.OrgCode, *beforeStatus, *afterStatus, "")
+			d.deliveryControlEvent.PublishCampaignEvent(ctx, campaign.ID, campaign.OrgCode, *beforeStatus, *afterStatus, "")
 		}
 	case "delete":
 		// キャンペーンの物理削除は配信後には起きないためdelivery_data削除はしない

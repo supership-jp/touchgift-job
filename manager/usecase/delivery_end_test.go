@@ -39,6 +39,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		deliveryControlEventUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -58,7 +59,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlEventUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlEventUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		actual, err := deliveryEnd.GetDeliveryDataCampaigns(ctx, to, status, limit)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(expected), len(actual))
@@ -78,6 +79,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -101,7 +103,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		actual, err := deliveryEnd.GetDeliveryDataCampaigns(ctx, to, status, limit)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(expected), len(actual))
@@ -121,6 +123,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -138,7 +141,7 @@ func TestDeliveryEnd_GetCampaign(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		actual, err := deliveryEnd.GetDeliveryDataCampaigns(ctx, to, status, limit)
 		if assert.Error(t, err) {
 			assert.Nil(t, actual)
@@ -168,6 +171,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -192,7 +196,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		actual, err := deliveryEnd.Terminate(ctx, tx, ID, updatedAt)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected, actual)
@@ -212,6 +216,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -235,7 +240,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 
 		actual, err := deliveryEnd.Terminate(ctx, tx, ID, updatedAt)
 		if assert.NoError(t, err) {
@@ -256,6 +261,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -281,7 +287,7 @@ func TestDeliveryEnd_Terminate(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &config.Env.DeliveryEnd, &config.Env.DeliveryEndUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		_, err := deliveryEnd.Terminate(ctx, tx, ID, updatedAt)
 		if assert.Error(t, err) {
 			assert.EqualError(t, err, expected.Error())
@@ -313,6 +319,7 @@ func TestDeliveryEnd_Execute_NotTERMINATE(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -343,7 +350,7 @@ func TestDeliveryEnd_Execute_NotTERMINATE(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		// Workerを使って実行するので作成
 		deliveryEnd.CreateWorker(ctx)
 
@@ -386,6 +393,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -401,7 +409,13 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			CampaignID: campaign.ID,
 		}
 		id := strconv.Itoa(deliveryData.ID)
-		groupID := strconv.Itoa(deliveryData.GroupID)
+		touchPointCondition := repository.TouchPointByGroupIDCondition{
+			GroupID: deliveryData.GroupID,
+			Limit:   100000,
+		}
+		groupIDStr := strconv.Itoa(deliveryData.GroupID)
+		touchPointID := "test"
+		touchPoints := []*models.TouchPoint{{ID: touchPointID}}
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
@@ -411,9 +425,10 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
 			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
 			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, nil),
-			touchPointDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&groupID)).Return(nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&touchPointCondition)).Return(touchPoints, nil),
+			touchPointDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&touchPointID), gomock.Eq(&groupIDStr)).Return(nil),
 			tx.EXPECT().Commit().Return(nil),
-			deliveryControlUsecase.EXPECT().Publish(
+			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 			),
 		)
@@ -421,7 +436,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		// Workerを使って実行するので作成
 		deliveryEnd.CreateWorker(ctx)
 
@@ -446,6 +461,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -471,7 +487,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
 			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(1, nil),
 			tx.EXPECT().Commit().Return(nil),
-			deliveryControlUsecase.EXPECT().Publish(
+			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 			),
 		)
@@ -479,7 +495,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		// Workerを使って実行するので作成
 		deliveryEnd.CreateWorker(ctx)
 
@@ -504,6 +520,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
 		tx := mock_repository.NewMockTransaction(ctrl)
 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
 		timer := NewTimer(logger)
 
 		// mockの処理を定義
@@ -538,7 +555,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		// テストを実行する
 		deliveryEnd := NewDeliveryEnd(
 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository)
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
 		// Workerを使って実行するので作成
 		deliveryEnd.CreateWorker(ctx)
 
@@ -614,7 +631,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 // 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
 // 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(nil),
 // 			tx.EXPECT().Commit().Return(nil),
-// 			deliveryControlUsecase.EXPECT().Publish(
+// 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 // 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 // 			),
 // 		)
@@ -826,7 +843,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 // 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
 // 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(nil),
 // 			tx.EXPECT().Commit().Return(nil),
-// 			deliveryControlUsecase.EXPECT().Publish(
+// 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 // 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 // 			),
 // 		)

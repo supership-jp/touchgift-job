@@ -37,16 +37,16 @@ func (m *MockTouchPointRepository) EXPECT() *MockTouchPointRepositoryMockRecorde
 }
 
 // GetTouchPointByGroupID mocks base method.
-func (m *MockTouchPointRepository) GetTouchPointByGroupID(ctx context.Context, tx repository.Transaction, args *repository.TouchPointByGroupIDCondition) ([]*models.TouchPoint, error) {
+func (m *MockTouchPointRepository) GetTouchPointByGroupID(ctx context.Context, args *repository.TouchPointByGroupIDCondition) ([]*models.TouchPoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTouchPointByGroupID", ctx, tx, args)
+	ret := m.ctrl.Call(m, "GetTouchPointByGroupID", ctx, args)
 	ret0, _ := ret[0].([]*models.TouchPoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTouchPointByGroupID indicates an expected call of GetTouchPointByGroupID.
-func (mr *MockTouchPointRepositoryMockRecorder) GetTouchPointByGroupID(ctx, tx, args interface{}) *gomock.Call {
+func (mr *MockTouchPointRepositoryMockRecorder) GetTouchPointByGroupID(ctx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTouchPointByGroupID", reflect.TypeOf((*MockTouchPointRepository)(nil).GetTouchPointByGroupID), ctx, tx, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTouchPointByGroupID", reflect.TypeOf((*MockTouchPointRepository)(nil).GetTouchPointByGroupID), ctx, args)
 }

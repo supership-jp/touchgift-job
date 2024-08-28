@@ -14,7 +14,7 @@ import (
 )
 
 type DeliveryControlEvent interface {
-	Publish(ctx context.Context, CampaignID int, organization string, before string, after string, detail string)
+	PublishCampaignEvent(ctx context.Context, CampaignID int, organization string, before string, after string, detail string)
 }
 
 type deliveryControlEvent struct {
@@ -35,7 +35,7 @@ func NewDeliveryControlEvent(
 
 // SNSへPublishを行う
 // CampaignID, org_code, cacheOperation(サーバー上のキャッシュ操作), before(更新前のCampaign.status), after(更新後のCampaign.status)
-func (d *deliveryControlEvent) Publish(ctx context.Context,
+func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
 	CampaignID int, organization string, before string, after string, detail string) {
 	deliveryControl := d.createDeliveryControlLog(CampaignID, organization, before, after, detail)
 

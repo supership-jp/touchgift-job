@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +11,8 @@ import (
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/infra"
 	"touchgift-job-manager/injector"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SignalContext(ctx context.Context, logger *infra.Logger) (context.Context, context.CancelFunc) {
@@ -36,7 +37,7 @@ func SignalContext(ctx context.Context, logger *infra.Logger) (context.Context, 
 	return parent, cancelParent
 }
 
-func listenAndServe(ctx context.Context, port string, router *gin.Engine, logger *infra.Logger) (*http.Server, chan error) {
+func listenAndServe(ctx context.Context, port string, router *gin.Engine, logger *infra.Logger) chan error {
 	srv := &http.Server{
 		Addr:              ":" + port,
 		Handler:           router,
@@ -63,7 +64,7 @@ func listenAndServe(ctx context.Context, port string, router *gin.Engine, logger
 			return
 		}
 	}()
-	return srv, ch
+	return ch
 }
 
 func run(sctx context.Context, cancel context.CancelFunc, logger *infra.Logger) {
@@ -71,9 +72,8 @@ func run(sctx context.Context, cancel context.CancelFunc, logger *infra.Logger) 
 	done := make(chan bool, 1)
 	defer close(done)
 
-	// ルーターの追加
 	adminRouter, initializeAdmin, terminateAdmin := injector.AdminRoute(sctx, infra.NewRouter(logger))
-	_, adminServerCh := listenAndServe(sctx, config.Env.Server.AdminPort, adminRouter, logger)
+	adminServerCh := listenAndServe(sctx, config.Env.Server.AdminPort, adminRouter, logger)
 	wg.Add(1)
 	logger.Info().Msg("Start to initialize for admin.")
 	if err := initializeAdmin(); err != nil {
@@ -83,7 +83,7 @@ func run(sctx context.Context, cancel context.CancelFunc, logger *infra.Logger) 
 	}
 
 	router := injector.Route(infra.NewRouter(logger))
-	_, serverCh := listenAndServe(sctx, config.Env.Server.Port, router, logger)
+	serverCh := listenAndServe(sctx, config.Env.Server.Port, router, logger)
 	wg.Add(1)
 
 	go func() {

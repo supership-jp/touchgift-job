@@ -4,23 +4,21 @@ env:
   variables:
     UT_RESOURCE_PREFIX: UT_TOUCHGIFT_DDM
     DB_DRIVER_NAME: mysql
-    DB_PORT: 5432
+    DB_PORT: 3306
     DB_USER: master
     DB_CONNECT_TIMEOUT_SEC: 600
   parameter-store:
-    DB_HOST: /rds/touchgift-main/endpoint
-    DB_PASSWORD: /rds/touchgift-main/user/master/password
-    MYSQL_PASSWORD: /rds/touchgift-main/user/master/password
+    DB_HOST: /rds/touchgift-cicd/endpoint
+    DB_PASSWORD: /rds/touchgift-cicd/user/master/password
+    MYSQL_PASSWORD: /rds/touchgift-cicd/user/master/password
 
 phases:
   install:
     runtime-versions:
       golang: 1.20
     commands:
-      - echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-      - curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
       - apt-get update -y
-      - apt-get install -y postgresql-client-10
+      - apt-get install -y mysql-server-8.0
       - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
       - go get -u github.com/jstemmer/go-junit-report
       - goenv install -l
@@ -50,8 +48,8 @@ phases:
       - make create-all-table TN_PREFIX=${TN_PREFIX} DYNAMODB_OPTIONS=""
       - echo "Create Database"
       - DB_DATABASE="touchgift_delivery_data_manager_${CODEBUILD_BUILD_NUMBER}"
-      - mysql -h "${DB_HOST}" -u "${DB_USER}" -P "${DB_PORT}" -c "CREATE DATABASE ${DB_DATABASE} TEMPLATE 'template0' ENCODING 'UTF8' LC_COLLATE 'ja_JP.UTF-8' LC_CTYPE 'ja_JP.UTF-8';" -p
-      - mysql -h "${DB_HOST}" -u "${DB_USER}" -p "${DB_PORT}" -D ${DB_DATABASE} -f rdb/init/1_all.sql -p
+      - mysql -h "${DB_HOST}" -u "${DB_USER}" -P "${DB_PORT}" -p${DB_PASSWORD} -e "CREATE DATABASE ${DB_DATABASE} TEMPLATE 'template0' ENCODING 'UTF8' LC_COLLATE 'ja_JP.UTF-8' LC_CTYPE 'ja_JP.UTF-8';" -p${MYSQL_PASSWORD}
+      - mysql -h "${DB_HOST}" -u "${DB_USER}" -p "${DB_PORT}" -p${DB_PASSWORD} {DB_DATABASE} < rdb/init/1_all.sql
       - echo Logging in to Amazon ECR...
       - IMAGE_TAG=$GITHUB_SHA
   build:
@@ -88,7 +86,7 @@ phases:
       - echo Delete DynamoDB table...
       - make delete-all-table TN_PREFIX=${TN_PREFIX} DYNAMODB_OPTIONS=""
       - echo "Drop database"
-      - mysql -h "${DB_HOST}" -u "${DB_USER}" -P "${DB_PORT}" -c "DROP DATABASE ${DB_DATABASE}" -p
+      - mysql -h "${DB_HOST}" -u "${DB_USER}" -P "${DB_PORT}" -e "DROP DATABASE ${DB_DATABASE}" -p
   post_build:
     commands:
       - echo Build completed on `date`

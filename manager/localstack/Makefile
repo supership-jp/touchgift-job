@@ -77,7 +77,11 @@ test-a-a:
 	@echo "$$(make show-queue-message LOG='{"a":"b"}')"
 
 # キューへメッセージを送信する
-send-message-sqs-delivery-operation-queue-insert: ## delivery-operationキューへInsertメッセージ作成
+send-message-sqs-delivery-operation-queue-insert-beta: ## delivery-operationキューへInsertメッセージ作成
+	aws-vault exec tpo-staging -- aws sqs send-message --queue-url https://sqs.ap-northeast-1.amazonaws.com/411776208124/touchgift-delivery-operation-beta1 \
+	--message-body $$(make show-queue-message LOG='{"time":"2024-09-01T09:52:57.804Z","type":"delivery_operation","request_id":"r1","target":"touchgift","campaigns":[{"id":1,"event":"insert","org_code":"org_1","creatives":[{"id":1,"event":"insert","org_code":"org_1"}]}]}')
+
+send-message-sqs-delivery-operation-queue-insert:
 	aws sqs send-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) \
 	--message-body $$(make show-queue-message LOG='{"time":"2024-09-01T09:52:57.804Z","type":"delivery_operation","request_id":"r1","target":"touchgift","campaigns":[{"id":1,"event":"insert","org_code":"org_1","creatives":[{"id":1,"event":"insert","org_code":"org_1"}]}]}') $(SQS_OPTIONS)
 
@@ -94,7 +98,7 @@ send-message-delivery-control: ##　delivery-controlキューへメッセージ�
 	--message-body $$(make show-queue-message LOG='{"time":"2021-08-02T09:42:43.388523304Z","version":1,"cache_operation":"DELETE","event":"expended","source":"touchgift-delivery-data-manager","org_code":"org_1","campaign_id":2}') $(SQS_OPTIONS)
 
 receive-message-sqs-delivery-operation-queue: ## delivery-operationのメッセージ確認
-	aws sqs receive-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) $(SQS_OPTIONS)
+	aws-vault exec tpo-staging -- aws sqs receive-message --queue-url https://sqs.ap-northeast-1.amazonaws.com/411776208124/touchgift-delivery-operation-beta1
 receive-message-sqs-delivery-control-queue: ## delivery-controlのメッセージ確認
 	aws sqs receive-message --queue-url http://localhost:4566/000000000000/$(DELIVERY_CONTROL_QUEUE) $(SQS_OPTIONS)
 
@@ -106,6 +110,8 @@ delete-sqs-delivery-control-queue: ## delivery-control-queueの削除
 	@aws sqs delete-queue --queue-url http://localhost:4566/000000000000/$(DELIVERY_CONTROL_QUEUE) $(SQS_OPTIONS)
 
 #　メッセージの削除
+delete-message-sqs-delivery-operation-queue-beta: ## delivery-operationのメッセージをすべて削除
+	aws-vault exec tpo-staging -- aws sqs purge-queue --queue-url https://sqs.ap-northeast-1.amazonaws.com/411776208124/touchgift-delivery-operation-beta1
 delete-message-sqs-delivery-operation-queue: ## delivery-operationのメッセージをすべて削除
 	aws sqs purge-queue --queue-url http://localhost:4566/000000000000/$(DELIVERY_OPERATION_QUEUE) $(SQS_OPTIONS)
 delete-message-sqs-delivery-control-queue: ## delivery-controlのメッセージをすべて削除

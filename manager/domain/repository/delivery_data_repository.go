@@ -35,7 +35,7 @@ type DeliveryDataTouchPointRepository interface {
 	// まとめて登録更新する
 	PutAll(ctx context.Context, updateData *[]models.DeliveryTouchPoint) error
 	// 削除する
-	Delete(ctx context.Context, groupID *string) error
+	Delete(ctx context.Context, id *string, groupID *string) error
 	// まとめて削除する
 	DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryTouchPoint) error
 	// TTLを更新する (更新対象がない場合 codes.ErrConditionFailed)

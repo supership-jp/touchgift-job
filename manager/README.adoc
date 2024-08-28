@@ -136,7 +136,66 @@ make start-db
 // テストデータを投入
 make create-db-testdata
 
-// MySQLに接続 Password=test
-mysql -h 127.0.0.1 -P 3306 -u root -p
+// MySQLに接続
+mysql -h 127.0.0.1 -P 3306 -u root -ptest
 
+----
+
+== 手動でリリースする (テストなど)
+
+* 通常は、codebuild/codedeployでリリースする
+
+* タスク定義の登録する場合
++
+[source,bash]
+----
+# ステージングの場合
+# ENVIRONMENT_SUFFIX: e1, beta1, ...
+make rewrite-image-on-task-definition \
+  ENV=staging \
+  ENVIRONMENT_SUFFIX=e1 \
+  TAG=1.0.0 > task-definition-temp.json
+
+make register-task-definition ENV=staging TASK_DEF_FILE=file://./task-definition-temp.json
+
+# 本番の場合
+# ENVIRONMENT_SUFFIX: e1, rc1, ...
+make rewrite-image-on-task-definition \
+  ENV=production \
+  ENVIRONMENT_SUFFIX=e1 \
+  TAG=1.0.0 > task-definition-temp.json
+
+make register-task-definition ENV=production TASK_DEF_FILE=file://./task-definition-temp.json
+----
+* ステージング
++
+[source,bash]
+----
+make build-image ENV=staging TAG=1.2.0-beta1
+make push-image ENV=staging TAG=1.2.0-beta1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e1, beta1, ...
+$ make run-deploy ENV=staging ENVIRONMENT_SUFFIX=beta1 TAG=0.0.0-beta1
+----
+* 本番
++
+[source,bash]
+----
+make build-image ENV=production TAG=1.2.0-rc1
+make push-image ENV=production TAG=1.2.0-rc1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e1, rc1, ...
+$ make run-deploy ENV=production ENVIRONMENT_SUFFIX=e1 TAG=1.0.0-rc1
+----
+
+== タスク数の変更
+
+* 0にすれば全台停止
+
+[source, bash]
+----
+# AutoScale未設定の場合, COUNTにタスク数を指定する
+$ make update-desired-count ENV=staging ENVIRONMENT_SUFFIX=beta1 COUNT=0
 ----

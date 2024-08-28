@@ -156,8 +156,6 @@ func (d *deliveryStart) execute(ctx context.Context) {
 			err := d.process(ctx, condition)
 			if err != nil {
 				d.logger.Error().Err(err).Time("baseTime", condition.BaseTime).Str("status", condition.Status).Msg("Failed to process")
-			} else {
-				d.logger.Info().Time("baseTime", condition.BaseTime).Msg("End execute")
 			}
 			wg.Done()
 		case <-ctx.Done():
@@ -236,7 +234,7 @@ func (d *deliveryStart) handleConfigured(ctx context.Context, baseTime time.Time
 		return errors.Wrap(err, "Failed to commit")
 	}
 	// 配信制御イベントを発行する
-	d.deliveryControlEvent.Publish(ctx, campaign.ID, campaign.OrgCode, codes.StatusConfigured, codes.StatusWarmup, "")
+	d.deliveryControlEvent.PublishCampaignEvent(ctx, campaign.ID, campaign.OrgCode, codes.StatusConfigured, codes.StatusWarmup, "")
 	// 取得した配信対象の開始時間を指定時間として実行する
 	d.deliveryStartUsecase.Reserve(ctx, campaign.StartAt, campaign)
 	return nil

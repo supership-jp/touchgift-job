@@ -21,9 +21,9 @@ type Server struct {
 
 type Db struct {
 	DriverName      string        `envconfig:"DB_DRIVER_NAME" default:"mysql"`
-	User            string        `envconfig:"DB_USER" default:"touchgift"`
+	User            string        `envconfig:"DB_USER" default:"sc2_pn"`
 	Password        string        `envconfig:"DB_PASSWORD" default:"test"`
-	Database        string        `envconfig:"DB_DATABASE" default:"touchgift"`
+	Database        string        `envconfig:"DB_DATABASE" default:"retail"`
 	Host            string        `envconfig:"DB_HOST" default:"localhost"`
 	Port            int           `envconfig:"DB_PORT" default:"3306"`
 	ConnectTimeout  int           `envconfig:"DB_CONNECT_TIMEOUT_SEC" default:"60"`
@@ -33,8 +33,10 @@ type Db struct {
 }
 
 type SNS struct {
-	EndPoint           string `envconfig:"SNS_ENDPOINT" default:"http://localhost:4566"`                                                                 // デフォルトはローカル用
-	ControlLogTopicArn string `envconfig:"SNS_CONTROL_LOG_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-delivery-control-local"` // デフォルトはローカル用
+	EndPoint              string `envconfig:"SNS_ENDPOINT" default:"http://localhost:4566"`                                                                         // デフォルトはローカル用
+	ControlLogTopicArn    string `envconfig:"SNS_CONTROL_LOG_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-delivery-control-local"`         // デフォルトはローカル用
+	DeliveryCacheTopicArn string `envconfig:"SNS_DELIVERY_CACHE_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-server-delivery-cache-local"` // デフォルトはローカル用
+	CreativeCacheTopicArn string `envconfig:"SNS_CREATIVE_CACHE_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-server-creative-cache-local"` // デフォルトはローカル用
 }
 
 type DeliveryStart struct {

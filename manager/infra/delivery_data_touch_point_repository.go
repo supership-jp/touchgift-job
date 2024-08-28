@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"strconv"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/domain/models"
@@ -47,8 +48,8 @@ func (r *DeliveryTouchPointRepository) Get(ctx context.Context, id *string) (*mo
 	result, err := r.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
-			"group_id": {
-				N: id,
+			"id": {
+				S: id,
 			},
 		},
 		ConsistentRead: aws.Bool(true),
@@ -103,15 +104,18 @@ func (r *DeliveryTouchPointRepository) PutAll(ctx context.Context, updateDatas *
 }
 
 // Delete is function
-func (r *DeliveryTouchPointRepository) Delete(ctx context.Context, id *string) error {
+func (r *DeliveryTouchPointRepository) Delete(ctx context.Context, id *string, groupID *string) error {
 	defer func() {
 		r.monitor.Metrics.GetCounter(metricDynamodbDeleteTotal).WithLabelValues(*r.tableName, "success").Inc()
 	}()
 	_, err := r.dynamoDBHandler.Svc.DeleteItemWithContext(ctx, &dynamodb.DeleteItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				S: id,
+			},
 			"group_id": {
-				N: id,
+				N: groupID,
 			},
 		},
 	})
@@ -126,8 +130,9 @@ func (r *DeliveryTouchPointRepository) Delete(ctx context.Context, id *string) e
 func (r *DeliveryTouchPointRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryTouchPoint) error {
 	for i := range *deleteDatas {
 		deleteData := (*deleteDatas)[i]
-		ID := &deleteData.TouchPointID
-		err := r.Delete(ctx, ID)
+		ID := &deleteData.ID
+		groupID := strconv.Itoa(deleteData.GroupID)
+		err := r.Delete(ctx, ID, &groupID)
 		if err != nil {
 			return err
 		}

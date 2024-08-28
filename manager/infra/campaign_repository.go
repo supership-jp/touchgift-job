@@ -27,7 +27,7 @@ func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, tx reposito
     c.id as id,
     sg.id as group_id,
     c.organization_code as org_code,
-		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
+		IFNULL(c.daily_coupon_limit_per_user, 0) as daily_coupon_limit_per_user,
     c.status as status,
 	c.updated_at as updated_at
 FROM campaign c
@@ -57,7 +57,7 @@ func (c *CampaignRepository) GetCampaignToEnd(ctx context.Context, args *reposit
     c.id as id,
     c.store_group_id as group_id,
     c.organization_code as org_code,
-    c.daily_coupon_limit_per_user as daily_coupon_limit_per_user,
+    IFNULL(c.daily_coupon_limit_per_user, 0) as daily_coupon_limit_per_user,
     c.status as status,
 		c.updated_at as updated_at
 FROM campaign c
@@ -95,7 +95,7 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 		sg.id as group_id,
 		c.status as status,
 		c.organization_code as org_code,
-		c.daily_coupon_limit_per_user as daily_coupon_limit_per_user
+		IFNULL(c.daily_coupon_limit_per_user, 0) as daily_coupon_limit_per_user
 	FROM campaign c
 	INNER JOIN store_group sg ON c.store_group_id = sg.id
 	WHERE

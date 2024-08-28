@@ -162,10 +162,7 @@ func (d *deliveryStart) UpdateStatus(ctx context.Context, tx repository.Transact
 
 // 配信開始処理
 func (d *deliveryStart) execute(ctx context.Context) {
-	defer func() {
-		d.logger.Debug().Msg("End execute")
-		d.worker.wg.Done()
-	}()
+	defer d.worker.wg.Done()
 	wg := sync.WaitGroup{}
 	for {
 		select {
@@ -240,7 +237,7 @@ func (d *deliveryStart) start(
 		return errors.Wrap(err, "Failed to commit")
 	}
 	// 配信制御イベントを発行する
-	d.deliveryControlEvent.Publish(
+	d.deliveryControlEvent.PublishCampaignEvent(
 		ctx, startCampaign.ID, startCampaign.OrgCode, startCampaign.Status, codes.StatusStarted, "")
 	return nil
 }
@@ -303,7 +300,7 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 		GroupID: campaign.GroupID,
 		Limit:   1,
 	}
-	touchPoints, err := d.touchPointRepository.GetTouchPointByGroupID(ctx, tx, touchPointCondition)
+	touchPoints, err := d.touchPointRepository.GetTouchPointByGroupID(ctx, touchPointCondition)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -322,8 +319,8 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	touchPointDatas := make([]*models.DeliveryTouchPoint, 0, len(touchPoints))
 	for _, touchPoint := range touchPoints {
 		touchPointData := models.DeliveryTouchPoint{
-			TouchPointID: touchPoint.TouchPointID,
-			GroupID:      touchPoint.GroupID,
+			ID:      touchPoint.ID,
+			GroupID: touchPoint.GroupID,
 		}
 		touchPointDatas = append(touchPointDatas, &touchPointData)
 	}

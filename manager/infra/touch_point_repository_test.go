@@ -7,6 +7,7 @@ import (
 	mock_infra "touchgift-job-manager/mock/infra"
 
 	"github.com/golang/mock/gomock"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,9 +32,8 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			err := tx.Rollback()
 			assert.NoError(t, err)
 		}()
-		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
 		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
-		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, tx, &repository.TouchPointByGroupIDCondition{
+		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, &repository.TouchPointByGroupIDCondition{
 			GroupID: 1,
 			Limit:   10,
 		})
@@ -101,9 +101,15 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			return
 		}
 
-		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
-		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
-		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, tx, &repository.TouchPointByGroupIDCondition{
+		_sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		_sqlHandler.EXPECT().PrepareContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.Stmt, error) {
+			return tx.(*Transaction).Tx.PreparexContext(ctx, query)
+		}).Times(1)
+		_sqlHandler.EXPECT().In(gomock.Any(), gomock.Any()).DoAndReturn(func(query string, arg interface{}) (*string, []interface{}, error) {
+			return sqlHandler.In(query, arg)
+		}).Times(1)
+		touchPointRepository := NewTouchPointRepository(logger, _sqlHandler)
+		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, &repository.TouchPointByGroupIDCondition{
 			GroupID: store_group_id,
 			Limit:   10,
 		})
@@ -190,9 +196,15 @@ func TestTouchPointRepository_GetTouchPointByGroupID(t *testing.T) {
 			return
 		}
 
-		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
-		touchPointRepository := NewTouchPointRepository(logger, sqlHandler)
-		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, tx, &repository.TouchPointByGroupIDCondition{
+		_sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		_sqlHandler.EXPECT().PrepareContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.Stmt, error) {
+			return tx.(*Transaction).Tx.PreparexContext(ctx, query)
+		}).Times(1)
+		_sqlHandler.EXPECT().In(gomock.Any(), gomock.Any()).DoAndReturn(func(query string, arg interface{}) (*string, []interface{}, error) {
+			return sqlHandler.In(query, arg)
+		}).Times(1)
+		touchPointRepository := NewTouchPointRepository(logger, _sqlHandler)
+		actuals, err := touchPointRepository.GetTouchPointByGroupID(ctx, &repository.TouchPointByGroupIDCondition{
 			GroupID: store_group_id,
 			Limit:   10,
 		})

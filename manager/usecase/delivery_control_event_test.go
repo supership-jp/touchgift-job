@@ -57,7 +57,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 		)
 
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
-		deliveryControlEventUsecase.Publish(ctx, 1, "org1", "configured", "warmup", "")
+		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, "org1", "configured", "warmup", "")
 	})
 
 	t.Run("通知に失敗した場合は専用のエラーログを出力する", func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 
 		// テストを実行する
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
-		deliveryControlEventUsecase.Publish(ctx, 1, "org1", "warmup", "started", "")
+		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, "org1", "warmup", "started", "")
 	})
 }
 

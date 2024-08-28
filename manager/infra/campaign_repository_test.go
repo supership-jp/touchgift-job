@@ -222,7 +222,6 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 			Status: []string{"started", "warmup"},
 		})
 		assert.NoError(t, err)
-		fmt.Println(actuals)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 1, len(actuals))
 		}

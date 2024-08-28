@@ -165,7 +165,6 @@ func (d *deliveryEnd) execute(ctx context.Context) {
 			if err != nil {
 				d.logger.Error().Err(err).Time("baseTime", condition.BaseTime).Strs("status", condition.Status).Msg("Failed to process")
 			}
-			d.logger.Info().Time("baseTime", condition.BaseTime).Strs("status", condition.Status).Msg("End execute")
 			wg.Done()
 		case <-ctx.Done():
 			wg.Wait()
@@ -187,7 +186,6 @@ func (d *deliveryEnd) process(ctx context.Context, condition *DeliveryEndConditi
 	// end_at < 2021/01/06 10:01 and status in ('started','paused') のものを取得する
 	baseTime := condition.BaseTime
 	to := condition.To
-	d.logger.Debug().Time("baseTime", baseTime).Time("to", to).Interface("status", condition.Status).Msg("Condtion parameter")
 	// 終了対象キャンペーンを取得
 	campaigns, err := d.deliveryEndUsecase.GetDeliveryDataCampaigns(ctx, to, condition.Status, d.config.TaskLimit)
 	if err != nil {

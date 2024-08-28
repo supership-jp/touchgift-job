@@ -130,17 +130,17 @@ func (m *MockDeliveryDataTouchPointRepository) EXPECT() *MockDeliveryDataTouchPo
 }
 
 // Delete mocks base method.
-func (m *MockDeliveryDataTouchPointRepository) Delete(ctx context.Context, campaignID *string) error {
+func (m *MockDeliveryDataTouchPointRepository) Delete(ctx context.Context, id, groupID *string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, campaignID)
+	ret := m.ctrl.Call(m, "Delete", ctx, id, groupID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockDeliveryDataTouchPointRepositoryMockRecorder) Delete(ctx, campaignID interface{}) *gomock.Call {
+func (mr *MockDeliveryDataTouchPointRepositoryMockRecorder) Delete(ctx, id, groupID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDeliveryDataTouchPointRepository)(nil).Delete), ctx, campaignID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDeliveryDataTouchPointRepository)(nil).Delete), ctx, id, groupID)
 }
 
 // DeleteAll mocks base method.
@@ -158,18 +158,18 @@ func (mr *MockDeliveryDataTouchPointRepositoryMockRecorder) DeleteAll(ctx, delet
 }
 
 // Get mocks base method.
-func (m *MockDeliveryDataTouchPointRepository) Get(ctx context.Context, id *string) (*models.DeliveryTouchPoint, error) {
+func (m *MockDeliveryDataTouchPointRepository) Get(ctx context.Context, groupID *string) (*models.DeliveryTouchPoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, groupID)
 	ret0, _ := ret[0].(*models.DeliveryTouchPoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockDeliveryDataTouchPointRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockDeliveryDataTouchPointRepositoryMockRecorder) Get(ctx, groupID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeliveryDataTouchPointRepository)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeliveryDataTouchPointRepository)(nil).Get), ctx, groupID)
 }
 
 // Put mocks base method.
@@ -360,18 +360,18 @@ func (mr *MockDeliveryDataContentRepositoryMockRecorder) DeleteAll(ctx, deleteDa
 }
 
 // Get mocks base method.
-func (m *MockDeliveryDataContentRepository) Get(ctx context.Context, id *string) (*models.DeliveryDataContent, error) {
+func (m *MockDeliveryDataContentRepository) Get(ctx context.Context, campaignID *string) (*models.DeliveryDataContent, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, campaignID)
 	ret0, _ := ret[0].(*models.DeliveryDataContent)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockDeliveryDataContentRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockDeliveryDataContentRepositoryMockRecorder) Get(ctx, campaignID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeliveryDataContentRepository)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDeliveryDataContentRepository)(nil).Get), ctx, campaignID)
 }
 
 // Put mocks base method.
