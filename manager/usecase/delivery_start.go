@@ -340,13 +340,16 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		if err != nil {
 			return err
 		}
+		d.deliveryControlEvent.PublishDeliveryEvent(ctx, tp.ID, tp.GroupID, campaign.ID, campaign.OrgCode, "PUT")
 	}
 
 	for _, creative := range creatives {
-		err := d.creativeDataRepository.Put(ctx, creative.CreateDeliveryDataCreative())
+		deliveryCreative := creative.CreateDeliveryDataCreative()
+		err := d.creativeDataRepository.Put(ctx, deliveryCreative)
 		if err != nil {
 			return err
 		}
+		d.deliveryControlEvent.PublishCreativeEvent(ctx, deliveryCreative, campaign.OrgCode, "PUT")
 	}
 
 	err = d.contentDataRepository.Put(ctx, content)

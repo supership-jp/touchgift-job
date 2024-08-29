@@ -427,6 +427,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, nil),
 			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&touchPointCondition)).Return(touchPoints, nil),
 			touchPointDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&touchPointID), gomock.Eq(&groupIDStr)).Return(nil),
+			deliveryControlUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq(touchPointID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq("DELETE")),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),

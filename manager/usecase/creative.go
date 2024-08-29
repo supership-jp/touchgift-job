@@ -52,7 +52,7 @@ func (c *creative) Process(ctx context.Context, tx repository.Transaction, curre
 				return err
 			}
 			if len(creatives) == 0 {
-				c.logger.Info().Time("current", current).Str("organization_code", creativeLog.OrgCode).Int("creative_id", creativeLog.ID).Msg("Delete (change ttl)")
+				c.logger.Info().Time("current", current).Str("org_code", creativeLog.OrgCode).Int("creative_id", creativeLog.ID).Msg("Delete (change ttl)")
 				// どのキャンペーンにも紐付かないデータの場合、有効期限(TTL)を1日後に更新
 				ttl := time.Now().Add(24 * time.Hour).Truncate(time.Millisecond)
 				if err := c.updateTTL(ctx, ttl, &creativeLog); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 	"time"
 	"touchgift-job-manager/codes"
@@ -32,28 +33,28 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 		ctx := context.Background()
 		current := time.Now()
 		cacheOperation := "NONE"
-		deliveryControlEvent := models.DeliveryControlLog{
-			TraceID:        "traceid1",
-			Time:           current.Format(time.RFC3339Nano),
-			Version:        1,
-			CacheOperation: cacheOperation,
-			Event:          "warmup",
-			Source:         "touchgift-job-manager",
-			OrgCode:        "org1",
-			CampaignID:     1,
+		deliveryControlEvent := models.CampaignCacheLog{
+			TraceID: "traceid1",
+			Time:    current.Format(time.RFC3339Nano),
+			Version: 1,
+			Action:  cacheOperation,
+			Event:   "warmup",
+			Source:  "touchgift-job-manager",
+			OrgCode: "org1",
+			ID:      "1",
 		}
 		_, err := json.Marshal(&deliveryControlEvent)
 		if err != nil {
 			t.Fatal("failed to marshal json")
 		}
 		messageAttributes := map[string]string{
-			"event":           deliveryControlEvent.Event,
-			"cache_operation": deliveryControlEvent.CacheOperation,
+			"event":  deliveryControlEvent.Event,
+			"action": deliveryControlEvent.Action,
 		}
 
 		messageID := "message_id1"
 		gomock.InOrder(
-			notificationHandler.EXPECT().Publish(ctx, gomock.Any(), messageAttributes).Return(&messageID, nil),
+			notificationHandler.EXPECT().Publish(ctx, gomock.Any(), messageAttributes, config.Env.SNS.ControlLogTopicArn).Return(&messageID, nil),
 		)
 
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
@@ -73,27 +74,27 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 		ctx := context.Background()
 		current := time.Now()
 		cacheOperation := "PUT"
-		deliveryControlEvent := models.DeliveryControlLog{
-			TraceID:        "traceid1",
-			Time:           current.Format(time.RFC3339Nano),
-			Version:        1,
-			CacheOperation: cacheOperation,
-			Event:          "start",
-			Source:         "touchgift-job-manager",
-			OrgCode:        "org1",
-			CampaignID:     1,
+		deliveryControlEvent := models.CampaignCacheLog{
+			TraceID: "traceid1",
+			Time:    current.Format(time.RFC3339Nano),
+			Version: 1,
+			Action:  cacheOperation,
+			Event:   "start",
+			Source:  "touchgift-job-manager",
+			OrgCode: "org1",
+			ID:      "1",
 		}
 		_, err := json.Marshal(&deliveryControlEvent)
 		if err != nil {
 			t.Fatal("failed to marshal json")
 		}
 		messageAttributes := map[string]string{
-			"event":           deliveryControlEvent.Event,
-			"cache_operation": deliveryControlEvent.CacheOperation,
+			"event":  deliveryControlEvent.Event,
+			"action": deliveryControlEvent.Action,
 		}
 		errUnexpected := errors.New("unexpected error")
 		gomock.InOrder(
-			notificationHandler.EXPECT().Publish(ctx, gomock.Any(), messageAttributes).Return(nil, errUnexpected),
+			notificationHandler.EXPECT().Publish(ctx, gomock.Any(), messageAttributes, config.Env.SNS.ControlLogTopicArn).Return(nil, errUnexpected),
 		)
 
 		// テストを実行する
@@ -102,8 +103,8 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 	})
 }
 
-// DeliveryControlEventのcreateDeliveryControlLogのテスト
-func TestDeliveryControlEvent_createDeliveryControlLog(t *testing.T) {
+// DeliveryControlEventのcreateCampaignCacheLogのテスト
+func TestDeliveryControlEvent_createCampaignCacheLog(t *testing.T) {
 	// テスト用のLoggerを作成
 	logger := NewTestLogger(t)
 	t.Parallel()
@@ -127,12 +128,12 @@ func TestDeliveryControlEvent_createDeliveryControlLog(t *testing.T) {
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
 		// private methodのテストを行うためにcastする
 		deliveryControlEventInteractor := deliveryControlEventUsecase.(*deliveryControlEvent)
-		actual := deliveryControlEventInteractor.createDeliveryControlLog(CampaignID, organization, before, after, codes.DetailShortage)
+		actual := deliveryControlEventInteractor.createCampaignCacheLog(CampaignID, organization, before, after, codes.DetailShortage)
 		assert.NotEmpty(t, actual.TraceID)
-		assert.Equal(t, CampaignID, actual.CampaignID)
+		assert.Equal(t, strconv.Itoa(CampaignID), actual.ID)
 		assert.Equal(t, organization, actual.OrgCode)
 		assert.Equal(t, expectedEvent, actual.Event)
-		assert.Equal(t, cache, actual.CacheOperation)
+		assert.Equal(t, cache, actual.Action)
 		assert.Equal(t, expectedEventDetail, actual.EventDetail)
 		assert.Equal(t, config.Env.Version, actual.Version)
 		assert.NotEmpty(t, actual.Time)

@@ -29,7 +29,7 @@ type DeliveryDataCampaignRepository interface {
 
 type DeliveryDataTouchPointRepository interface {
 	// 取得する
-	Get(ctx context.Context, groupID *string) (*models.DeliveryTouchPoint, error)
+	Get(ctx context.Context, id *string, groupID *string) (*models.DeliveryTouchPoint, error)
 	//	登録/更新する
 	Put(ctx context.Context, updateData *models.DeliveryTouchPoint) error
 	// まとめて登録更新する

@@ -4,5 +4,5 @@ package notification
 import "context"
 
 type NotificationHandler interface {
-	Publish(ctx context.Context, message string, messageAttributes map[string]string) (*string, error)
+	Publish(ctx context.Context, message string, messageAttributes map[string]string, topicArn string) (*string, error)
 }

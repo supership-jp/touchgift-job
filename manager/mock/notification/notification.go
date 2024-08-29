@@ -35,16 +35,16 @@ func (m *MockNotificationHandler) EXPECT() *MockNotificationHandlerMockRecorder 
 }
 
 // Publish mocks base method.
-func (m *MockNotificationHandler) Publish(ctx context.Context, message string, messageAttributes map[string]string) (*string, error) {
+func (m *MockNotificationHandler) Publish(ctx context.Context, message string, messageAttributes map[string]string, topicArn string) (*string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Publish", ctx, message, messageAttributes)
+	ret := m.ctrl.Call(m, "Publish", ctx, message, messageAttributes, topicArn)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Publish indicates an expected call of Publish.
-func (mr *MockNotificationHandlerMockRecorder) Publish(ctx, message, messageAttributes interface{}) *gomock.Call {
+func (mr *MockNotificationHandlerMockRecorder) Publish(ctx, message, messageAttributes, topicArn interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockNotificationHandler)(nil).Publish), ctx, message, messageAttributes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockNotificationHandler)(nil).Publish), ctx, message, messageAttributes, topicArn)
 }

@@ -7,6 +7,7 @@ package mock_usecase
 import (
 	context "context"
 	reflect "reflect"
+	models "touchgift-job-manager/domain/models"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -44,4 +45,28 @@ func (m *MockDeliveryControlEvent) PublishCampaignEvent(ctx context.Context, Cam
 func (mr *MockDeliveryControlEventMockRecorder) PublishCampaignEvent(ctx, CampaignID, organization, before, after, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishCampaignEvent", reflect.TypeOf((*MockDeliveryControlEvent)(nil).PublishCampaignEvent), ctx, CampaignID, organization, before, after, detail)
+}
+
+// PublishCreativeEvent mocks base method.
+func (m *MockDeliveryControlEvent) PublishCreativeEvent(ctx context.Context, creative *models.DeliveryDataCreative, organization, action string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishCreativeEvent", ctx, creative, organization, action)
+}
+
+// PublishCreativeEvent indicates an expected call of PublishCreativeEvent.
+func (mr *MockDeliveryControlEventMockRecorder) PublishCreativeEvent(ctx, creative, organization, action interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishCreativeEvent", reflect.TypeOf((*MockDeliveryControlEvent)(nil).PublishCreativeEvent), ctx, creative, organization, action)
+}
+
+// PublishDeliveryEvent mocks base method.
+func (m *MockDeliveryControlEvent) PublishDeliveryEvent(ctx context.Context, id string, groupID, campaignID int, organization, action string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishDeliveryEvent", ctx, id, groupID, campaignID, organization, action)
+}
+
+// PublishDeliveryEvent indicates an expected call of PublishDeliveryEvent.
+func (mr *MockDeliveryControlEventMockRecorder) PublishDeliveryEvent(ctx, id, groupID, campaignID, organization, action interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishDeliveryEvent", reflect.TypeOf((*MockDeliveryControlEvent)(nil).PublishDeliveryEvent), ctx, id, groupID, campaignID, organization, action)
 }

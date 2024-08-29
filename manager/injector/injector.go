@@ -58,12 +58,11 @@ func InjectSQLHandler(logger *infra.Logger) infra.SQLHandler {
 
 var notifactionHandler notification.NotificationHandler
 
-func InjectSNSHandler(logger *infra.Logger, topicArn string) notification.NotificationHandler {
+func InjectSNSHandler(logger *infra.Logger) notification.NotificationHandler {
 	if notifactionHandler == nil {
 		notifactionHandler = infra.NewSNSHandler(
 			logger,
 			InjectRegion(logger),
-			topicArn,
 			metrics.GetMonitor(),
 		)
 	}
@@ -156,7 +155,7 @@ func InjectDeliveryControlEventUsecase(logger *infra.Logger) usecase.DeliveryCon
 	if deliveryControlEventUsecase == nil {
 		deliveryControlEventUsecase = usecase.NewDeliveryControlEvent(
 			logger,
-			InjectSNSHandler(logger, config.Env.SNS.ControlLogTopicArn),
+			InjectSNSHandler(logger),
 		)
 	}
 	return deliveryControlEventUsecase

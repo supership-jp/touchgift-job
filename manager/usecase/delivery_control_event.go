@@ -4,6 +4,7 @@ package usecase
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"time"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
@@ -15,6 +16,8 @@ import (
 
 type DeliveryControlEvent interface {
 	PublishCampaignEvent(ctx context.Context, CampaignID int, organization string, before string, after string, detail string)
+	PublishCreativeEvent(ctx context.Context, creative *models.DeliveryDataCreative, organization string, action string)
+	PublishDeliveryEvent(ctx context.Context, id string, groupID int, campaignID int, organization string, action string)
 }
 
 type deliveryControlEvent struct {
@@ -33,21 +36,21 @@ func NewDeliveryControlEvent(
 	return &instance
 }
 
-// SNSへPublishを行う
+// サーバーのCampaignキャッシュ更新のためSNSへPublishを行う
 // CampaignID, org_code, cacheOperation(サーバー上のキャッシュ操作), before(更新前のCampaign.status), after(更新後のCampaign.status)
 func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
 	CampaignID int, organization string, before string, after string, detail string) {
-	deliveryControl := d.createDeliveryControlLog(CampaignID, organization, before, after, detail)
+	deliveryControl := d.createCampaignCacheLog(CampaignID, organization, before, after, detail)
 
 	message, err := json.Marshal(deliveryControl)
 	if err != nil {
 		d.failedToPublishLog(deliveryControl, err)
 	}
 	messageAttributes := map[string]string{
-		"event":           deliveryControl.Event,
-		"cache_operation": deliveryControl.CacheOperation,
+		"event":  deliveryControl.Event,
+		"action": deliveryControl.Action,
 	}
-	messageID, err := d.notificationHandler.Publish(ctx, string(message), messageAttributes)
+	messageID, err := d.notificationHandler.Publish(ctx, string(message), messageAttributes, config.Env.SNS.ControlLogTopicArn)
 	if err != nil {
 		d.failedToPublishLog(deliveryControl, err)
 	} else {
@@ -58,45 +61,138 @@ func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
 			Int("version", deliveryControl.Version).
 			Str("event", deliveryControl.Event).
 			Str("event_detail", deliveryControl.EventDetail).
-			Str("cache_operation", deliveryControl.CacheOperation).
+			Str("action", deliveryControl.Action).
 			Str("source", deliveryControl.Source).
+			Str("org_code", deliveryControl.OrgCode).
+			Str("campaign_id", deliveryControl.ID).
+			Msg("Publish delivery control event")
+	}
+}
+
+// サーバーのCreativeキャッシュ更新のためSNSへPublishを行う
+func (d *deliveryControlEvent) PublishCreativeEvent(ctx context.Context,
+	creative *models.DeliveryDataCreative, organization string, action string) {
+	deliveryControl := d.createCreativeEventLog(creative, organization, action)
+
+	message, err := json.Marshal(deliveryControl)
+	if err != nil {
+		d.logger.Error().Err(err).
+			Str("creative_id", deliveryControl.ID).
+			Str("action", deliveryControl.Action).
+			Msg("Failed to marshal json")
+	}
+	messageAttributes := map[string]string{
+		"action": deliveryControl.Action,
+	}
+	messageID, err := d.notificationHandler.Publish(ctx, string(message), messageAttributes, config.Env.SNS.CreativeCacheTopicArn)
+	if err != nil {
+		d.logger.Error().Err(err).
+			Str("creative_id", deliveryControl.ID).
+			Str("action", deliveryControl.Action).
+			Msg("Failed to creative cache sns publish")
+	} else {
+		d.logger.Info().
+			Str("message_id", *messageID).
+			Str("action", deliveryControl.Action).
+			Str("creative_id", deliveryControl.ID).
+			Msg("Publish creative cache event")
+	}
+}
+
+// サーバーのTouchpointキャッシュ更新のためSNSへPublishを行う
+func (d *deliveryControlEvent) PublishDeliveryEvent(ctx context.Context,
+	id string, groupID int, campaignID int, organization string, operation string) {
+	deliveryControl := d.createDeliveryEventLog(id, groupID, organization, campaignID, operation)
+
+	message, err := json.Marshal(deliveryControl)
+	if err != nil {
+		d.logger.Error().Err(err).
+			Str("touchpoint_id", deliveryControl.ID).
+			Str("action", deliveryControl.Action).
+			Msg("Failed to marshal json")
+	}
+	messageAttributes := map[string]string{
+		"action": deliveryControl.Action,
+	}
+	messageID, err := d.notificationHandler.Publish(ctx, string(message), messageAttributes, config.Env.SNS.DeliveryCacheTopicArn)
+	if err != nil {
+		d.logger.Error().Err(err).
+			Str("touchpoint_id", deliveryControl.ID).
+			Str("action", deliveryControl.Action).
+			Msg("Failed to delivery cache sns publish")
+	} else {
+		d.logger.Info().
+			Str("message_id", *messageID).
+			Str("action", deliveryControl.Action).
 			Str("org_code", deliveryControl.OrgCode).
 			Int("campaign_id", deliveryControl.CampaignID).
 			Msg("Publish delivery control event")
 	}
 }
 
-func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.DeliveryControlLog, err error) {
+func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.CampaignCacheLog, err error) {
 	// このログが出た場合はcloudwatch logsのmetric alarmでアラートを通知する
 	d.logger.Error().Err(err).
 		Str("trace_id", deliveryControl.TraceID).
 		Str("trace_time", deliveryControl.Time).
 		Int("version", deliveryControl.Version).
 		Str("event", deliveryControl.Event).
-		Str("cache_operation", deliveryControl.CacheOperation).
+		Str("action", deliveryControl.Action).
 		Str("source", deliveryControl.Source).
 		Str("organization", deliveryControl.OrgCode).
-		Int("campaign_id", deliveryControl.CampaignID).
+		Str("campaign_id", deliveryControl.ID).
 		Msg("Failed to publish sns event")
 }
 
 // delivery_controlログに整形
-func (d *deliveryControlEvent) createDeliveryControlLog(campaignID int,
+func (d *deliveryControlEvent) createCampaignCacheLog(campaignID int,
 	organization string, before string, after string,
-	eventDetail string) *models.DeliveryControlLog {
+	eventDetail string) *models.CampaignCacheLog {
 
 	event, operation := d.deliveryEvent(before, after)
 	current := time.Now().Format(time.RFC3339Nano)
-	return &models.DeliveryControlLog{
-		TraceID:        d.createTraceID(),
-		Time:           current,
-		Version:        config.Env.Version,
-		Event:          event,
-		EventDetail:    eventDetail,
-		CacheOperation: operation,
-		OrgCode:        organization,
-		Source:         "touchgift-job-manager",
-		CampaignID:     campaignID,
+	return &models.CampaignCacheLog{
+		TraceID:     d.createTraceID(),
+		Time:        current,
+		Version:     config.Env.Version,
+		Event:       event,
+		EventDetail: eventDetail,
+		Action:      operation,
+		OrgCode:     organization,
+		Source:      "touchgift-job-manager",
+		ID:          strconv.Itoa(campaignID),
+	}
+}
+
+func (d *deliveryControlEvent) createCreativeEventLog(creative *models.DeliveryDataCreative,
+	organization string, operation string) *models.CreativeCacheLog {
+	return &models.CreativeCacheLog{
+		ID:               strconv.Itoa(creative.ID),
+		Link:             *creative.Link,
+		URL:              creative.URL,
+		Width:            creative.Width,
+		Height:           creative.Height,
+		Type:             creative.Type,
+		Extension:        creative.Extension,
+		Duration:         *creative.Duration,
+		EndCardUrl:       *creative.EndCardURL,
+		EndCardWidth:     *creative.EndCardWidth,
+		EndCardHeight:    *creative.EndCardHeight,
+		EndCardExtension: *creative.EndCardExtension,
+		EndCardLink:      *creative.EndCardLink,
+		Action:           operation,
+	}
+}
+
+func (d *deliveryControlEvent) createDeliveryEventLog(id string, groupID int,
+	organization string, campaignID int, operation string) *models.DeliveryCacheLog {
+
+	return &models.DeliveryCacheLog{
+		Action:     operation,
+		OrgCode:    organization,
+		ID:         id,
+		GroupID:    groupID,
+		CampaignID: campaignID,
 	}
 }
 
