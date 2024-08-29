@@ -44,12 +44,15 @@ func NewDeliveryDataTouchPointRepository(handler *DynamoDBHandler, logger *Logge
 }
 
 // Get is function
-func (r *DeliveryTouchPointRepository) Get(ctx context.Context, id *string) (*models.DeliveryTouchPoint, error) {
+func (r *DeliveryTouchPointRepository) Get(ctx context.Context, id *string, groupID *string) (*models.DeliveryTouchPoint, error) {
 	result, err := r.dynamoDBHandler.Svc.GetItemWithContext(ctx, &dynamodb.GetItemInput{
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
 				S: id,
+			},
+			"group_id": {
+				N: groupID,
 			},
 		},
 		ConsistentRead: aws.Bool(true),

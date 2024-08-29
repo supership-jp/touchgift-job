@@ -33,8 +33,10 @@ create-touch-point-table: ## タッチポイントテーブルを作成する
 	aws dynamodb create-table --table-name $(TBL_TOUCH_POINT) \
 		--attribute-definitions \
 			AttributeName=id,AttributeType=S \
+			AttributeName=group_id,AttributeType=N \
 		--key-schema \
 			AttributeName=id,KeyType=HASH \
+			AttributeName=group_id,KeyType=RANGE \
 		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
 get-touch-point: ## タッチポイント情報の取得
 	aws dynamodb scan --table-name $(TBL_TOUCH_POINT) $(DYNAMODB_OPTIONS)
