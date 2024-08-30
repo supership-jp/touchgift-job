@@ -65,7 +65,7 @@ func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
 			Str("source", deliveryControl.Source).
 			Str("org_code", deliveryControl.OrgCode).
 			Str("campaign_id", deliveryControl.ID).
-			Msg("Publish delivery control event")
+			Msg("Publish campaign cache event")
 	}
 }
 
@@ -167,19 +167,19 @@ func (d *deliveryControlEvent) createCampaignCacheLog(campaignID int,
 func (d *deliveryControlEvent) createCreativeEventLog(creative *models.DeliveryDataCreative,
 	organization string, operation string) *models.CreativeCacheLog {
 	return &models.CreativeCacheLog{
-		ID:               strconv.Itoa(creative.ID),
-		Link:             *creative.Link,
+		ID:               creative.ID,
+		Link:             creative.Link,
 		URL:              creative.URL,
 		Width:            creative.Width,
 		Height:           creative.Height,
 		Type:             creative.Type,
 		Extension:        creative.Extension,
-		Duration:         *creative.Duration,
-		EndCardUrl:       *creative.EndCardURL,
-		EndCardWidth:     *creative.EndCardWidth,
-		EndCardHeight:    *creative.EndCardHeight,
-		EndCardExtension: *creative.EndCardExtension,
-		EndCardLink:      *creative.EndCardLink,
+		Duration:         creative.Duration,
+		EndCardUrl:       creative.EndCardURL,
+		EndCardWidth:     creative.EndCardWidth,
+		EndCardHeight:    creative.EndCardHeight,
+		EndCardExtension: creative.EndCardExtension,
+		EndCardLink:      creative.EndCardLink,
 		Action:           operation,
 	}
 }

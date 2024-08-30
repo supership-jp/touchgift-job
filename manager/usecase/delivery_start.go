@@ -4,6 +4,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 	"touchgift-job-manager/codes"
@@ -306,7 +307,7 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	}
 	// content作成
 	content := &models.DeliveryDataContent{
-		CampaignID: campaign.ID,
+		CampaignID: strconv.Itoa(campaign.ID),
 		Coupons:    deliveryCouponDatas,
 		Gimmicks: []models.Gimmick{
 			{
@@ -330,11 +331,13 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 	campaign *models.Campaign, cc []*models.CampaignCreative, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint,
 ) error {
+	d.logger.Info().Int("id", campaign.ID).Msg("campaign")
 	err := d.campaignDataRepository.Put(ctx, campaign.CreateDeliveryDataCampaign(cc))
 	if err != nil {
 		return err
 	}
 
+	d.logger.Info().Int("id", campaign.ID).Msg("touchpoint")
 	for _, tp := range touchPoints {
 		err := d.touchPointDataRepository.Put(ctx, tp)
 		if err != nil {
@@ -343,6 +346,7 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		d.deliveryControlEvent.PublishDeliveryEvent(ctx, tp.ID, tp.GroupID, campaign.ID, campaign.OrgCode, "PUT")
 	}
 
+	d.logger.Info().Int("id", campaign.ID).Msg("creative")
 	for _, creative := range creatives {
 		deliveryCreative := creative.CreateDeliveryDataCreative()
 		err := d.creativeDataRepository.Put(ctx, deliveryCreative)
@@ -352,6 +356,7 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		d.deliveryControlEvent.PublishCreativeEvent(ctx, deliveryCreative, campaign.OrgCode, "PUT")
 	}
 
+	d.logger.Info().Int("id", campaign.ID).Msg("content")
 	err = d.contentDataRepository.Put(ctx, content)
 	if err != nil {
 		return err

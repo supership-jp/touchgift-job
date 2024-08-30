@@ -31,7 +31,7 @@ func TestCampaignDataRepository_Get(t *testing.T) {
 		ID := "id_get1"
 		expected := models.DeliveryDataCampaign{
 			ID:      ID,
-			GroupID: 1,
+			GroupID: "1",
 			OrgCode: "ORG1",
 		}
 		// データを用意
@@ -62,7 +62,7 @@ func TestCampaignDataRepository_Put(t *testing.T) {
 	createData := func() *models.DeliveryDataCampaign {
 		return &models.DeliveryDataCampaign{
 			ID:      "1",
-			GroupID: 1,
+			GroupID: "1",
 			OrgCode: "ORG1",
 		}
 	}
@@ -125,7 +125,7 @@ func TestCampaignDataRepository_PutAll(t *testing.T) {
 	createData := func(id string, name string) *models.DeliveryDataCampaign {
 		return &models.DeliveryDataCampaign{
 			ID:      id,
-			GroupID: 1,
+			GroupID: "1",
 			OrgCode: "ORG1",
 		}
 	}
@@ -193,7 +193,7 @@ func TestCampaignDataRepository_Delete(t *testing.T) {
 	createData := func(id string, name string) *models.DeliveryDataCampaign {
 		return &models.DeliveryDataCampaign{
 			ID:      id,
-			GroupID: 1,
+			GroupID: "1",
 			OrgCode: "ORG1",
 		}
 	}

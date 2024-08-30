@@ -27,7 +27,7 @@ type Gimmick struct {
 }
 
 type Content struct {
-	CampaignID int       `db:"campaign_id" json:"campaign_id"`
+	CampaignID string    `db:"campaign_id" json:"campaign_id"`
 	Coupons    []Coupon  `json:"coupons"`
 	Gimmicks   []Gimmick `json:"gimmicks"`
 }

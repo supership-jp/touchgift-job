@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
@@ -91,6 +92,7 @@ func (r *DeliveryDataCreativeRepository) Put(ctx context.Context, updateData *mo
 
 	item, err := dynamodbattribute.MarshalMap(updateData)
 	if err != nil {
+		fmt.Println("marshal error")
 		r.monitor.Metrics.GetCounter(metricDynamodbPutTotal).WithLabelValues(*r.tableName, "marshal_error").Inc()
 		return err
 	}
@@ -142,8 +144,7 @@ func (r *DeliveryDataCreativeRepository) Delete(ctx context.Context, id *string)
 func (r *DeliveryDataCreativeRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataCreative) error {
 	for i := range *deleteDatas {
 		deleteData := (*deleteDatas)[i]
-		ID := strconv.Itoa(deleteData.ID)
-		err := r.Delete(ctx, &ID)
+		err := r.Delete(ctx, &deleteData.ID)
 		if err != nil {
 			return err
 		}

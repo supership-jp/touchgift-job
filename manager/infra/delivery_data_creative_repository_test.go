@@ -3,7 +3,6 @@ package infra
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 	"time"
 	"touchgift-job-manager/codes"
@@ -33,8 +32,7 @@ func TestCreativeDataRepository_Get(t *testing.T) {
 
 	t.Run("creative_dataを1件返す", func(t *testing.T) {
 		creativeDataRepository := NewDeliveryDataCreativeRepository(dynamodbHandler, logger, monitor)
-		ID := 1
-		IDString := strconv.Itoa(ID)
+		ID := "1"
 		expected := models.DeliveryDataCreative{
 			ID:  ID,
 			URL: "id_get1_url",
@@ -46,12 +44,12 @@ func TestCreativeDataRepository_Get(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := creativeDataRepository.Delete(ctx, &ID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
 		// テスト実行する
-		actual, err := creativeDataRepository.Get(ctx, &IDString)
+		actual, err := creativeDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected, *actual)
 		}
@@ -65,8 +63,7 @@ func TestCreativeDataRepository_Put(t *testing.T) {
 	monitor := metrics.GetMonitor()
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
-	ID := 1
-	IDString := strconv.Itoa(ID)
+	ID := "1"
 
 	createData := func() *models.DeliveryDataCreative {
 		return &models.DeliveryDataCreative{
@@ -86,11 +83,11 @@ func TestCreativeDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := creativeDataRepository.Delete(ctx, &ID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := creativeDataRepository.Get(ctx, &IDString)
+		actual, err := creativeDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, *expected, *actual)
 		}
@@ -114,11 +111,11 @@ func TestCreativeDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := creativeDataRepository.Delete(ctx, &ID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := creativeDataRepository.Get(ctx, &IDString)
+		actual, err := creativeDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected2, *actual)
 		}
@@ -136,12 +133,12 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 	createData := func() *[]models.DeliveryDataCreative {
 		return &[]models.DeliveryDataCreative{
 			{
-				ID:  1,
+				ID:  "1",
 				URL: "id_put1_url",
 				TTL: time.Now().Unix(),
 			},
 			{
-				ID:  2,
+				ID:  "2",
 				URL: "id_put2_url",
 				TTL: time.Now().Unix(),
 			},
@@ -160,16 +157,14 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range *expected {
 				data := (*expected)[i]
-				IDString := strconv.Itoa(data.ID)
-				if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
+				if err := creativeDataRepository.Delete(ctx, &data.ID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range *expected {
 			data := (*expected)[i]
-			IDString := strconv.Itoa(data.ID)
-			actual, err := creativeDataRepository.Get(ctx, &IDString)
+			actual, err := creativeDataRepository.Get(ctx, &data.ID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -200,16 +195,14 @@ func TestCreativeDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range updateData {
 				data := (updateData)[i]
-				IDString := strconv.Itoa(data.ID)
-				if err := creativeDataRepository.Delete(ctx, &IDString); err != nil {
+				if err := creativeDataRepository.Delete(ctx, &data.ID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range updateData {
 			data := (updateData)[i]
-			IDString := strconv.Itoa(data.ID)
-			actual, err := creativeDataRepository.Get(ctx, &IDString)
+			actual, err := creativeDataRepository.Get(ctx, &data.ID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -227,7 +220,7 @@ func TestCreativeDataRepository_Delete(t *testing.T) {
 
 	t.Run("creative_dataを1件削除", func(t *testing.T) {
 		creativeDataRepository := NewDeliveryDataCreativeRepository(dynamodbHandler, logger, monitor)
-		ID := 1
+		ID := "1"
 		expected := models.DeliveryDataCreative{
 			ID:  ID,
 			URL: "id_delete1_url",
@@ -236,10 +229,9 @@ func TestCreativeDataRepository_Delete(t *testing.T) {
 		if err := creativeDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return
 		}
-		IDString := strconv.Itoa(ID)
-		err := creativeDataRepository.Delete(ctx, &IDString)
+		err := creativeDataRepository.Delete(ctx, &ID)
 		if assert.NoError(t, err) {
-			actual, err := creativeDataRepository.Get(ctx, &IDString)
+			actual, err := creativeDataRepository.Get(ctx, &ID)
 			if assert.Error(t, err) {
 				assert.Nil(t, actual)
 				assert.EqualError(t, err, codes.ErrNoData.Error())

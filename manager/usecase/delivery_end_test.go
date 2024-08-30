@@ -413,7 +413,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			GroupID: deliveryData.GroupID,
 			Limit:   100000,
 		}
-		groupIDStr := strconv.Itoa(deliveryData.GroupID)
+		groupIDStr := deliveryData.GroupID
 		touchPointID := "test"
 		touchPoints := []*models.TouchPoint{{ID: touchPointID}}
 		// 何回呼ばれるか (Times)

@@ -31,8 +31,7 @@ func TestContentDataRepository_Get(t *testing.T) {
 
 	t.Run("content_dataを1件返す", func(t *testing.T) {
 		contentDataRepository := NewDeliveryDataContentRepository(dynamodbHandler, logger, monitor)
-		ID := 1
-		IDString := strconv.Itoa(ID)
+		ID := "1"
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
@@ -44,12 +43,12 @@ func TestContentDataRepository_Get(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := contentDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := contentDataRepository.Delete(ctx, &ID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
 		// テスト実行する
-		actual, err := contentDataRepository.Get(ctx, &IDString)
+		actual, err := contentDataRepository.Get(ctx, &ID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected, *actual)
 		}
@@ -63,8 +62,7 @@ func TestContentDataRepository_Put(t *testing.T) {
 	monitor := metrics.GetMonitor()
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
-	campaignID := 1
-	IDString := strconv.Itoa(campaignID)
+	campaignID := "1"
 
 	createData := func() *models.DeliveryDataContent {
 		return &models.DeliveryDataContent{
@@ -84,11 +82,11 @@ func TestContentDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := contentDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := contentDataRepository.Delete(ctx, &campaignID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := contentDataRepository.Get(ctx, &IDString)
+		actual, err := contentDataRepository.Get(ctx, &campaignID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, *expected, *actual)
 		}
@@ -112,11 +110,11 @@ func TestContentDataRepository_Put(t *testing.T) {
 		}
 		// 用意したデータを削除
 		defer func() {
-			if err := contentDataRepository.Delete(ctx, &IDString); err != nil {
+			if err := contentDataRepository.Delete(ctx, &campaignID); err != nil {
 				assert.NoError(t, err)
 			}
 		}()
-		actual, err := contentDataRepository.Get(ctx, &IDString)
+		actual, err := contentDataRepository.Get(ctx, &campaignID)
 		if assert.NoError(t, err) {
 			assert.Exactly(t, expected2, *actual)
 		}
@@ -134,12 +132,12 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 	createData := func() *[]models.DeliveryDataContent {
 		return &[]models.DeliveryDataContent{
 			{
-				CampaignID: 1,
+				CampaignID: "1",
 				Coupons:    []models.DeliveryCouponData{{ID: 1}},
 				Gimmicks:   []models.Gimmick{{URL: "URL1"}},
 			},
 			{
-				CampaignID: 2,
+				CampaignID: "2",
 				Coupons:    []models.DeliveryCouponData{{ID: 2}},
 				Gimmicks:   []models.Gimmick{{URL: "URL2"}},
 			},
@@ -158,16 +156,14 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range *expected {
 				data := (*expected)[i]
-				IDString := strconv.Itoa(data.CampaignID)
-				if err := contentDataRepository.Delete(ctx, &IDString); err != nil {
+				if err := contentDataRepository.Delete(ctx, &data.CampaignID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range *expected {
 			data := (*expected)[i]
-			IDString := strconv.Itoa(data.CampaignID)
-			actual, err := contentDataRepository.Get(ctx, &IDString)
+			actual, err := contentDataRepository.Get(ctx, &data.CampaignID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -186,7 +182,7 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 		updateData := make([]models.DeliveryDataContent, len(*initData))
 		for i := range *initData {
 			data := (*initData)[i]
-			data.CampaignID = i
+			data.CampaignID = strconv.Itoa(i)
 			updateData[i] = data
 		}
 		// 更新する
@@ -198,16 +194,14 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 		defer func() {
 			for i := range updateData {
 				data := (updateData)[i]
-				IDString := strconv.Itoa(data.CampaignID)
-				if err := contentDataRepository.Delete(ctx, &IDString); err != nil {
+				if err := contentDataRepository.Delete(ctx, &data.CampaignID); err != nil {
 					assert.NoError(t, err)
 				}
 			}
 		}()
 		for i := range updateData {
 			data := (updateData)[i]
-			IDString := strconv.Itoa(data.CampaignID)
-			actual, err := contentDataRepository.Get(ctx, &IDString)
+			actual, err := contentDataRepository.Get(ctx, &data.CampaignID)
 			if assert.NoError(t, err) {
 				assert.Exactly(t, data, *actual)
 			}
@@ -225,7 +219,7 @@ func TestContentDataRepository_Delete(t *testing.T) {
 
 	t.Run("content_dataを1件削除", func(t *testing.T) {
 		contentDataRepository := NewDeliveryDataContentRepository(dynamodbHandler, logger, monitor)
-		ID := 1
+		ID := "1"
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
@@ -234,10 +228,9 @@ func TestContentDataRepository_Delete(t *testing.T) {
 		if err := contentDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return
 		}
-		IDString := strconv.Itoa(ID)
-		err := contentDataRepository.Delete(ctx, &IDString)
+		err := contentDataRepository.Delete(ctx, &ID)
 		if assert.NoError(t, err) {
-			actual, err := contentDataRepository.Get(ctx, &IDString)
+			actual, err := contentDataRepository.Get(ctx, &ID)
 			if assert.Error(t, err) {
 				assert.Nil(t, actual)
 				assert.EqualError(t, err, codes.ErrNoData.Error())

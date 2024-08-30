@@ -21,7 +21,7 @@ type Campaign struct {
 func (c *Campaign) CreateDeliveryDataCampaign(cc []*CampaignCreative) *DeliveryDataCampaign {
 	return &DeliveryDataCampaign{
 		ID:         strconv.Itoa(c.ID),
-		GroupID:    c.GroupID,
+		GroupID:    strconv.Itoa(c.GroupID),
 		OrgCode:    c.OrgCode,
 		DailyLimit: c.DailyCouponLimitPerUser,
 		Creatives:  cc,

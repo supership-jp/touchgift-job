@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"strconv"
 	"touchgift-job-manager/codes"
 	"touchgift-job-manager/config"
 	"touchgift-job-manager/domain/models"
@@ -127,9 +126,7 @@ func (r *DeliveryContentRepository) Delete(ctx context.Context, id *string) erro
 func (r *DeliveryContentRepository) DeleteAll(ctx context.Context, deleteDatas *[]models.DeliveryDataContent) error {
 	for i := range *deleteDatas {
 		deleteData := (*deleteDatas)[i]
-		ID := deleteData.CampaignID
-		IDStr := strconv.Itoa(ID)
-		err := r.Delete(ctx, &IDStr)
+		err := r.Delete(ctx, &deleteData.CampaignID)
 		if err != nil {
 			return err
 		}

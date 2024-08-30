@@ -13,8 +13,8 @@ type App struct {
 }
 
 type Server struct {
-	Port            string        `envconfig:"PORT" default:"8080"`
-	AdminPort       string        `envconfig:"ADMIN_PORT" default:"8081"`
+	Port            string        `envconfig:"PORT" default:"8090"`
+	AdminPort       string        `envconfig:"ADMIN_PORT" default:"8091"`
 	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"1m"`
 	MetricsPath     string        `envconfig:"METRICS_PATH" default:"/metrics"`
 }

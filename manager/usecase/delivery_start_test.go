@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"testing"
 	"time"
 	"touchgift-job-manager/codes"
@@ -438,7 +439,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 	gimmickCode := "gimmick_code"
 	touchPoints := []*models.TouchPoint{{ID: "test", GroupID: 1}}
 	contentData := &models.DeliveryDataContent{
-		CampaignID: campaignData.ID,
+		CampaignID: strconv.Itoa(campaignData.ID),
 		Coupons:    []models.DeliveryCouponData{{ID: 1}},
 		Gimmicks:   []models.Gimmick{{URL: gimmickURL, Code: gimmickCode}},
 	}
