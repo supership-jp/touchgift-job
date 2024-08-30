@@ -65,7 +65,7 @@ func (r *DeliveryDataCreativeRepository) Get(ctx context.Context, id *string) (*
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				N: id,
+				S: id,
 			},
 		},
 		ConsistentRead: aws.Bool(true),
@@ -129,7 +129,7 @@ func (r *DeliveryDataCreativeRepository) Delete(ctx context.Context, id *string)
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				N: id,
+				S: id,
 			},
 		},
 	})
@@ -162,7 +162,7 @@ func (r *DeliveryDataCreativeRepository) UpdateTTL(ctx context.Context, id strin
 		TableName: r.tableName,
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
-				N: aws.String(id),
+				S: aws.String(id),
 			},
 		},
 		ExpressionAttributeNames: map[string]*string{

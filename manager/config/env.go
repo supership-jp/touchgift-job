@@ -34,7 +34,7 @@ type Db struct {
 
 type SNS struct {
 	EndPoint              string `envconfig:"SNS_ENDPOINT" default:"http://localhost:4566"`                                                                         // デフォルトはローカル用
-	ControlLogTopicArn    string `envconfig:"SNS_CONTROL_LOG_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-delivery-control-local"`         // デフォルトはローカル用
+	ControlLogTopicArn    string `envconfig:"SNS_CONTROL_LOG_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-server-campaign-cache-local"`    // デフォルトはローカル用
 	DeliveryCacheTopicArn string `envconfig:"SNS_DELIVERY_CACHE_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-server-delivery-cache-local"` // デフォルトはローカル用
 	CreativeCacheTopicArn string `envconfig:"SNS_CREATIVE_CACHE_TOPIC_ARN" default:"arn:aws:sns:ap-northeast-1:000000000000:touchgift-server-creative-cache-local"` // デフォルトはローカル用
 }
