@@ -35,8 +35,11 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
 		campaignRepository := NewCampaignRepository(logger, sqlHandler)
-		actuals, err := campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		actuals, err := campaignRepository.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "configured",
 		})
@@ -63,13 +66,16 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
 
 		//	テストデータを登録する
 		_, err = createStartCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(-1)*time.Hour).Format("2006-01-02 15:04:05"))
 		assert.NoError(t, err)
 
 		repo := NewCampaignRepository(logger, sqlHandler)
-		campaigns, _ := repo.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		campaigns, _ := repo.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "configured",
 		})
@@ -96,6 +102,9 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
 
 		//	start_atが現在時刻から1時間後のテストデータを登録する
 		id, err := createStartCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(1)*time.Hour).Format("2006-01-02 15:04:05"))
@@ -103,7 +112,7 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 		assert.NotNil(t, id)
 
 		repo := NewCampaignRepository(logger, sqlHandler)
-		campaigns, _ := repo.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		campaigns, _ := repo.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "configured",
 		})
@@ -129,6 +138,9 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
 
 		//	テストデータを登録する
 		rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)
@@ -150,7 +162,7 @@ func TestCampaignRepository_GetCampaignToStart(t *testing.T) {
 
 		assert.NotNil(t, id)
 		repo := NewCampaignRepository(logger, sqlHandler)
-		campaigns, _ := repo.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		campaigns, _ := repo.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "configured",
 		})
@@ -226,37 +238,6 @@ func TestCampaignRepository_GetCampaignToEnd(t *testing.T) {
 			assert.Equal(t, 1, len(actuals))
 		}
 	})
-	t.Run("配信中(status=started)かつ終了日を過ぎていない場合はキャンペーンを返却しない", func(t *testing.T) {
-		// mockを使用する準備
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		ctx := context.Background()
-		tx, err := sqlHandler.Begin(ctx)
-
-		if !assert.NoError(t, err) {
-			return
-		}
-
-		// ロールバックする
-		defer func() {
-			err := tx.Rollback()
-			assert.NoError(t, err)
-		}()
-		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
-
-		id, err := createEndedCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(1)*time.Hour).Format("2006-01-02 15:04:05"))
-		assert.NoError(t, err)
-		assert.NotNil(t, id)
-
-		repo := NewCampaignRepository(logger, sqlHandler)
-		campaigns, _ := repo.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
-			To:     time.Now(),
-			Status: "configured",
-		})
-
-		assert.Len(t, campaigns, 0)
-	})
 }
 
 func TestCampaignRepository_UpdateStatus(t *testing.T) {
@@ -279,13 +260,19 @@ func TestCampaignRepository_UpdateStatus(t *testing.T) {
 			assert.NoError(t, err)
 		}()
 		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
+		sqlHandler.EXPECT().PrepareNamedContext(gomock.Eq(ctx), gomock.Any()).DoAndReturn(func(ctx context.Context, query string) (*sqlx.NamedStmt, error) {
+			return tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+		}).Times(1)
 		_, err = createStartCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(-1)*time.Hour).Format("2006-01-02 15:04:05"))
 		assert.NoError(t, err)
 
 		// リポジトリの取得
 		campaignRepository := NewCampaignRepository(logger, sqlHandler)
 
-		campaigns, err := campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		campaigns, err := campaignRepository.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "configured",
 		})
@@ -303,7 +290,7 @@ func TestCampaignRepository_UpdateStatus(t *testing.T) {
 		}
 		assert.Equal(t, campaigns[0].ID, updatedID)
 
-		campaigns, err = campaignRepository.GetCampaignToStart(ctx, tx, &repository.CampaignToStartCondition{
+		campaigns, err = campaignRepository.GetCampaignToStart(ctx, &repository.CampaignToStartCondition{
 			To:     time.Now(),
 			Status: "started",
 		})

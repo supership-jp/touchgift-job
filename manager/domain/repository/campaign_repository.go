@@ -18,11 +18,13 @@ type UpdateCondition struct {
 type CampaignToStartCondition struct {
 	To     time.Time
 	Status string
+	Limit  int
 }
 
 type CampaignDataToEndCondition struct {
 	End    time.Time
 	Status []string
+	Limit  int
 }
 
 type CampaignCondition struct {
@@ -32,9 +34,9 @@ type CampaignCondition struct {
 
 type CampaignRepository interface {
 	// GetCampaignToStart 配信開始するキャンペーン情報を取得する
-	GetCampaignToStart(ctx context.Context, tx Transaction, args *CampaignToStartCondition) ([]*models.Campaign, error)
+	GetCampaignToStart(ctx context.Context, args *CampaignToStartCondition) ([]*models.Campaign, error)
 	// GetCampaignToEnd 配信が終了するキャンペーン情報を取得する
-	GetCampaignToEnd(ctx context.Context, campaign *CampaignDataToEndCondition) ([]*models.Campaign, error)
+	GetCampaignToEnd(ctx context.Context, args *CampaignDataToEndCondition) ([]*models.Campaign, error)
 	// UpdateStatus キャンペーン情報のステータス更新(status)更新
 	UpdateStatus(ctx context.Context, tx Transaction, campaign *UpdateCondition) (int, error)
 	// 配信操作するキャンペーン情報を取得する

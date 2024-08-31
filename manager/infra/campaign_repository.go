@@ -22,7 +22,7 @@ func NewCampaignRepository(logger *Logger, sqlHandler SQLHandler) repository.Cam
 }
 
 // GetCampaignToStart 配信開始するキャンペーン情報を取得する
-func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, tx repository.Transaction, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
+func (c *CampaignRepository) GetCampaignToStart(ctx context.Context, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
 	query := `SELECT
     c.id as id,
     sg.id as group_id,
@@ -35,10 +35,15 @@ INNER JOIN store_group sg ON c.store_group_id = sg.id
 WHERE
     c.start_at <= :to AND
 	c.status = :status`
-	stmt, err := tx.(*Transaction).Tx.PrepareNamedContext(ctx, query)
+	stmt, err := c.sqlHandler.PrepareNamedContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err = stmt.Close(); err != nil {
+			c.logger.Error().Err(err).Msg("Failed to close statement")
+		}
+	}()
 	var campaigns []*models.Campaign
 	err = stmt.SelectContext(ctx, &campaigns, map[string]interface{}{
 		"to":     args.To.Format("2006-01-02 15:04:05"),

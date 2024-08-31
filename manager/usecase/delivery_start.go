@@ -136,16 +136,11 @@ func (d *deliveryStart) ExecuteNow(campaign *models.Campaign) {
 
 // 開始対象キャンペーンを取得する
 func (d *deliveryStart) GetCampaignToStart(ctx context.Context, to time.Time, status string, limit int) ([]*models.Campaign, error) {
-	d.logger.Debug().Msg("DeliveryStart GetCampaignToStart")
 	condition := repository.CampaignToStartCondition{
 		To:     to,
 		Status: status,
 	}
-	tx, err := d.transaction.Begin(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to start transaction")
-	}
-	return d.campaignRepository.GetCampaignToStart(ctx, tx, &condition)
+	return d.campaignRepository.GetCampaignToStart(ctx, &condition)
 }
 
 func (d *deliveryStart) UpdateStatus(ctx context.Context, tx repository.Transaction, Campaign *models.Campaign, status string) (int, error) {
@@ -331,13 +326,11 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 	campaign *models.Campaign, cc []*models.CampaignCreative, creatives []*models.Creative, content *models.DeliveryDataContent, touchPoints []*models.DeliveryTouchPoint,
 ) error {
-	d.logger.Info().Int("id", campaign.ID).Msg("campaign")
 	err := d.campaignDataRepository.Put(ctx, campaign.CreateDeliveryDataCampaign(cc))
 	if err != nil {
 		return err
 	}
 
-	d.logger.Info().Int("id", campaign.ID).Msg("touchpoint")
 	for _, tp := range touchPoints {
 		err := d.touchPointDataRepository.Put(ctx, tp)
 		if err != nil {
@@ -346,7 +339,6 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		d.deliveryControlEvent.PublishDeliveryEvent(ctx, tp.ID, tp.GroupID, campaign.ID, campaign.OrgCode, "PUT")
 	}
 
-	d.logger.Info().Int("id", campaign.ID).Msg("creative")
 	for _, creative := range creatives {
 		deliveryCreative := creative.CreateDeliveryDataCreative()
 		err := d.creativeDataRepository.Put(ctx, deliveryCreative)
@@ -356,7 +348,6 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		d.deliveryControlEvent.PublishCreativeEvent(ctx, deliveryCreative, campaign.OrgCode, "PUT")
 	}
 
-	d.logger.Info().Int("id", campaign.ID).Msg("content")
 	err = d.contentDataRepository.Put(ctx, content)
 	if err != nil {
 		return err

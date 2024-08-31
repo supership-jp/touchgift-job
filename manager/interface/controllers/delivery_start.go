@@ -85,6 +85,8 @@ func (d *deliveryStart) StartMonitoring(ctx context.Context, wg *sync.WaitGroup)
 			baseTime := now.Truncate(time.Minute)
 			// 配信開始処理
 			go d.call(ctx, &DeliveryStartCondition{
+				BaseTime: baseTime,
+				// 10sはぎりぎりで配信開始するのを防ぐために追加している
 				To:     baseTime.Add(d.config.TaskInterval).Add(10 * time.Second),
 				Status: codes.StatusConfigured,
 				r:      make(chan int, d.config.NumberOfQueue),
@@ -95,7 +97,7 @@ func (d *deliveryStart) StartMonitoring(ctx context.Context, wg *sync.WaitGroup)
 				BaseTime: baseTime,
 				To:       baseTime,
 				Status:   codes.StatusWarmup,
-				r:        make(chan int, d.config.NumberOfConcurrent),
+				r:        make(chan int, d.config.NumberOfQueue),
 			})
 		case <-ctx.Done():
 			d.logger.Info().Msg("Close monitoring delivery start")
@@ -187,24 +189,24 @@ func (d *deliveryStart) process(ctx context.Context, condition *DeliveryStartCon
 		return errors.Wrap(err, "Failed to GetCampaignData")
 	}
 
-	condition.r <- len(campaigns)
-	for i := range campaigns {
-		campaign := (campaigns)[i]
-		d.monitor.Metrics.GetCounter(metricDeliveryStartCampaignTotal).WithLabelValues(campaign.Status).Inc()
-		switch campaign.Status {
-		case codes.StatusConfigured:
-			err := d.handleConfigured(ctx, baseTime, campaign)
-			if err != nil {
-				d.logger.Error().Err(err).Time("baseTime", baseTime).
-					Int("campaign_id", campaign.ID).
-					Msg("Failed to handle configured")
+		condition.r <- len(campaigns)
+		for i := range campaigns {
+			campaign := (campaigns)[i]
+			d.monitor.Metrics.GetCounter(metricDeliveryStartCampaignTotal).WithLabelValues(campaign.Status).Inc()
+			switch campaign.Status {
+			case codes.StatusConfigured:
+				err := d.handleConfigured(ctx, baseTime, campaign)
+				if err != nil {
+					d.logger.Error().Err(err).Time("baseTime", baseTime).
+						Int("campaign_id", campaign.ID).
+						Msg("Failed to handle configured")
+				}
+			case codes.StatusWarmup:
+				// 再起動等でwarmupになったままのものを処理する
+				// 既に開始時間を過ぎているのですぐに開始する
+				d.deliveryStartUsecase.ExecuteNow(campaign)
 			}
-		case codes.StatusWarmup:
-			// 再起動等でwarmupになったままのものを処理する
-			// 既に開始時間を過ぎているのですぐに開始する
-			d.deliveryStartUsecase.ExecuteNow(campaign)
 		}
-	}
 	return nil
 }
 

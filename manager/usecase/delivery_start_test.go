@@ -50,18 +50,16 @@ func TestDeliveryStart_GetCampaignData(t *testing.T) {
 		// テスト対象のGetcampaignDataは、campaignRepository.GetCampaignToStart を使っているのでその処理を定義する
 		// 引数に渡ると想定される値
 		ctx := context.Background()
-		tx := mock_repository.NewMockTransaction(ctrl)
 		to := time.Now()
 		status := "configured"
-		limit := 1
-		condition := repository.CampaignToStartCondition{To: to, Status: status}
+		limit := 10
+		condition := repository.CampaignToStartCondition{To: to, Status: status, Limit: limit}
 		// その際の戻り値
 		expected := []*models.Campaign{}
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
-			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(expected, nil).Times(1),
+			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(&condition)).Return(expected, nil).Times(1),
 		)
 
 		// テストを実行する
@@ -98,11 +96,10 @@ func TestDeliveryStart_GetCampaignData(t *testing.T) {
 		// テスト対象のGetcampaignDataは、campaignRepository.GetCampaignToStart を使っているのでその処理を定義する
 		// 引数に渡ると想定される値
 		ctx := context.Background()
-		tx := mock_repository.NewMockTransaction(ctrl)
 		to := time.Now()
-		limit := 1
+		limit := 10
 		status := "configured"
-		condition := repository.CampaignToStartCondition{To: to, Status: status}
+		condition := repository.CampaignToStartCondition{To: to, Status: status, Limit: limit}
 		// その際の戻り値
 		expected := []*models.Campaign{
 			{
@@ -112,8 +109,7 @@ func TestDeliveryStart_GetCampaignData(t *testing.T) {
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
-			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(expected, nil).Times(1),
+			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(&condition)).Return(expected, nil).Times(1),
 		)
 
 		// テストを実行する
@@ -150,18 +146,16 @@ func TestDeliveryStart_GetCampaignData(t *testing.T) {
 		// テスト対象のGetcampaignDataは、campaignRepository.GetCampaignToStart を使っているのでその処理を定義する
 		// 引数に渡ると想定される値
 		ctx := context.Background()
-		tx := mock_repository.NewMockTransaction(ctrl)
 		to := time.Now()
-		limit := 1
+		limit := 10
 		status := "configured"
-		condition := repository.CampaignToStartCondition{To: to, Status: status}
+		condition := repository.CampaignToStartCondition{To: to, Status: status, Limit: limit}
 		// その際の戻り値
 		expected := errors.New("Failed")
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
-			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(nil, expected).Times(1),
+			campaignRepository.EXPECT().GetCampaignToStart(gomock.Eq(ctx), gomock.Eq(&condition)).Return(nil, expected).Times(1),
 		)
 
 		// テストを実行する

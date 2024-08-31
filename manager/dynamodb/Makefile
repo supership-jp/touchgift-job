@@ -55,7 +55,7 @@ delete-campaign: ## キャンペーンテーブルの削除
 
 create-content-table: ## コンテンツテーブルを作成する
 	aws dynamodb create-table --table-name $(TBL_CONTENT) \
-		--attribute-definitions AttributeName=campaign_id,AttributeType=N \
+		--attribute-definitions AttributeName=campaign_id,AttributeType=S \
 		--key-schema AttributeName=campaign_id,KeyType=HASH \
 		--billing-mode PAY_PER_REQUEST $(DYNAMODB_OPTIONS)
 get-content: ## コンテンツ情報の取得

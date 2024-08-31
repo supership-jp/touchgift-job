@@ -52,33 +52,33 @@ func (mr *MockCampaignRepositoryMockRecorder) GetCampaignCreative(ctx, tx, args 
 }
 
 // GetCampaignToEnd mocks base method.
-func (m *MockCampaignRepository) GetCampaignToEnd(ctx context.Context, campaign *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
+func (m *MockCampaignRepository) GetCampaignToEnd(ctx context.Context, args *repository.CampaignDataToEndCondition) ([]*models.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCampaignToEnd", ctx, campaign)
+	ret := m.ctrl.Call(m, "GetCampaignToEnd", ctx, args)
 	ret0, _ := ret[0].([]*models.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCampaignToEnd indicates an expected call of GetCampaignToEnd.
-func (mr *MockCampaignRepositoryMockRecorder) GetCampaignToEnd(ctx, campaign interface{}) *gomock.Call {
+func (mr *MockCampaignRepositoryMockRecorder) GetCampaignToEnd(ctx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignToEnd", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignToEnd), ctx, campaign)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignToEnd", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignToEnd), ctx, args)
 }
 
 // GetCampaignToStart mocks base method.
-func (m *MockCampaignRepository) GetCampaignToStart(ctx context.Context, tx repository.Transaction, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
+func (m *MockCampaignRepository) GetCampaignToStart(ctx context.Context, args *repository.CampaignToStartCondition) ([]*models.Campaign, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCampaignToStart", ctx, tx, args)
+	ret := m.ctrl.Call(m, "GetCampaignToStart", ctx, args)
 	ret0, _ := ret[0].([]*models.Campaign)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCampaignToStart indicates an expected call of GetCampaignToStart.
-func (mr *MockCampaignRepositoryMockRecorder) GetCampaignToStart(ctx, tx, args interface{}) *gomock.Call {
+func (mr *MockCampaignRepositoryMockRecorder) GetCampaignToStart(ctx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignToStart", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignToStart), ctx, tx, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaignToStart", reflect.TypeOf((*MockCampaignRepository)(nil).GetCampaignToStart), ctx, args)
 }
 
 // GetDeliveryCampaignCountByGroupID mocks base method.
