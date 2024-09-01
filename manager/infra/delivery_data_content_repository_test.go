@@ -32,10 +32,11 @@ func TestContentDataRepository_Get(t *testing.T) {
 	t.Run("content_dataを1件返す", func(t *testing.T) {
 		contentDataRepository := NewDeliveryDataContentRepository(dynamodbHandler, logger, monitor)
 		ID := "1"
+		URL := "URL1"
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: "URL1"}},
+			Gimmicks:   []models.Gimmick{{URL: &URL}},
 		}
 		// データを用意
 		if err := contentDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
@@ -63,12 +64,13 @@ func TestContentDataRepository_Put(t *testing.T) {
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
 	campaignID := "1"
+	URL := "URL1"
 
 	createData := func() *models.DeliveryDataContent {
 		return &models.DeliveryDataContent{
 			CampaignID: campaignID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: "URL1"}},
+			Gimmicks:   []models.Gimmick{{URL: &URL}},
 		}
 	}
 
@@ -128,18 +130,19 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 	monitor := metrics.GetMonitor()
 	region := NewRegion(logger)
 	dynamodbHandler := NewDynamoDBHandler(logger, region)
+	URL := "URL"
 
 	createData := func() *[]models.DeliveryDataContent {
 		return &[]models.DeliveryDataContent{
 			{
 				CampaignID: "1",
 				Coupons:    []models.DeliveryCouponData{{ID: 1}},
-				Gimmicks:   []models.Gimmick{{URL: "URL1"}},
+				Gimmicks:   []models.Gimmick{{URL: &URL}},
 			},
 			{
 				CampaignID: "2",
 				Coupons:    []models.DeliveryCouponData{{ID: 2}},
-				Gimmicks:   []models.Gimmick{{URL: "URL2"}},
+				Gimmicks:   []models.Gimmick{{URL: &URL}},
 			},
 		}
 	}
@@ -220,10 +223,11 @@ func TestContentDataRepository_Delete(t *testing.T) {
 	t.Run("content_dataを1件削除", func(t *testing.T) {
 		contentDataRepository := NewDeliveryDataContentRepository(dynamodbHandler, logger, monitor)
 		ID := "1"
+		URL := "URL1"
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: "URL1"}},
+			Gimmicks:   []models.Gimmick{{URL: &URL}},
 		}
 		if err := contentDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return

@@ -22,8 +22,8 @@ func (c *Coupon) CreateDeliveryCouponData() *DeliveryCouponData {
 }
 
 type Gimmick struct {
-	URL  string `db:"gimmick_url" json:"gimmick_url,omitempty"`
-	Code string `db:"gimmick_code" json:"gimmick_code,omitempty"`
+	URL  *string `db:"gimmick_url" json:"gimmick_url,omitempty"`
+	Code *string `db:"gimmick_code" json:"gimmick_code,omitempty"`
 }
 
 type Content struct {

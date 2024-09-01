@@ -139,6 +139,7 @@ func (d *deliveryStart) GetCampaignToStart(ctx context.Context, to time.Time, st
 	condition := repository.CampaignToStartCondition{
 		To:     to,
 		Status: status,
+		Limit:  limit,
 	}
 	return d.campaignRepository.GetCampaignToStart(ctx, &condition)
 }
@@ -306,8 +307,8 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 		Coupons:    deliveryCouponDatas,
 		Gimmicks: []models.Gimmick{
 			{
-				URL:  *gimmickURL,
-				Code: *gimmickCode,
+				URL:  gimmickURL,
+				Code: gimmickCode,
 			},
 		},
 	}

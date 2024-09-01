@@ -32,20 +32,21 @@ type DeliveryTouchPoint struct {
 
 // DeliveryDataCreative dynamo用に整形するための構造体(クリエイティブ用)
 type DeliveryDataCreative struct {
-	ID               string  `json:"id"`
-	Link             string  `json:"link,omitempty"`
-	URL              string  `json:"url"`
-	TTL              int64   `json:"ttl"`
-	Width            float32 `json:"width"`
-	Height           float32 `json:"height"`
-	Type             string  `json:"type"`
-	Extension        string  `json:"extension"`
-	Duration         int     `json:"duration,omitempty"`
-	EndCardURL       string  `json:"end_card_url,omitempty"`
-	EndCardWidth     float32 `json:"end_card_width,omitempty"`
-	EndCardHeight    float32 `json:"end_card_height,omitempty"`
-	EndCardExtension string  `json:"end_card_extension,omitempty"`
-	EndCardLink      string  `json:"end_card_link,omitempty"`
+	ID               string   `json:"id"`
+	Link             string   `json:"link,omitempty"`
+	URL              string   `json:"url"`
+	TTL              int64    `json:"ttl"`
+	Width            float32  `json:"width"`
+	Height           float32  `json:"height"`
+	Type             string   `json:"type"`
+	Extension        string   `json:"extension"`
+	Duration         *int     `json:"duration,omitempty"`
+	SkipOffset       *int     `json:"skip_offset,omitempty"`
+	EndCardURL       *string  `json:"end_card_url,omitempty"`
+	EndCardWidth     *float32 `json:"end_card_width,omitempty"`
+	EndCardHeight    *float32 `json:"end_card_height,omitempty"`
+	EndCardExtension *string  `json:"end_card_extension,omitempty"`
+	EndCardLink      *string  `json:"end_card_link,omitempty"`
 }
 
 type DeliveryDataContent struct {

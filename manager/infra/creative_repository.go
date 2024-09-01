@@ -35,10 +35,10 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 			WHEN banner.id IS NOT NULL THEN banner.extension
 			WHEN video.id IS NOT NULL THEN video.extension
 		END AS extension,
-		video.endcard_url AS end_card_url,
+		IFNULL(video.endcard_url, '') AS end_card_url,
 		video.endcard_width AS end_card_width,
 		video.endcard_height AS end_card_height,
-		video.endcard_extension AS end_card_extension
+		IFNULL(video.endcard_extension, '') AS end_card_extension
 	FROM campaign_creative
 			 INNER JOIN  campaign ON campaign_creative.campaign_id = campaign.id
 			 INNER JOIN creative ON campaign_creative.creative_id = creative.id

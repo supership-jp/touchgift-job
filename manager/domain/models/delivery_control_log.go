@@ -14,20 +14,20 @@ type CampaignCacheLog struct {
 }
 
 type CreativeCacheLog struct {
-	ID               string  `json:"id"`
-	Link             string  `json:"link"`
-	URL              string  `json:"url"`
-	Width            float32 `json:"width"`
-	Height           float32 `json:"height"`
-	Type             string  `json:"type"`
-	Extension        string  `json:"extension"`
-	Duration         int     `json:"duration"`
-	EndCardUrl       string  `json:"endcard_url"`
-	EndCardWidth     float32 `json:"endcard_width"`
-	EndCardHeight    float32 `json:"endcard_height"`
-	EndCardExtension string  `json:"endcard_extension"`
-	EndCardLink      string  `json:"endcard_link"`
-	Action           string  `json:"action"` // PUT or DELETE
+	ID               string   `json:"id"`
+	Link             string   `json:"link"`
+	URL              string   `json:"url"`
+	Width            float32  `json:"width"`
+	Height           float32  `json:"height"`
+	Type             string   `json:"type"`
+	Extension        string   `json:"extension"`
+	Duration         *int     `json:"duration"`
+	EndCardUrl       *string  `json:"endcard_url"`
+	EndCardWidth     *float32 `json:"endcard_width"`
+	EndCardHeight    *float32 `json:"endcard_height"`
+	EndCardExtension *string  `json:"endcard_extension"`
+	EndCardLink      *string  `json:"endcard_link"`
+	Action           string   `json:"action"` // PUT or DELETE
 }
 
 type DeliveryCacheLog struct {

@@ -68,9 +68,9 @@ ifneq (,$(findstring beta,$(ENVIRONMENT_SUFFIX)))
 	SQS_DELIVERY_OPERATION_QUEUE_URL=/sqs/url/touchgift-delivery-operation-$(ENVIRONMENT_SUFFIX)
 	SQS_DELIVERY_CONTROL_QUEUE_URL=/sqs/url/touchgift-delivery-control-$(ENVIRONMENT_SUFFIX)
 else
-	DELIVERY_TABLE_NAME=touchgift_delivery_data
-	CREATIVE_TABLE_NAME=touchgift_creative_data
 	TOUCH_POINT_TABLE_NAME=touchgift_delivery_data
+	CREATIVE_TABLE_NAME=touchgift_creative_data
+	CAMPAIGN_TABLE_NAME=touchgift_campaign_data
 	CONTENT_TABLE_NAME=touchgift_content_data
 	DB_HOST=/rds/touchgift-main/endpoint
 	DB_PASSWORD=/rds/touchgift-main/user/sc2_pn/password

@@ -1,5 +1,6 @@
 package infra
 
+/*
 import (
 	"context"
 	"errors"
@@ -29,9 +30,7 @@ func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.
 	content := &models.Content{
 		Coupons: make([]models.Coupon, len(args.Coupons)),
 		Gimmicks: []models.Gimmick{
-			{
-				URL: "",
-			},
+			{},
 		},
 	}
 
@@ -48,10 +47,11 @@ func (c *ContentsHelper) GenerateContents(ctx context.Context, args *repository.
 
 	// Set gimmick URL if available
 	if args.GimmickURL != nil {
-		content.Gimmicks[0].URL = *args.GimmickURL
+		content.Gimmicks[0].URL = args.GimmickURL
 	}
 
 	contents = append(contents, content)
 
 	return contents, nil
 }
+*/
