@@ -1,9 +1,17 @@
-name: touchgift-delivery-manager release
+name: touchgift-job-manager
 on:
+  pull_request:
+    branches:
+      - 'feature/**'
+      - 'issue/**'
+      - 'beta/**'
+      - 'PB/**'
+    paths:
+      - manager/**
   push:
     branches:
-      - main
-      - 'rc/**'
+      - 'feature/**'
+      - 'beta/**'
     paths:
       - manager/**
 jobs:
@@ -22,18 +30,18 @@ jobs:
       - name: Configure AWS Credentials (CodeBuild)
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID_PRO }}
-          aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY_PRO }}
+          aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-          role-to-assume: arn:aws:iam::991880925744:role/touchgift-delivery-manager.codebuild.execution
+          role-to-assume: arn:aws:iam::411776208124:role/touchgift-job.codebuild.execution
           role-duration-seconds: 1200
 
       - name: Run Build
         run: |
           aws codebuild start-build \
-            --project-name touchgift-delivery-manager \
+            --project-name touchgift-job \
             --source-version ${SOURCE_VERSION} \
-            --buildspec-override ${{ matrix.component }}/buildspecs/production.yml \
+            --buildspec-override ${{ matrix.component }}/buildspecs/staging.yml \
             --environment-variables-override \
             name=GITHUB_EVENT_NAME,value=${{ github.event_name }},type=PLAINTEXT \
             name=GITHUB_SHA,value=${{ github.sha }},type=PLAINTEXT \

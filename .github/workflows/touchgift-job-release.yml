@@ -25,13 +25,13 @@ jobs:
           aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID_PRO }}
           aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY_PRO }}
           aws-region: ap-northeast-1
-          role-to-assume: arn:aws:iam::991880925744:role/touchgift-job-manager.codebuild.execution
+          role-to-assume: arn:aws:iam::991880925744:role/touchgift-job.codebuild.execution
           role-duration-seconds: 1200
 
       - name: Run Build
         run: |
           aws codebuild start-build \
-            --project-name touchgift-job-manager \
+            --project-name touchgift-job \
             --source-version ${SOURCE_VERSION} \
             --buildspec-override ${{ matrix.component }}/buildspecs/production.yml \
             --environment-variables-override \
