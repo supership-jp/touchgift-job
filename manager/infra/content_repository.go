@@ -66,11 +66,10 @@ WHERE campaign.id = :campaign_id`
 		return nil, nil, err
 	}
 
-	var gimmickURL string
-	var gimmickCode string
-	err = stmt.QueryRowxContext(ctx, map[string]interface{}{
+	var gimmicks []*models.Gimmick
+	err = stmt.SelectContext(ctx, &gimmicks, map[string]interface{}{
 		"campaign_id": args.CampaignID,
-	}).Scan(&gimmickURL, &gimmickCode)
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// No rows found, return nil without error
@@ -79,6 +78,16 @@ WHERE campaign.id = :campaign_id`
 		c.logger.Error().Msgf("Error getting gimmick URL: %v", err)
 		return nil, nil, err
 	}
+	var gimmickURL *string
+	var gimmickCode *string
+	for _, gimmick := range gimmicks {
+		if *gimmick.URL != "" {
+			gimmickURL = gimmick.URL
+		}
+		if *gimmick.Code != "" {
+			gimmickCode = gimmick.Code
+		}
+	}
 
-	return &gimmickURL, &gimmickCode, nil
+	return gimmickURL, gimmickCode, nil
 }

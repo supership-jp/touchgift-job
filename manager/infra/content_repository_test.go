@@ -77,17 +77,119 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
 		)
-		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "code1", time.Now().Format("15:04:05"), 1)
+		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "", time.Now().Format("15:04:05"), 1)
 		rdbUtil.InsertCampaignGimmick(id, gimmickID)
 
 		contentsRepository := NewContentRepository(logger, sqlHandler)
 
-		gimmickURL, _, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
+		gimmickURL, gimmickCode, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
 			CampaignID: id,
 		})
 
 		assert.NotNil(t, gimmickURL)
+		assert.Nil(t, gimmickCode)
 		assert.Equal(t, "https://gimmck.jpg", *gimmickURL)
+	})
+
+	t.Run("Campaignに紐づいたGimmickが存在する時Codeを返却する", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+
+		// テストデータを登録する
+		rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)
+
+		// 店舗情報登録
+		rdbUtil.InsertStore("ORG001", "S001", "東京本店", "100-0001", "13", "東京都千代田区丸の内1-1-1")
+		//　store_group情報登録
+		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
+
+		id, _ := rdbUtil.InsertCampaign(
+			"ORG001",              // organizationCode
+			"configured",          // status
+			"Project X",           // name
+			"2024-06-01 18:41:11", // startAt
+			"2024-06-29 18:41:11", // endAt
+			1,                     // lastUpdatedBy
+			store_group_id,        // storeGroupId
+		)
+		gimmickID := rdbUtil.InsertGimmick("gimmick1", "", "ORG001", "2", "Code1", time.Now().Format("15:04:05"), 1)
+		rdbUtil.InsertCampaignGimmick(id, gimmickID)
+
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+
+		gimmickURL, gimmickCode, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
+			CampaignID: id,
+		})
+
+		assert.Nil(t, gimmickURL)
+		assert.NotNil(t, gimmickCode)
+		assert.Equal(t, "Code1", *gimmickCode)
+	})
+
+	t.Run("Campaignに2件Gimmickが存在する時CodeとURL両方を返却する", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		sqlHandler := mock_infra.NewMockSQLHandler(ctrl)
+
+		// テストデータを登録する
+		rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)
+
+		// 店舗情報登録
+		rdbUtil.InsertStore("ORG001", "S001", "東京本店", "100-0001", "13", "東京都千代田区丸の内1-1-1")
+		//　store_group情報登録
+		store_group_id := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
+
+		id, _ := rdbUtil.InsertCampaign(
+			"ORG001",              // organizationCode
+			"configured",          // status
+			"Project X",           // name
+			"2024-06-01 18:41:11", // startAt
+			"2024-06-29 18:41:11", // endAt
+			1,                     // lastUpdatedBy
+			store_group_id,        // storeGroupId
+		)
+		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "Code1", time.Now().Format("15:04:05"), 1)
+		gimmickID2 := rdbUtil.InsertGimmick("gimmick2", "", "ORG001", "2", "", time.Now().Add(time.Minute).Format("15:04:05"), 1)
+		rdbUtil.InsertCampaignGimmick(id, gimmickID)
+		rdbUtil.InsertCampaignGimmick(id, gimmickID2)
+
+		contentsRepository := NewContentRepository(logger, sqlHandler)
+
+		gimmickURL, gimmickCode, _ := contentsRepository.GetGimmicksByCampaignID(ctx, tx, &repository.ContentByCampaignIDCondition{
+			CampaignID: id,
+		})
+
+		assert.NotNil(t, gimmickURL)
+		assert.NotNil(t, gimmickCode)
+		assert.Equal(t, "https://gimmck.jpg", *gimmickURL)
+		assert.Equal(t, "Code1", *gimmickCode)
 	})
 }
 
