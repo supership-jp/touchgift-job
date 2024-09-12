@@ -28,7 +28,7 @@ go install github.com/golang/mock/mockgen@v1.6.0
 ----
 # DBを起動
 # touchgift-dmのものを使用する
-## クローン
+## (DM)クローン
 git clone https://github.com/supership-jp/touchgift-dm.git
 ## ディレクトリ移動
 cd touchgift-dm/backend/
@@ -41,6 +41,8 @@ npm run typeorm migration:run # 他のターミナル
 # DDLを出力する (テスト等に使用する)
 cd touchgfit-job/manager
 docker exec -it touchgift-db mysqldump -uretail --password=test --no-data retail > rdb/init/1_all.sql
+## 注意
+### 1_all.sqlの1行目と18行目をコメントアウトしてください
 ----
 
 * テスト
@@ -80,7 +82,7 @@ make clean-testcache
 # テスト
 make test
 # テスト対象を絞る場合
-make test TEST_TARGET="--run DeliveryScheduleUsecase ./..."
+make test TEST_TARGET="--run DeliveryStartUsecase ./..."
 # vscodeの場合、editorから個別にテストを起動できる (デバッグも)
 
 make delete-all-table
@@ -96,3 +98,104 @@ make lint
 ----
 
 
+* ローカルテスト(SNS_PUBLISH→SQS)
++
+[source,bash]
+----
+// sns-topicをすべて作成
+nakagawadaiki:~/workspace/touchgift-job/manager]+[PB-688]
+$ [ arm64 ] % make create-sns-all
+
+// topicの内容を確認
+$ make list-sns-topics
+
+// sqsにキューが存在しないことを確認
+$ make list-sqs-queue
+
+// sqsにキューを作成
+make create-sqs-all-queue
+
+// sqsに作成されたキューを確認
+make list-sqs-queue
+
+// 1件もキューが存在しないことを確認
+make receive-message-sqs-delivery-operation-queue
+
+// SNS publishを実施
+make publish-delivery-operation-local
+
+// 正常にキューにメッセージが入っていることを確認
+make receive-message-sqs-delivery-operation-queue
+
+----
+[source,bash]
+----
+// RDBを起動する (起動時に↑のDDLが実行される)
+make start-db
+
+// テストデータを投入
+make create-db-testdata
+
+// MySQLに接続
+mysql -h 127.0.0.1 -P 3306 -u root -ptest
+
+----
+
+== 手動でリリースする (テストなど)
+
+* 通常は、codebuild/codedeployでリリースする
+
+* タスク定義の登録する場合
++
+[source,bash]
+----
+# ステージングの場合
+# ENVIRONMENT_SUFFIX: e1, beta1, ...
+make rewrite-image-on-task-definition \
+  ENV=staging \
+  ENVIRONMENT_SUFFIX=e1 \
+  TAG=1.0.0 > task-definition-temp.json
+
+make register-task-definition ENV=staging TASK_DEF_FILE=file://./task-definition-temp.json
+
+# 本番の場合
+# ENVIRONMENT_SUFFIX: e1, rc1, ...
+make rewrite-image-on-task-definition \
+  ENV=production \
+  ENVIRONMENT_SUFFIX=e1 \
+  TAG=1.0.0 > task-definition-temp.json
+
+make register-task-definition ENV=production TASK_DEF_FILE=file://./task-definition-temp.json
+----
+* ステージング
++
+[source,bash]
+----
+make build-image ENV=staging TAG=1.2.0-beta1
+make push-image ENV=staging TAG=1.2.0-beta1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e1, beta1, ...
+$ make run-deploy ENV=staging ENVIRONMENT_SUFFIX=beta1 TAG=0.0.0-beta1
+----
+* 本番
++
+[source,bash]
+----
+make build-image ENV=production TAG=1.2.0-rc1
+make push-image ENV=production TAG=1.2.0-rc1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e1, rc1, ...
+$ make run-deploy ENV=production ENVIRONMENT_SUFFIX=e1 TAG=1.0.0-rc1
+----
+
+== タスク数の変更
+
+* 0にすれば全台停止
+
+[source, bash]
+----
+# AutoScale未設定の場合, COUNTにタスク数を指定する
+$ make update-desired-count ENV=staging ENVIRONMENT_SUFFIX=beta1 COUNT=0
+----

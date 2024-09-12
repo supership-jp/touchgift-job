@@ -1,0 +1,20 @@
+= repository層
+
+
+説明
+[NOTE]
+====
+抽象化されたデータストレージへのインターフェース群
+====
+
+'''
+
+== RDSへの操作
+
+- campaign_repository.go
+- contents_repository.go
+- creative_repository.go
+- touch_point_repository.go
+
+== Dynamoへの操作
+- delivery_data_repository.go

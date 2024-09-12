@@ -1,0 +1,239 @@
+{
+  "family": "(Value replaced by Makefile)",
+  "taskRoleArn": "(Value replaced by Makefile)",
+  "executionRoleArn": "(Value replaced by Makefile)",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["EC2"],
+  "containerDefinitions": [
+    {
+      "essential": true,
+      "image": "(Value replaced by Makefile)",
+      "name": "adm-delivery-dm",
+      "cpu": 1024,
+      "memory": 2048,
+      "memoryReservation": 1024,
+      "logConfiguration": {
+        "logDriver": "json-file",
+        "options": {
+          "max-size": "1g",
+          "max-file": "120",
+          "tag": "(Value replaced by Makefile)"
+        }
+      },
+      "portMappings": [
+        {
+          "containerPort": 8080
+        },
+        {
+          "containerPort": 8081
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "ENVIRONMENT_SUFFIX",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "GIN_MODE",
+          "value": "release"
+        },
+        {
+          "name": "PORT",
+          "value": "8080"
+        },
+        {
+          "name": "ADMIN_PORT",
+          "value": "8081"
+        },
+        {
+          "name": "REGION_FROM_EC2METADATA",
+          "value": "true"
+        },
+        {
+          "name": "SHUTDOWN_TIMEOUT",
+          "value": "5m"
+        },
+        {
+          "name": "DB_DRIVER_NAME",
+          "value": "pgx"
+        },
+        {
+          "name": "DB_DATABASE",
+          "value": "dm"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_USER",
+          "value": "dm"
+        },
+        {
+          "name": "DB_CONNECT_TIMEOUT_SEC",
+          "value": "120"
+        },
+        {
+          "name": "DB_MAX_OPEN_CONNS",
+          "value": "50"
+        },
+        {
+          "name": "DB_MAX_IDLE_CONNS",
+          "value": "50"
+        },
+        {
+          "name": "DB_CONN_MAX_LIFETIME",
+          "value": "1h"
+        },
+        {
+          "name": "AWS_PROFILE",
+          "value": ""
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "DYNAMODB_ENDPOINT",
+          "value": ""
+        },
+        {
+          "name": "SQS_ENDPOINT",
+          "value": ""
+        },
+        {
+          "name": "SQS_VISIBILITY_TIMEOUT_SECONDS",
+          "value": "60"
+        },
+        {
+          "name": "SQS_WAIT_TIME_SECONDS",
+          "value": "20"
+        },
+        {
+          "name": "SQS_MAX_MESSAGES",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_START_TASK_INTERVAL",
+          "value": "1m"
+        },
+        {
+          "name": "DELIVERY_START_WORKER_TASK_LIMIT",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_START_WORKER_NUMBER_OF_CONCURRENT",
+          "value": "5"
+        },
+        {
+          "name": "DELIVERY_START_WORKER_NUMBER_OF_QUEUE",
+          "value": "5"
+        },
+        {
+          "name": "DELIVERY_START_USECASE_WORKER_NUMBER_OF_CONCURRENT",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_START_USECASE_WORKER_NUMBER_OF_QUEUE",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_END_TASK_INTERVAL",
+          "value": "1m"
+        },
+        {
+          "name": "DELIVERY_END_WORKER_TASK_LIMIT",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_END_WORKER_NUMBER_OF_CONCURRENT",
+          "value": "5"
+        },
+        {
+          "name": "DELIVERY_END_WORKER_NUMBER_OF_QUEUE",
+          "value": "5"
+        },
+        {
+          "name": "DELIVERY_END_USECASE_WORKER_NUMBER_OF_CONCURRENT",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_END_USECASE_WORKER_NUMBER_OF_QUEUE",
+          "value": "10"
+        },
+        {
+          "name": "DELIVERY_TABLE_NAME",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "CREATIVE_TABLE_NAME",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "DELIVERY_BUDGET_TABLE_NAME",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "SNS_ENDPOINT",
+          "value": ""
+        },
+        {
+          "name": "SNS_CONTROL_LOG_TOPIC_ARN",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "METRICS_PATH",
+          "value": "/metrics"
+        },
+        {
+          "name": "PROMETHEUS",
+          "value": "true"
+        },
+        {
+          "name": "PROMETHEUS_PORT",
+          "value": "8081"
+        },
+        {
+          "name": "PROMETHEUS_ENDPOINT",
+          "value": "30s:/metrics"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_HOST",
+          "valueFrom": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "SQS_DELIVERY_OPERATION_QUEUE_URL",
+          "valueFrom": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "SQS_DELIVERY_CONTROL_QUEUE_URL",
+          "valueFrom": "(Value replaced by Makefile)"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD", "./healthcheck", "-url=http://localhost:8080/ping"],
+        "interval": 5,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 5
+      },
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ]
+    }
+  ]
+}
