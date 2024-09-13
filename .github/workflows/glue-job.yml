@@ -43,16 +43,14 @@ jobs:
             echo "WORKSPACE=beta" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == refs/heads/feature/* ]]; then
             echo "WORKSPACE=e" >> $GITHUB_ENV
-          else
-            echo "WORKSPACE=hoge" >> $GITHUB_ENV
           fi
 
-      # Remove job.py from S3
-      - name: Remove job.py from S3
+      # Only for push events: Remove job.py and Upload new Python files
+      - name: Conditional steps for push events
+        if: github.event_name == 'push'
         run: |
+          # Remove job.py from S3
           aws s3 rm s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
-
-      # Upload new Python files to S3
-      - name: Upload new Python files to S3
-        run: |
+          
+          # Upload new Python files to S3
           aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
