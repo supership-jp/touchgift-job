@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Checkout the repository with full history
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Fetch full history to enable git diff
 
       # Install AWS CLI
       - name: Install AWS CLI
