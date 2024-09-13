@@ -41,24 +41,9 @@ jobs:
             echo "WORKSPACE=e" >> $GITHUB_ENV
           fi
 
-      - name: Set ORGCODE based on changed directory
-        id: set_orgcode
-        run: |
-          # Get list of changed files
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-          
-          # Check for changes in glue-job directory
-          for file in $CHANGED_FILES; do
-            if [[ $file == glue-job/* ]]; then
-              # Extract the directory name from glue-job/<directory>
-              ORGCODE=$(echo $file | cut -d'/' -f2)
-              echo "ORGCODE=$ORGCODE" >> $GITHUB_ENV
-              break
-            fi
-          done
       # TODO: (9/13)code_build applyしたらこの下改修
       - name: Conditional steps for push events
         if: github.event_name == 'push'
         run: |
           aws s3 rm s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
-          aws s3 cp glue-job/${{ env.ORGCODE }}/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
+          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
