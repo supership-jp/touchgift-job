@@ -175,8 +175,8 @@ func TestContentsRepository_GetGimmickURLByCampaignID(t *testing.T) {
 			1,                     // lastUpdatedBy
 			store_group_id,        // storeGroupId
 		)
-		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "Code1", time.Now().Format("15:04:05"), 1)
-		gimmickID2 := rdbUtil.InsertGimmick("gimmick2", "", "ORG001", "2", "", time.Now().Add(time.Minute).Format("15:04:05"), 1)
+		gimmickID := rdbUtil.InsertGimmick("gimmick1", "https://gimmck.jpg", "ORG001", "2", "", time.Now().Format("15:04:05"), 1)
+		gimmickID2 := rdbUtil.InsertGimmick("gimmick2", "", "ORG001", "2", "Code1", time.Now().Add(time.Minute).Format("15:04:05"), 1)
 		rdbUtil.InsertCampaignGimmick(id, gimmickID)
 		rdbUtil.InsertCampaignGimmick(id, gimmickID2)
 
