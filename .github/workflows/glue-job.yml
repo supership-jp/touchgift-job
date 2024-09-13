@@ -45,7 +45,7 @@ jobs:
             echo "WORKSPACE=e" >> $GITHUB_ENV
           else
             echo "WORKSPACE=hoge" >> $GITHUB_ENV
-        shell: bash
+          fi
 
       # Remove job.py from S3
       - name: Remove job.py from S3
