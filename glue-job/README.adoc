@@ -7,7 +7,7 @@
 
 [source,text]
 ----
-baroque
+baroque(組織)
 └── staging(環境) ex)staging, production
     └── beta(workspace) ex) beta, e ②
         └── evserver アプリケーション
@@ -30,5 +30,15 @@ baroque
 - テスト環境でのジョブ実行:
 [source,bash]
 ----
-aws-vault exec tpo-staging -- aws glue start-job-run --job-name <glue-job-name> --arguments '{"--mode":"test"}'
+## RunIDが取得できるので取得する
+make test-job WORKSPACE=(workspace) JOB_NAME=(job名) ENV=(環境名)
+----
+
+4. **テストの確認**
+[source,bash]
+----
+# 3で実行した後にジョブランIDはわかる
+make show-test-result WORKSPACE=beta JOB_NAME=(job名) RUN_ID=(run_id) ENV=(環境名) | grep -C 2 "テストが完了しました"
+# テスト完了というログがあれば成功
+# DataFrame constructor is internal. Do not directly use itこの警告は無視して良い。
 ----
