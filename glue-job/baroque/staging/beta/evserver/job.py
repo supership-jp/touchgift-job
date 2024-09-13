@@ -4,20 +4,20 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.dynamicframe import DynamicFrame
 from awsglue.job import Job
-from datetime import datetime, timedelta  # datetimeモジュールのインポート
+from datetime import datetime, timedelta
 import pytz
 
 def apply(inputFrame, glueContext):
     frame = inputFrame.toDF()
     gc = glueContext
-    
+
     # タイムゾーンをJSTに設定
     jst = pytz.timezone('Asia/Tokyo')
     now = datetime.now(pytz.utc).astimezone(jst)
-    
+
     # 前日のdtを計算
     yesterday = (now - timedelta(1)).strftime('%Y%m%d')
-    
+
     frame.createOrReplaceTempView("application_table")
 
     query = f"""
@@ -38,12 +38,13 @@ def apply(inputFrame, glueContext):
         and request_id is not null 
         and request_id != '';
     """
-    
+
     transformed_df = gc.sparkSession.sql(query)
 
     return DynamicFrame.fromDF(transformed_df, gc)
 
-args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+# 引数を取得
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])  # 'mode'引数を追加
 
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -53,8 +54,8 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database = "touchgift-datalake-beta",
-    table_name = "application",
+    database="touchgift-datalake-beta",
+    table_name="application",
 )
 
 spark.conf.set("spark.sql.legacy.timeParserPolicy", "LEGACY")
@@ -63,11 +64,15 @@ recipe = apply(
     inputFrame=dyf,
     glueContext=glueContext)
 
-glueContext.write_dynamic_frame.from_options(
-    frame=recipe, 
-    connection_type="s3", 
-    format="glueparquet", 
-    connection_options={"path": "s3://baroque-data-link-staging-beta", "partitionKeys": ["dt", "ev"]}, 
-    format_options={"compression": "gzip"})
+
+if args.get('mode') != 'test':
+    glueContext.write_dynamic_frame.from_options(
+        frame=recipe,
+        connection_type="s3",
+        format="glueparquet",
+        connection_options={"path": "s3://baroque-data-link-staging-beta", "partitionKeys": ["dt", "ev"]},
+        format_options={"compression": "gzip"})
+else:
+    print("テストが完了しました。")
 
 job.commit()
