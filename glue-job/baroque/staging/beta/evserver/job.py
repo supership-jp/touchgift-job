@@ -15,7 +15,6 @@ def apply(inputFrame, glueContext):
     jst = pytz.timezone('Asia/Tokyo')
     now = datetime.now(pytz.utc).astimezone(jst)
 
-    # 前日のdtを計算
     yesterday = (now - timedelta(1)).strftime('%Y%m%d')
 
     frame.createOrReplaceTempView("application_table")
