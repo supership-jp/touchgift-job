@@ -6,11 +6,13 @@ on:
       - 'beta/**'
       - 'PB/**'
     paths:
-      - glue-job/**
+      - 'glue-job/**'
   push:
     branches:
       - 'feature/*'
       - 'beta/*'
+    paths:
+      - 'glue-job/**'
 
 jobs:
   deploy:
@@ -20,13 +22,13 @@ jobs:
       # Checkout the repository
       - uses: actions/checkout@v2
 
-      # Set up AWS CLI
+      # Install AWS CLI
       - name: Install AWS CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
 
-      # Configure AWS credentials using GitHub secrets
+      # Configure AWS credentials
       - name: Configure AWS credentials
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
@@ -36,21 +38,26 @@ jobs:
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region ap-northeast-1
 
-      # Set WORKSPACE variable based on branch
-      - name: Set WORKSPACE variable
+      # Detect which directory in glue-job/ was changed and set ORGCODE
+      - name: Set ORGCODE based on changed directory
+        id: set_orgcode
         run: |
-          if [[ "${{ github.ref }}" == refs/heads/beta/* ]]; then
-            echo "WORKSPACE=beta" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == refs/heads/feature/* ]]; then
-            echo "WORKSPACE=e" >> $GITHUB_ENV
-          fi
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          
+          # Check for changes in glue-job directory
+          for file in $CHANGED_FILES; do
+            if [[ $file == glue-job/* ]]; then
+              # Extract the directory name from glue-job/<directory>
+              ORGCODE=$(echo $file | cut -d'/' -f2)
+              echo "ORGCODE=$ORGCODE" >> $GITHUB_ENV
+              break
+            fi
+          done
 
-      # Only for push events: Remove job.py and Upload new Python files
+      # Conditional steps for push events
       - name: Conditional steps for push events
         if: github.event_name == 'push'
         run: |
-          # Remove job.py from S3
           aws s3 rm s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
-          
-          # Upload new Python files to S3
-          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
+          aws s3 cp glue-job/${{ env.ORGCODE }}/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
