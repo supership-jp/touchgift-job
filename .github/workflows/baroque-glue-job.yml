@@ -1,36 +1,28 @@
-name: glue-job
-
+name: baroque-glue-job
 on:
   pull_request:
     branches:
       - 'beta/**'
       - 'PB/**'
     paths:
-      - 'glue-job/**'
+      - 'glue-job/baroque/staging/**'
   push:
     branches:
       - 'feature/*'
       - 'beta/*'
     paths:
       - 'glue-job/**'
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository with full history
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Fetch full history to enable git diff
-
-      # Install AWS CLI
+          fetch-depth: 0
       - name: Install AWS CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y awscli
-
-      # Configure AWS credentials
       - name: Configure AWS credentials
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
