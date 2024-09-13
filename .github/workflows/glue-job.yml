@@ -1,0 +1,46 @@
+name: glue-job
+
+on:
+  pull_request:
+    branches:
+      - 'beta/**'
+      - 'PB/**'
+    paths:
+      - glue-job/**
+  push:
+    branches:
+      - 'feature/*'
+      - 'beta/*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v2
+
+      # Set up AWS CLI
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      # Configure AWS credentials using GitHub secrets
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region ap-northeast-1
+
+      - name: Remove job.py from S3
+        run: |
+          aws s3 rm s3://touchgift-script-glue-staging-beta/job.py
+
+      # Upload new Python files to S3
+      - name: Upload new Python files to S3
+        run: |
+          aws s3 cp glue-job/baroque/staging/beta/evserver/job.py s3://touchgift-script-glue-staging-beta/job.py
