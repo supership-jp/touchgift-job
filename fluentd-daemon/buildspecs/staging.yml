@@ -1,0 +1,47 @@
+version: 0.2
+
+env:
+  variables:
+    WORKING_DIR: fluentd-daemon
+phases:
+  pre_build:
+    commands:
+      - WEBHOOK_EVENT=$GITHUB_EVENT_NAME
+      - |
+        case "$GITHUB_REF" in
+          refs/heads/feature/*)
+            ENVIRONMENT_SUFFIX=e2
+          ;;
+          refs/heads/beta/*)
+            ENVIRONMENT_SUFFIX=beta1
+          ;;
+        esac
+      - echo "Config ENVIRONMENT_SUFFIX $ENVIRONMENT_SUFFIX"
+      - git status
+      - cd $CODEBUILD_SRC_DIR/$WORKING_DIR
+      - IMAGE_TAG=${GITHUB_SHA}-${GITHUB_RUN_ID}
+  build:
+    commands:
+      - aws --version
+      - echo "Build started on `date` $WEBHOOK_EVENT $GITHUB_REF"
+      - echo "GITHUB_EVENT_NAME $GITHUB_EVENT_NAME, GITHUB_SHA $GITHUB_SHA, GITHUB_REF $GITHUB_REF, GITHUB_RUN_ID $GITHUB_RUN_ID"
+      - echo Building the Docker image...
+      - make build-image AWS_VAULT_CMD= TAG=$IMAGE_TAG
+      - |
+        RUN_DEPLOY="no"
+        case "$GITHUB_REF" in
+          refs/heads/feature/*)
+            RUN_DEPLOY="yes"
+          ;;
+          refs/heads/beta/*)
+            RUN_DEPLOY="yes"
+          ;;
+        esac
+        if [ "$RUN_DEPLOY" = "yes" ]; then
+          echo "Pushing image && Deploy image ..."
+          make push-image AWS_VAULT_CMD= TAG=$IMAGE_TAG && \
+          make run-deploy AWS_VAULT_CMD= ENV=staging ENVIRONMENT_SUFFIX=${ENVIRONMENT_SUFFIX} TAG=$IMAGE_TAG
+        fi
+  post_build:
+    commands:
+      - echo Build completed on `date`

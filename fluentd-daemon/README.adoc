@@ -1,1 +1,69 @@
 = touchgift-job-fluentd-daemon
+
+ECS Cluster内にDAEMONサービス
+として常駐し、touchgift-jobのログをfluentd-receiverに転送する
+
+== Docker
+
+=== ステージング
+
+[source, bash]
+----
+$ make build-image ENV=staging TAG=1.0.0-beta1
+$ make push-image ENV=staging TAG=1.0.0-beta1
+----
+
+=== 本番
+
+[source, bash]
+----
+$ make build-image ENV=production TAG=1.0.0-rc1
+$ make push-image ENV=production TAG=1.0.0-rc1
+----
+
+== タスク定義書の作成/登録
+
+=== staging
+
+[source, bash]
+----
+$ make rewrite-image-on-task-definition ENV=staging ENVIRONMENT_SUFFIX=beta1 TAG=1.0.0-beta1 > task-definition-temp.json
+$ make register-task-definition ENV=staging TASK_DEF_FILE=file://./task-definition-temp.json
+----
+
+=== production
+
+[source, bash]
+----
+
+$ make rewrite-image-on-task-definition ENV=production ENVIRONMENT_SUFFIX=e1 TAG=1.0.0-rc1 > task-definition-temp.json
+$ make register-task-definition ENV=production TASK_DEF_FILE=file://./task-definition-temp.json
+----
+
+== Deploy
+
+* 以下は手動でデプロイする場合(緊急時/テスト時など)。通常はCICD(codebuild/codedeploy)を使用すること。
+
+* ステージング
++
+[source, bash]
+----
+$ make build-image ENV=staging TAG=1.0.0-beta1
+$ make push-image ENV=staging TAG=1.0.0-beta1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e1, beta1, ...
+$ make run-deploy ENV=staging ENVIRONMENT_SUFFIX=e1 TAG=1.0.0-beta1
+----
+
+* 本番
++
+[source, bash]
+----
+$ make build-image ENV=production TAG=2.0.0-rc1
+$ make push-image ENV=production TAG=2.0.0-rc1
+
+# deploy
+# ENVIRONMENT_SUFFIX: e3, rc1, ...
+$ make run-deploy ENV=production ENVIRONMENT_SUFFIX=e1 TAG=1.0.0-rc1
+----

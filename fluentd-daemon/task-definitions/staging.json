@@ -1,0 +1,109 @@
+{
+  "family": "(Value replaced by Makefile)",
+  "taskRoleArn": "(Value replaced by Makefile)",
+  "executionRoleArn": "(Value replaced by Makefile)",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["EC2"],
+  "containerDefinitions": [
+    {
+      "essential": true,
+      "image": "(Value replaced by Makefile)",
+      "name": "fluentd-daemon",
+      "cpu": 1024,
+      "memory": 2048,
+      "memoryReservation": 1024,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "(Value replaced by Makefile)",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "fluentd",
+          "awslogs-create-group": "true"
+        }
+      },
+      "portMappings": [
+        {
+          "containerPort": 24220
+        },
+        {
+          "containerPort": 24230
+        },
+        {
+          "containerPort": 24231
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT_SUFFIX",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "FLUENTD_RECEIVER_SD",
+          "value": "(Replace with Makefile)"
+        },
+        {
+          "name": "FLUENTD_TOTAL_LIMIT_SIZE",
+          "value": "5g"
+        },
+        {
+          "name": "PROMETHEUS",
+          "value": "true"
+        },
+        {
+          "name": "PROMETHEUS_PORT",
+          "value": "24231"
+        },
+        {
+          "name": "PROMETHEUS_ENDPOINT",
+          "value": "30s:/metrics"
+        }
+      ],
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "nc -vz localhost 24220 || exit 1"],
+        "interval": 5,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 5
+      },
+      "systemControls": [
+        {
+          "namespace": "net.core.somaxconn",
+          "value": "65534"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "docker",
+          "containerPath": "/var/lib/docker/containers"
+        },
+        {
+          "sourceVolume": "fluentd",
+          "containerPath": "/var/log/fluentd"
+        }
+      ]
+    }
+  ],
+  "volumes": [
+    {
+      "name": "docker",
+      "host": {
+        "sourcePath": "/var/lib/docker/containers"
+      }
+    },
+    {
+      "name": "fluentd",
+      "dockerVolumeConfiguration": {
+        "scope": "shared",
+        "driver": "local",
+        "autoprovision": true
+      }
+    }
+  ]
+}
