@@ -1,0 +1,57 @@
+name: baroque-glue-job
+on:
+  pull_request:
+    branches:
+      - 'beta/**'
+      - 'PB**'
+    paths:
+      - 'glue-job/baroque/staging/**'
+  push:
+    branches:
+      - 'feature/*'
+      - 'beta/*'
+    paths:
+      - 'glue-job/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region ap-northeast-1
+
+      - name: Set WORKSPACE and DIRECTORY variable
+        run: |
+          echo "DIRECTORY=${{ inputs.directory }}" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == refs/heads/beta/* ]]; then
+            echo "WORKSPACE=beta" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == refs/heads/feature/* ]]; then
+            echo "WORKSPACE=e" >> $GITHUB_ENV
+          fi
+      - name: Set Script Prefix
+        run: |
+          if [[ "$WORKSPACE" == "beta" ]]; then
+            echo "SCRIPT_PREFIX=beta" >> $GITHUB_ENV
+          elif [[ "$WORKSPACE" == "e" ]]; then
+            echo "SCRIPT_PREFIX=" >> $GITHUB_ENV
+          fi
+          
+
+      # TODO: (9/13)code_build applyしたらこの下改修
+      - name: Conditional steps for push events
+        if: github.event_name == 'push'
+        run: |
+          aws s3 rm s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
+          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging-${{ env.SCRIPT_PREFIX }}/job.py
