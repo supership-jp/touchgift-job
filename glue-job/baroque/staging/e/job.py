@@ -20,21 +20,21 @@ def apply(inputFrame, glueContext):
     frame.createOrReplaceTempView("application_table")
 
     query = f"""
-    select 
+    select
         request_id as request_id,
         time as timestamp,
         visitor_uuid,
-        org_code, 
-        mid, 
-        ad_id, 
+        org_code,
+        mid,
+        ad_id,
         view_time,
         ev,
         campaign_id,
         dt
     from application_table
-    where 
+    where
         dt = '{yesterday}'
-        and request_id is not null 
+        and request_id is not null
         and request_id != '';
     """
 
@@ -53,7 +53,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database="touchgift-datalake-beta",
+    database="touchgift-datalake",
     table_name="application",
 )
 
@@ -69,7 +69,7 @@ if args.get('mode') != 'test':
         frame=recipe,
         connection_type="s3",
         format="glueparquet",
-        connection_options={"path": "s3://baroque-data-link-staging-beta", "partitionKeys": ["dt", "ev"]},
+        connection_options={"path": "s3://baroque-data-link-staging", "partitionKeys": ["dt", "ev"]},
         format_options={"compression": "gzip"})
 else:
     print("テストが完了しました。")
