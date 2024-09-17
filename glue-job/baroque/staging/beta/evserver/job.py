@@ -20,21 +20,21 @@ def apply(inputFrame, glueContext):
     frame.createOrReplaceTempView("application_table")
 
     query = f"""
-    select 
+    select
         request_id as request_id,
         time as timestamp,
         visitor_uuid,
-        org_code, 
-        mid, 
-        ad_id, 
+        org_code,
+        mid,
+        ad_id,
         view_time,
         ev,
         campaign_id,
         dt
     from application_table
-    where 
+    where
         dt = '{yesterday}'
-        and request_id is not null 
+        and request_id is not null
         and request_id != '';
     """
 
@@ -43,7 +43,11 @@ def apply(inputFrame, glueContext):
     return DynamicFrame.fromDF(transformed_df, gc)
 
 # 引数を取得
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])  # 'mode'引数を追加
+try:
+    args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])
+except KeyError:
+    args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+    args['mode'] = 'production'  # 'mode'引数がない場合にデフォルトで'production'を設定
 
 sc = SparkContext()
 glueContext = GlueContext(sc)
