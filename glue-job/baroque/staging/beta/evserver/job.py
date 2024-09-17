@@ -20,21 +20,21 @@ def apply(inputFrame, glueContext):
     frame.createOrReplaceTempView("application_table")
 
     query = f"""
-    select 
+    select
         request_id as request_id,
         time as timestamp,
         visitor_uuid,
-        org_code, 
-        mid, 
-        ad_id, 
+        org_code,
+        mid,
+        ad_id,
         view_time,
         ev,
         campaign_id,
         dt
     from application_table
-    where 
+    where
         dt = '{yesterday}'
-        and request_id is not null 
+        and request_id is not null
         and request_id != '';
     """
 
@@ -43,7 +43,8 @@ def apply(inputFrame, glueContext):
     return DynamicFrame.fromDF(transformed_df, gc)
 
 # 引数を取得
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])  # 'mode'引数を追加
+# 'mode'引数が必須なので、指定されない場合はエラーで終了
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])
 
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -63,8 +64,8 @@ recipe = apply(
     inputFrame=dyf,
     glueContext=glueContext)
 
-
-if args.get('mode') != 'test':
+# 'mode'が'test'でない場合はS3に書き込む
+if args['mode'] != 'test':
     glueContext.write_dynamic_frame.from_options(
         frame=recipe,
         connection_type="s3",

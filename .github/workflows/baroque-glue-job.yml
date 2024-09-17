@@ -45,7 +45,7 @@ jobs:
           if [[ "$WORKSPACE" == "beta" ]]; then
             echo "SCRIPT_PREFIX=-beta" >> $GITHUB_ENV
           elif [[ "$WORKSPACE" == "e" ]]; then
-            echo "SCRIPT_PREFIX=" >> ""
+            echo "SCRIPT_PREFIX=" >> $GITHUB_ENV
           fi
           
 
@@ -53,5 +53,7 @@ jobs:
       - name: Conditional steps for push events
         if: github.event_name == 'push'
         run: |
-          aws s3 rm s3://touchgift-script-glue-staging-${{ env.WORKSPACE }}/job.py
+          if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py ; then
+            aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py
+          fi
           aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py
