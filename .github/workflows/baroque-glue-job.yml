@@ -45,7 +45,7 @@ jobs:
           if [[ "$WORKSPACE" == "beta" ]]; then
             echo "SCRIPT_PREFIX=-beta" >> $GITHUB_ENV
           elif [[ "$WORKSPACE" == "e" ]]; then
-            echo "SCRIPT_PREFIX=" >> ""
+            echo "SCRIPT_PREFIX=" >> $GITHUB_ENV
           fi
           
 
