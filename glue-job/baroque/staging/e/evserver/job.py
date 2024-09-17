@@ -54,7 +54,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database="touchgift-datalake-beta",
+    database="touchgift-datalake",
     table_name="application",
 )
 
@@ -70,7 +70,7 @@ if args['mode'] != 'test':
         frame=recipe,
         connection_type="s3",
         format="glueparquet",
-        connection_options={"path": "s3://baroque-data-link-staging-beta", "partitionKeys": ["dt", "ev"]},
+        connection_options={"path": "s3://baroque-data-link-staging", "partitionKeys": ["dt", "ev"]},
         format_options={"compression": "gzip"})
 else:
     print("テストが完了しました。")
