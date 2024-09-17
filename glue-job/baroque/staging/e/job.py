@@ -43,11 +43,8 @@ def apply(inputFrame, glueContext):
     return DynamicFrame.fromDF(transformed_df, gc)
 
 # 引数を取得
-try:
-    args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])
-except KeyError:
-    args = getResolvedOptions(sys.argv, ['JOB_NAME'])
-    args['mode'] = 'production'  # 'mode'引数がない場合にデフォルトで'production'を設定
+# 'mode'引数が必須なので、指定されない場合はエラーで終了
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'mode'])
 
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -57,7 +54,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database="touchgift-datalake",
+    database="touchgift-datalake-beta",
     table_name="application",
 )
 
@@ -67,13 +64,13 @@ recipe = apply(
     inputFrame=dyf,
     glueContext=glueContext)
 
-
-if args.get('mode') != 'test':
+# 'mode'が'test'でない場合はS3に書き込む
+if args['mode'] != 'test':
     glueContext.write_dynamic_frame.from_options(
         frame=recipe,
         connection_type="s3",
         format="glueparquet",
-        connection_options={"path": "s3://baroque-data-link-staging", "partitionKeys": ["dt", "ev"]},
+        connection_options={"path": "s3://baroque-data-link-staging-beta", "partitionKeys": ["dt", "ev"]},
         format_options={"compression": "gzip"})
 else:
     print("テストが完了しました。")
