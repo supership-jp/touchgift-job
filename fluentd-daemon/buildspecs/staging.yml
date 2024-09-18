@@ -10,7 +10,7 @@ phases:
       - |
         case "$GITHUB_REF" in
           refs/heads/feature/*)
-            ENVIRONMENT_SUFFIX=e2
+            ENVIRONMENT_SUFFIX=e1
           ;;
           refs/heads/beta/*)
             ENVIRONMENT_SUFFIX=beta1
