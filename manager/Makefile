@@ -176,7 +176,7 @@ rewrite-image-on-task-definition:aws_account_id ## rewrite image on task-definit
 		| jq ".taskRoleArn|=\"arn:aws:iam::$(AWS_ACCOUNT_ID):role/$(APPLICATION)-$(ENVIRONMENT_SUFFIX).ecs-task-role\"" \
 		| jq ".executionRoleArn|=\"arn:aws:iam::$(AWS_ACCOUNT_ID):role/$(APPLICATION)-$(ENVIRONMENT_SUFFIX).ecs-task-execution-role\"" \
 		| jq ".containerDefinitions[0].image|=\"$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY):$(TAG)\"" \
-		| jq ".containerDefinitions[0].logConfiguration.options.tag|=\"touchgiftjob.${APPLICATION}.$(ENVIRONMENT_SUFFIX).$(subst .,-,$(TAG)).{{.ID}}\"" \
+		| jq ".containerDefinitions[0].logConfiguration.options.tag|=\"touchgiftjob.$(ENVIRONMENT_SUFFIX).$(subst .,-,$(TAG)).{{.ID}}\"" \
 		| jq "(.containerDefinitions[0].environment[] | select(.name==\"ENVIRONMENT_SUFFIX\") | .value) |=\"$(ENVIRONMENT_SUFFIX)\"" \
 		| jq "(.containerDefinitions[0].environment[] | select(.name==\"AWS_REGION\") | .value) |=\"$(AWS_REGION)\"" \
 		| jq "(.containerDefinitions[0].environment[] | select(.name==\"CAMPAIGN_TABLE_NAME\") | .value) |=\"$(CAMPAIGN_TABLE_NAME)\"" \
