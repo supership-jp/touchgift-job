@@ -80,9 +80,9 @@ make generate
 make clean-testcache
 
 # テスト
-make test
+make tests
 # テスト対象を絞る場合
-make test TEST_TARGET="--run DeliveryStartUsecase ./..."
+make tests TEST_TARGET="--run DeliveryStartUsecase ./..."
 # vscodeの場合、editorから個別にテストを起動できる (デバッグも)
 
 make delete-all-table

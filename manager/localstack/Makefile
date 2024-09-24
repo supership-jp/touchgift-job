@@ -4,13 +4,13 @@ DELIVERY_CONTROL_QUEUE = $(PROJECT_NAME_PREFIX)delivery-control
 
 DELIVERY_OPERATION_TOPIC = $(PROJECT_NAME_PREFIX)delivery-operation-local
 DELIVERY_OPERATION_TOPIC_ARN = arn:aws:sns:ap-northeast-1:000000000000:$(DELIVERY_OPERATION_TOPIC)
-DELIVERY_OPERATION_NOTIFICATION_ENDPOINT = '$(SNS_ENDPOINT)/000000000000/$(DELIVERY_OPERATION_QUEUE)'
+DELIVERY_OPERATION_NOTIFICATION_ENDPOINT = 'arn:aws:sqs:ap-northeast-1:000000000000:$(DELIVERY_OPERATION_QUEUE)'
 
 DELIVERY_CONTROL_TOPIC = $(PROJECT_NAME_PREFIX)server-campaign-cache-local
 DELIVERY_CONTROL_TOPIC_ARN = arn:aws:sns:ap-northeast-1:000000000000:$(DELIVERY_CONTROL_TOPIC)
 
 start-localstack: ## build sqs mock (elasticmq)
-	docker run --name touchgift-job-localstack -d --rm -it -p 4566:4566 -p 4567-4582:4567-4582 -e "LOCALSTACK_SERVICES=sns,sqs,dynamodb" localstack/localstack:1.2.0
+	docker run --name touchgift-job-localstack -d --rm -it -p 4566:4566 -p 4567-4582:4567-4582 -e "LOCALSTACK_SERVICES=sns,sqs,dynamodb" localstack/localstack:3.7.1
 
 stop-localstack: ## stop sqs mock (elasticmq)
 	docker stop touchgift-job-localstack
