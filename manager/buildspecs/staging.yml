@@ -1,0 +1,58 @@
+version: 0.2
+
+env:
+  variables:
+    UT_RESOURCE_PREFIX: UT
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.20
+    commands:
+      - goenv install --list
+      - goenv install 1.20.6 || exit 0
+      - goenv global 1.20.6
+      - goenv rehash
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.52.2
+  pre_build:
+    commands:
+      - WEBHOOK_EVENT=$GITHUB_EVENT_NAME
+      - |
+        case "$GITHUB_REF" in
+          refs/heads/feature/*)
+            ENVIRONMENT_SUFFIX=e1
+          ;;
+          refs/heads/beta/*)
+            ENVIRONMENT_SUFFIX=beta1
+          ;;
+        esac
+      - echo "Config ENVIRONMENT_SUFFIX $ENVIRONMENT_SUFFIX"
+      - git status
+      - cd $WORKING_DIR
+      - git init
+      - IMAGE_TAG=${GITHUB_SHA}.${GITHUB_RUN_ID}
+  build:
+    commands:
+      - aws --version
+      - echo "Build started on `date` $WEBHOOK_EVENT $GITHUB_REF"
+      - echo "GITHUB_EVENT_NAME $GITHUB_EVENT_NAME, GITHUB_SHA $GITHUB_SHA, GITHUB_REF $GITHUB_REF, GITHUB_RUN_ID $GITHUB_RUN_ID"
+      - echo Building the Docker image...
+      - make build-image TAG=$IMAGE_TAG AWS_VAULT_CMD=
+      - |
+        RUN_DEPLOY="no"
+        case "$GITHUB_REF" in
+          refs/heads/feature/*)
+            RUN_DEPLOY="yes"
+          ;;
+          refs/heads/beta/*)
+            RUN_DEPLOY="yes"
+          ;;
+        esac
+        if [ "$RUN_DEPLOY" = "yes" ]; then
+          echo "Pushing image && Deploy image ..."
+          make push-image TAG=$IMAGE_TAG AWS_VAULT_CMD= && \
+          make run-deploy TAG=$IMAGE_TAG AWS_VAULT_CMD= ENV=staging ENVIRONMENT_SUFFIX=${ENVIRONMENT_SUFFIX}
+        fi
+  post_build:
+    commands:
+      - echo Build completed on `date`
