@@ -14,7 +14,7 @@ var log *Logger
 func init() {
 	zerolog.DisableSampling(true)
 	zerolog.DurationFieldUnit = time.Millisecond
-	zerolog.TimeFieldFormat = time.RFC3339Nano
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.TimestampFunc = func() time.Time {
 		return time.Now().UTC()
 	}
