@@ -36,7 +36,7 @@ func TestContentDataRepository_Get(t *testing.T) {
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: &URL}},
+			Gimmicks:   models.Gimmick{URL: &URL},
 		}
 		// データを用意
 		if err := contentDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
@@ -70,7 +70,7 @@ func TestContentDataRepository_Put(t *testing.T) {
 		return &models.DeliveryDataContent{
 			CampaignID: campaignID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: &URL}},
+			Gimmicks:   models.Gimmick{URL: &URL},
 		}
 	}
 
@@ -137,12 +137,12 @@ func TestContentDataRepository_PutAll(t *testing.T) {
 			{
 				CampaignID: "1",
 				Coupons:    []models.DeliveryCouponData{{ID: 1}},
-				Gimmicks:   []models.Gimmick{{URL: &URL}},
+				Gimmicks:   models.Gimmick{URL: &URL},
 			},
 			{
 				CampaignID: "2",
 				Coupons:    []models.DeliveryCouponData{{ID: 2}},
-				Gimmicks:   []models.Gimmick{{URL: &URL}},
+				Gimmicks:   models.Gimmick{URL: &URL},
 			},
 		}
 	}
@@ -227,7 +227,7 @@ func TestContentDataRepository_Delete(t *testing.T) {
 		expected := models.DeliveryDataContent{
 			CampaignID: ID,
 			Coupons:    []models.DeliveryCouponData{{ID: 1}},
-			Gimmicks:   []models.Gimmick{{URL: &URL}},
+			Gimmicks:   models.Gimmick{URL: &URL},
 		}
 		if err := contentDataRepository.Put(ctx, &expected); !assert.NoError(t, err) {
 			return

@@ -305,11 +305,9 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	content := &models.DeliveryDataContent{
 		CampaignID: strconv.Itoa(campaign.ID),
 		Coupons:    deliveryCouponDatas,
-		Gimmicks: []models.Gimmick{
-			{
-				URL:  gimmickURL,
-				Code: gimmickCode,
-			},
+		Gimmicks: models.Gimmick{
+			URL:  gimmickURL,
+			Code: gimmickCode,
 		},
 	}
 	// touchPoint作成
