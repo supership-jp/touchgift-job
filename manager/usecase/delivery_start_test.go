@@ -435,7 +435,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 	contentData := &models.DeliveryDataContent{
 		CampaignID: strconv.Itoa(campaignData.ID),
 		Coupons:    []models.DeliveryCouponData{{ID: 1}},
-		Gimmicks:   []models.Gimmick{{URL: &gimmickURL, Code: &gimmickCode}},
+		Gimmicks:   models.Gimmick{URL: &gimmickURL, Code: &gimmickCode},
 	}
 	// DBから取得するデータの条件
 	contentCondition := repository.ContentByCampaignIDCondition{CampaignID: campaignData.ID}
