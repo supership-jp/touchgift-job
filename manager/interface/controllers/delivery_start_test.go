@@ -27,6 +27,7 @@ func TestDeliveryStart_Execute(t *testing.T) {
 	createCampaign := func(id int, status string) *models.Campaign {
 		return &models.Campaign{
 			ID:        id,
+			GroupID:   1,
 			Status:    status,
 			StartAt:   time.Time{},
 			UpdatedAt: time.Time{},
@@ -158,7 +159,7 @@ func TestDeliveryStart_Execute(t *testing.T) {
 			gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaigns[0]), codes.StatusWarmup).Return(1, nil).Times(1)
 		tx.EXPECT().Commit().Return(nil).Times(1)
 		deliveryControlEvent.EXPECT().PublishCampaignEvent(
-			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].OrgCode),
+			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].GroupID), gomock.Eq(campaigns[0].OrgCode),
 			gomock.Eq("configured"), gomock.Eq("warmup"), gomock.Eq(""),
 		).Times(1)
 		deliveryStartUsecase.EXPECT().Reserve(gomock.Eq(ctx), gomock.Eq(campaigns[0].StartAt), gomock.Eq(campaigns[0])).Return().Times(1)
@@ -240,7 +241,7 @@ func TestDeliveryStart_Execute(t *testing.T) {
 			gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(campaigns[0]), gomock.Eq(codes.StatusWarmup)).Return(1, nil).Times(1)
 		tx.EXPECT().Commit().Return(nil).Times(1)
 		deliveryControlEvent.EXPECT().PublishCampaignEvent(
-			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].OrgCode),
+			gomock.Eq(ctx), gomock.Eq(campaigns[0].ID), gomock.Eq(campaigns[0].GroupID), gomock.Eq(campaigns[0].OrgCode),
 			gomock.Eq("configured"), gomock.Eq("warmup"), gomock.Eq(""),
 		).Times(1)
 		deliveryStartUsecase.EXPECT().Reserve(gomock.Eq(ctx), gomock.Eq(campaigns[0].StartAt), campaigns[0]).Return().Times(1)

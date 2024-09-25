@@ -36,15 +36,15 @@ func (m *MockDeliveryControlEvent) EXPECT() *MockDeliveryControlEventMockRecorde
 }
 
 // PublishCampaignEvent mocks base method.
-func (m *MockDeliveryControlEvent) PublishCampaignEvent(ctx context.Context, CampaignID int, organization, before, after, detail string) {
+func (m *MockDeliveryControlEvent) PublishCampaignEvent(ctx context.Context, CampaignID, groupID int, organization, before, after, detail string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "PublishCampaignEvent", ctx, CampaignID, organization, before, after, detail)
+	m.ctrl.Call(m, "PublishCampaignEvent", ctx, CampaignID, groupID, organization, before, after, detail)
 }
 
 // PublishCampaignEvent indicates an expected call of PublishCampaignEvent.
-func (mr *MockDeliveryControlEventMockRecorder) PublishCampaignEvent(ctx, CampaignID, organization, before, after, detail interface{}) *gomock.Call {
+func (mr *MockDeliveryControlEventMockRecorder) PublishCampaignEvent(ctx, CampaignID, groupID, organization, before, after, detail interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishCampaignEvent", reflect.TypeOf((*MockDeliveryControlEvent)(nil).PublishCampaignEvent), ctx, CampaignID, organization, before, after, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishCampaignEvent", reflect.TypeOf((*MockDeliveryControlEvent)(nil).PublishCampaignEvent), ctx, CampaignID, groupID, organization, before, after, detail)
 }
 
 // PublishCreativeEvent mocks base method.
