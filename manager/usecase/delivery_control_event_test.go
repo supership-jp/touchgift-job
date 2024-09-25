@@ -42,6 +42,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 			Source:  "touchgift-job-manager",
 			OrgCode: "org1",
 			ID:      "1",
+			GroupID: "1",
 		}
 		_, err := json.Marshal(&deliveryControlEvent)
 		if err != nil {
@@ -58,7 +59,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 		)
 
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
-		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, "org1", "configured", "warmup", "")
+		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, 1, "org1", "configured", "warmup", "")
 	})
 
 	t.Run("通知に失敗した場合は専用のエラーログを出力する", func(t *testing.T) {
@@ -83,6 +84,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 			Source:  "touchgift-job-manager",
 			OrgCode: "org1",
 			ID:      "1",
+			GroupID: "1",
 		}
 		_, err := json.Marshal(&deliveryControlEvent)
 		if err != nil {
@@ -99,7 +101,7 @@ func TestDeliveryControlEvent_Publish(t *testing.T) {
 
 		// テストを実行する
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
-		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, "org1", "warmup", "started", "")
+		deliveryControlEventUsecase.PublishCampaignEvent(ctx, 1, 1, "org1", "warmup", "started", "")
 	})
 }
 
@@ -118,6 +120,7 @@ func TestDeliveryControlEvent_createCampaignCacheLog(t *testing.T) {
 		notificationHandler := mock_notification.NewMockNotificationHandler(ctrl)
 
 		CampaignID := 1
+		groupID := 2
 		organization := "org"
 		cache := "NONE"
 		before := "configured"
@@ -128,9 +131,10 @@ func TestDeliveryControlEvent_createCampaignCacheLog(t *testing.T) {
 		deliveryControlEventUsecase := NewDeliveryControlEvent(logger, notificationHandler)
 		// private methodのテストを行うためにcastする
 		deliveryControlEventInteractor := deliveryControlEventUsecase.(*deliveryControlEvent)
-		actual := deliveryControlEventInteractor.createCampaignCacheLog(CampaignID, organization, before, after, codes.DetailShortage)
+		actual := deliveryControlEventInteractor.createCampaignCacheLog(CampaignID, groupID, organization, before, after, codes.DetailShortage)
 		assert.NotEmpty(t, actual.TraceID)
 		assert.Equal(t, strconv.Itoa(CampaignID), actual.ID)
+		assert.Equal(t, strconv.Itoa(groupID), actual.GroupID)
 		assert.Equal(t, organization, actual.OrgCode)
 		assert.Equal(t, expectedEvent, actual.Event)
 		assert.Equal(t, cache, actual.Action)

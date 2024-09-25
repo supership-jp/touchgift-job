@@ -235,7 +235,7 @@ func (d *deliveryStart) start(
 	}
 	// 配信制御イベントを発行する
 	d.deliveryControlEvent.PublishCampaignEvent(
-		ctx, startCampaign.ID, startCampaign.OrgCode, startCampaign.Status, codes.StatusStarted, "")
+		ctx, startCampaign.ID, startCampaign.GroupID, startCampaign.OrgCode, startCampaign.Status, codes.StatusStarted, "")
 	return nil
 }
 

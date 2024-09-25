@@ -415,7 +415,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		}
 		groupIDStr := strconv.Itoa(deliveryData.GroupID)
 		touchPointID := "test"
-		touchPoints := []*models.TouchPoint{{ID: touchPointID}}
+		touchPoints := []*models.TouchPoint{{ID: touchPointID, GroupID: deliveryData.GroupID}}
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
@@ -430,7 +430,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			deliveryControlUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq(touchPointID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq("DELETE")),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
-				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
+				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 			),
 		)
 
@@ -489,7 +489,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(1, nil),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
-				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
+				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
 			),
 		)
 
@@ -942,6 +942,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 func createEndTestCampaign(campaign *models.Campaign, startAt time.Time, endAt sql.NullTime, status string, updatedAt time.Time) *models.Campaign {
 	return &models.Campaign{
 		ID:        campaign.ID,
+		GroupID:   1,
 		Status:    status,
 		StartAt:   startAt,
 		EndAt:     endAt,

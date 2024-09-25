@@ -189,24 +189,24 @@ func (d *deliveryStart) process(ctx context.Context, condition *DeliveryStartCon
 		return errors.Wrap(err, "Failed to GetCampaignData")
 	}
 
-		condition.r <- len(campaigns)
-		for i := range campaigns {
-			campaign := (campaigns)[i]
-			d.monitor.Metrics.GetCounter(metricDeliveryStartCampaignTotal).WithLabelValues(campaign.Status).Inc()
-			switch campaign.Status {
-			case codes.StatusConfigured:
-				err := d.handleConfigured(ctx, baseTime, campaign)
-				if err != nil {
-					d.logger.Error().Err(err).Time("baseTime", baseTime).
-						Int("campaign_id", campaign.ID).
-						Msg("Failed to handle configured")
-				}
-			case codes.StatusWarmup:
-				// 再起動等でwarmupになったままのものを処理する
-				// 既に開始時間を過ぎているのですぐに開始する
-				d.deliveryStartUsecase.ExecuteNow(campaign)
+	condition.r <- len(campaigns)
+	for i := range campaigns {
+		campaign := (campaigns)[i]
+		d.monitor.Metrics.GetCounter(metricDeliveryStartCampaignTotal).WithLabelValues(campaign.Status).Inc()
+		switch campaign.Status {
+		case codes.StatusConfigured:
+			err := d.handleConfigured(ctx, baseTime, campaign)
+			if err != nil {
+				d.logger.Error().Err(err).Time("baseTime", baseTime).
+					Int("campaign_id", campaign.ID).
+					Msg("Failed to handle configured")
 			}
+		case codes.StatusWarmup:
+			// 再起動等でwarmupになったままのものを処理する
+			// 既に開始時間を過ぎているのですぐに開始する
+			d.deliveryStartUsecase.ExecuteNow(campaign)
 		}
+	}
 	return nil
 }
 
@@ -236,7 +236,7 @@ func (d *deliveryStart) handleConfigured(ctx context.Context, baseTime time.Time
 		return errors.Wrap(err, "Failed to commit")
 	}
 	// 配信制御イベントを発行する
-	d.deliveryControlEvent.PublishCampaignEvent(ctx, campaign.ID, campaign.OrgCode, codes.StatusConfigured, codes.StatusWarmup, "")
+	d.deliveryControlEvent.PublishCampaignEvent(ctx, campaign.ID, campaign.GroupID, campaign.OrgCode, codes.StatusConfigured, codes.StatusWarmup, "")
 	// 取得した配信対象の開始時間を指定時間として実行する
 	d.deliveryStartUsecase.Reserve(ctx, campaign.StartAt, campaign)
 	return nil
