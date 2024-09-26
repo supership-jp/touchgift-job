@@ -235,7 +235,7 @@ func (d *deliveryStart) start(
 	}
 	// 配信制御イベントを発行する
 	d.deliveryControlEvent.PublishCampaignEvent(
-		ctx, startCampaign.ID, startCampaign.OrgCode, startCampaign.Status, codes.StatusStarted, "")
+		ctx, startCampaign.ID, startCampaign.GroupID, startCampaign.OrgCode, startCampaign.Status, codes.StatusStarted, "")
 	return nil
 }
 
@@ -305,11 +305,9 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	content := &models.DeliveryDataContent{
 		CampaignID: strconv.Itoa(campaign.ID),
 		Coupons:    deliveryCouponDatas,
-		Gimmicks: []models.Gimmick{
-			{
-				URL:  gimmickURL,
-				Code: gimmickCode,
-			},
+		Gimmicks: models.Gimmick{
+			URL:  gimmickURL,
+			Code: gimmickCode,
 		},
 	}
 	// touchPoint作成

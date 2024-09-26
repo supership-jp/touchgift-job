@@ -15,7 +15,7 @@ import (
 )
 
 type DeliveryControlEvent interface {
-	PublishCampaignEvent(ctx context.Context, CampaignID int, organization string, before string, after string, detail string)
+	PublishCampaignEvent(ctx context.Context, CampaignID int, groupID int, organization string, before string, after string, detail string)
 	PublishCreativeEvent(ctx context.Context, creative *models.DeliveryDataCreative, organization string, action string)
 	PublishDeliveryEvent(ctx context.Context, id string, groupID int, campaignID int, organization string, action string)
 }
@@ -39,8 +39,8 @@ func NewDeliveryControlEvent(
 // サーバーのCampaignキャッシュ更新のためSNSへPublishを行う
 // CampaignID, org_code, cacheOperation(サーバー上のキャッシュ操作), before(更新前のCampaign.status), after(更新後のCampaign.status)
 func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
-	CampaignID int, organization string, before string, after string, detail string) {
-	deliveryControl := d.createCampaignCacheLog(CampaignID, organization, before, after, detail)
+	CampaignID int, groupID int, organization string, before string, after string, detail string) {
+	deliveryControl := d.createCampaignCacheLog(CampaignID, groupID, organization, before, after, detail)
 
 	message, err := json.Marshal(deliveryControl)
 	if err != nil {
@@ -65,6 +65,7 @@ func (d *deliveryControlEvent) PublishCampaignEvent(ctx context.Context,
 			Str("source", deliveryControl.Source).
 			Str("org_code", deliveryControl.OrgCode).
 			Str("campaign_id", deliveryControl.ID).
+			Str("group_id", deliveryControl.GroupID).
 			Msg("Publish campaign cache event")
 	}
 }
@@ -126,6 +127,7 @@ func (d *deliveryControlEvent) PublishDeliveryEvent(ctx context.Context,
 			Str("action", deliveryControl.Action).
 			Str("org_code", deliveryControl.OrgCode).
 			Int("campaign_id", deliveryControl.CampaignID).
+			Int("group_id", deliveryControl.GroupID).
 			Msg("Publish delivery control event")
 	}
 }
@@ -141,12 +143,13 @@ func (d *deliveryControlEvent) failedToPublishLog(deliveryControl *models.Campai
 		Str("source", deliveryControl.Source).
 		Str("organization", deliveryControl.OrgCode).
 		Str("campaign_id", deliveryControl.ID).
+		Str("group_id", deliveryControl.GroupID).
 		Msg("Failed to publish sns event")
 }
 
 // delivery_controlログに整形
 func (d *deliveryControlEvent) createCampaignCacheLog(campaignID int,
-	organization string, before string, after string,
+	groupID int, organization string, before string, after string,
 	eventDetail string) *models.CampaignCacheLog {
 
 	event, operation := d.deliveryEvent(before, after)
@@ -161,6 +164,7 @@ func (d *deliveryControlEvent) createCampaignCacheLog(campaignID int,
 		OrgCode:     organization,
 		Source:      "touchgift-job-manager",
 		ID:          strconv.Itoa(campaignID),
+		GroupID:     strconv.Itoa(groupID),
 	}
 }
 

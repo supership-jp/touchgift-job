@@ -266,7 +266,7 @@ func (d *deliveryEnd) end(ctx context.Context, startTime time.Time, reservedData
 		return errors.Wrap(err, "Failed to commit")
 	}
 	// 配信制御イベントを発行する
-	d.deliveryControlEvent.PublishCampaignEvent(ctx, deliveryData.ID, deliveryData.OrgCode, deliveryData.Status, *afterStatus, "")
+	d.deliveryControlEvent.PublishCampaignEvent(ctx, deliveryData.ID, deliveryData.GroupID, deliveryData.OrgCode, deliveryData.Status, *afterStatus, "")
 	return nil
 }
 

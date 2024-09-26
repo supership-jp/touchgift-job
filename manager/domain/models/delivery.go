@@ -52,7 +52,7 @@ type DeliveryDataCreative struct {
 type DeliveryDataContent struct {
 	CampaignID string               `json:"campaign_id"`
 	Coupons    []DeliveryCouponData `json:"coupons"`
-	Gimmicks   []Gimmick            `json:"gimmicks"`
+	Gimmicks   Gimmick              `json:"gimmicks"`
 }
 
 type DeliveryCouponData struct {

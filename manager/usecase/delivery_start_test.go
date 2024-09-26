@@ -435,7 +435,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 	contentData := &models.DeliveryDataContent{
 		CampaignID: strconv.Itoa(campaignData.ID),
 		Coupons:    []models.DeliveryCouponData{{ID: 1}},
-		Gimmicks:   []models.Gimmick{{URL: &gimmickURL, Code: &gimmickCode}},
+		Gimmicks:   models.Gimmick{URL: &gimmickURL, Code: &gimmickCode},
 	}
 	// DBから取得するデータの条件
 	contentCondition := repository.ContentByCampaignIDCondition{CampaignID: campaignData.ID}
@@ -497,7 +497,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			contentDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(contentData)).Return(nil),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlEventUsecase.EXPECT().PublishCampaignEvent(
-				gomock.Eq(ctx), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq(deliveryData[0].Status),
+				gomock.Eq(ctx), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].GroupID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq(deliveryData[0].Status),
 				gomock.Eq(codes.StatusStarted), gomock.Eq(""),
 			),
 		)
