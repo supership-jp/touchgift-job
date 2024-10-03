@@ -33,6 +33,7 @@ type CreativeCacheLog struct {
 type DeliveryCacheLog struct {
 	ID         string `json:"id"`
 	GroupID    int    `json:"group_id"`
+	StoreID    string `json:"store_id"`
 	Action     string `json:"action"` // PUT or DELETE
 	OrgCode    string `json:"org_code"`
 	CampaignID int    `json:"campaign_id"`

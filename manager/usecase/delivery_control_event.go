@@ -102,8 +102,8 @@ func (d *deliveryControlEvent) PublishCreativeEvent(ctx context.Context,
 
 // サーバーのTouchpointキャッシュ更新のためSNSへPublishを行う
 func (d *deliveryControlEvent) PublishDeliveryEvent(ctx context.Context,
-	id string, groupID int, campaignID int, organization string, operation string) {
-	deliveryControl := d.createDeliveryEventLog(id, groupID, organization, campaignID, operation)
+	id string, groupID int, storeID string, campaignID int, organization string, operation string) {
+	deliveryControl := d.createDeliveryEventLog(id, groupID, storeID, organization, campaignID, operation)
 
 	message, err := json.Marshal(deliveryControl)
 	if err != nil {
@@ -128,6 +128,7 @@ func (d *deliveryControlEvent) PublishDeliveryEvent(ctx context.Context,
 			Str("org_code", deliveryControl.OrgCode).
 			Int("campaign_id", deliveryControl.CampaignID).
 			Int("group_id", deliveryControl.GroupID).
+			Str("store_id", deliveryControl.StoreID).
 			Msg("Publish delivery control event")
 	}
 }
@@ -188,13 +189,14 @@ func (d *deliveryControlEvent) createCreativeEventLog(creative *models.DeliveryD
 	}
 }
 
-func (d *deliveryControlEvent) createDeliveryEventLog(id string, groupID int,
+func (d *deliveryControlEvent) createDeliveryEventLog(id string, groupID int, storeID string,
 	organization string, campaignID int, operation string) *models.DeliveryCacheLog {
 
 	return &models.DeliveryCacheLog{
 		Action:     operation,
 		OrgCode:    organization,
 		ID:         id,
+		StoreID:    storeID,
 		GroupID:    groupID,
 		CampaignID: campaignID,
 	}

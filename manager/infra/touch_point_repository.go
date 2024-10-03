@@ -23,7 +23,8 @@ func (t *TouchPointRepository) GetTouchPointByGroupID(ctx context.Context,
 
 	query := `SELECT
 		c.store_group_id AS "group_id",
-		tp.point_unique_id AS "id"
+		tp.point_unique_id AS "id",
+		tp.store_id AS "store_id",
 	FROM campaign c
 	JOIN store_map sm on c.store_group_id = sm.store_group_id
 	JOIN store s on sm.store_id = s.id
