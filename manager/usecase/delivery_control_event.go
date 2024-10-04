@@ -17,7 +17,7 @@ import (
 type DeliveryControlEvent interface {
 	PublishCampaignEvent(ctx context.Context, CampaignID int, groupID int, organization string, before string, after string, detail string)
 	PublishCreativeEvent(ctx context.Context, creative *models.DeliveryDataCreative, organization string, action string)
-	PublishDeliveryEvent(ctx context.Context, id string, groupID int, campaignID int, organization string, action string)
+	PublishDeliveryEvent(ctx context.Context, id string, groupID int, storeID string, campaignID int, organization string, action string)
 }
 
 type deliveryControlEvent struct {
