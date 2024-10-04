@@ -191,7 +191,7 @@ func (d *deliveryEnd) Delete(ctx context.Context, campaign *models.Campaign) err
 			if err := d.touchPointDataRepository.Delete(ctx, &touchPoint.ID, &groupIDStr); err != nil {
 				return err
 			}
-			d.deliveryControlEvent.PublishDeliveryEvent(ctx, touchPoint.ID, touchPoint.GroupID, campaign.ID, campaign.OrgCode, "DELETE")
+			d.deliveryControlEvent.PublishDeliveryEvent(ctx, touchPoint.ID, touchPoint.GroupID, touchPoint.StoreID, campaign.ID, campaign.OrgCode, "DELETE")
 		}
 	}
 	return nil
