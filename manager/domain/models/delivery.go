@@ -27,6 +27,7 @@ func (d *DeliveryDataCampaign) CreateCampaign() *Campaign {
 
 type DeliveryTouchPoint struct {
 	GroupID int    `json:"group_id"`
+	StoreID string `json:"store_id"`
 	ID      string `json:"id"`
 }
 

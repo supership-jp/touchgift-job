@@ -295,7 +295,7 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 	// タッチポイントの取得
 	touchPointCondition := &repository.TouchPointByGroupIDCondition{
 		GroupID: campaign.GroupID,
-		Limit:   1,
+		Limit:   1000000,
 	}
 	touchPoints, err := d.touchPointRepository.GetTouchPointByGroupID(ctx, touchPointCondition)
 	if err != nil {
@@ -316,6 +316,7 @@ func (d *deliveryStart) getDataFromRDB(ctx context.Context, tx repository.Transa
 		touchPointData := models.DeliveryTouchPoint{
 			ID:      touchPoint.ID,
 			GroupID: touchPoint.GroupID,
+			StoreID: touchPoint.StoreID,
 		}
 		touchPointDatas = append(touchPointDatas, &touchPointData)
 	}
@@ -335,7 +336,7 @@ func (d *deliveryStart) createDeliveryDatas(ctx context.Context,
 		if err != nil {
 			return err
 		}
-		d.deliveryControlEvent.PublishDeliveryEvent(ctx, tp.ID, tp.GroupID, campaign.ID, campaign.OrgCode, "PUT")
+		d.deliveryControlEvent.PublishDeliveryEvent(ctx, tp.ID, tp.GroupID, tp.StoreID, campaign.ID, campaign.OrgCode, "PUT")
 	}
 
 	for _, creative := range creatives {

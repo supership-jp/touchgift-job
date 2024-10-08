@@ -411,7 +411,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		id := strconv.Itoa(deliveryData.ID)
 		touchPointCondition := repository.TouchPointByGroupIDCondition{
 			GroupID: deliveryData.GroupID,
-			Limit:   100000,
+			Limit:   1000000,
 		}
 		groupIDStr := strconv.Itoa(deliveryData.GroupID)
 		touchPointID := "test"
