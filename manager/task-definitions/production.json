@@ -59,19 +59,19 @@
         },
         {
           "name": "DB_DRIVER_NAME",
-          "value": "pgx"
+          "value": "mysql"
         },
         {
           "name": "DB_DATABASE",
-          "value": "dm"
+          "value": "retail"
         },
         {
           "name": "DB_PORT",
-          "value": "5432"
+          "value": "3306"
         },
         {
           "name": "DB_USER",
-          "value": "dm"
+          "value": "sc2_pn"
         },
         {
           "name": "DB_CONNECT_TIMEOUT_SEC",
@@ -166,7 +166,7 @@
           "value": "10"
         },
         {
-          "name": "DELIVERY_TABLE_NAME",
+          "name": "CAMPAIGN_TABLE_NAME",
           "value": "(Value replaced by Makefile)"
         },
         {
@@ -174,7 +174,11 @@
           "value": "(Value replaced by Makefile)"
         },
         {
-          "name": "DELIVERY_BUDGET_TABLE_NAME",
+          "name": "TOUCH_POINT_TABLE_NAME",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "CONTENT_TABLE_NAME",
           "value": "(Value replaced by Makefile)"
         },
         {
@@ -183,6 +187,14 @@
         },
         {
           "name": "SNS_CONTROL_LOG_TOPIC_ARN",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "SNS_DELIVERY_CACHE_TOPIC_ARN",
+          "value": "(Value replaced by Makefile)"
+        },
+        {
+          "name": "SNS_CREATIVE_CACHE_TOPIC_ARN",
           "value": "(Value replaced by Makefile)"
         },
         {
