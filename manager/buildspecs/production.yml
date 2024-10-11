@@ -15,7 +15,7 @@ phases:
       - |
         case "$GITHUB_REF" in
           refs/heads/master)
-            ENVIRONMENT_SUFFIX=e2
+            ENVIRONMENT_SUFFIX=e1
           ;;
           refs/heads/rc/*)
             ENVIRONMENT_SUFFIX=rc1
