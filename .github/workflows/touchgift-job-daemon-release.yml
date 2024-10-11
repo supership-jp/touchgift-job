@@ -22,8 +22,8 @@ jobs:
       - name: Configure AWS Credentials (CodeBuild)
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.CODEBUILD_AWS_ACCESS_KEY_ID_PRO }}
+          aws-secret-access-key: ${{ secrets.CODEBUILD_AWS_SECRET_ACCESS_KEY_PRO }}
           aws-region: ap-northeast-1
           role-to-assume: arn:aws:iam::991880925744:role/touchgift-job-fluentd-daemon.codebuild.execution
           role-duration-seconds: 1200
