@@ -42,7 +42,7 @@ def apply(inputFrame, glueContext):
         lang,
         campaign_id,
         coupon_id,
-        screen_id,
+        screen_id
     from application_table
     where
         dt = '{yesterday}'
