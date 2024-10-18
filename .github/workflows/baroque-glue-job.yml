@@ -49,7 +49,7 @@ jobs:
           elif [[ "$WORKSPACE" == "e" ]]; then
             echo "SCRIPT_PREFIX=" >> $GITHUB_ENV
           fi
-          scho ${{ github.event_name }}
+          echo ${{ github.event_name }}
           
 
       # TODO: (9/13)code_build applyしたらこの下改修
