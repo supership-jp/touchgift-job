@@ -11,7 +11,6 @@ def apply(inputFrame, glueContext):
     frame = inputFrame.toDF()
     gc = glueContext
 
-    # タイムゾーンをJSTに設定
     jst = pytz.timezone('Asia/Tokyo')
     now = datetime.now(pytz.utc).astimezone(jst)
 
