@@ -55,7 +55,10 @@ jobs:
       - name: Conditional steps for push events
         if: github.event_name == 'push'
         run: |
-          if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py ; then
-            aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py
+          if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/evserver/job.py ; then
+            aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/evserver/job.py
+          if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/apiserver/job.py ; then
+            aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/apiserver/job.py
           fi
-          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/job.py
+          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/evserver/job.py s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/evserver/job.py
+          aws s3 cp glue-job/baroque/staging/${{ env.WORKSPACE }}/apiserver/job.py s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/apiserver/job.py
