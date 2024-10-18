@@ -58,6 +58,7 @@ jobs:
         run: |
           if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/evserver/job.py ; then
             aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/evserver/job.py
+          fi
           if aws s3 ls s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/apiserver/job.py ; then
             aws s3 rm s3://touchgift-script-glue-staging${{ env.SCRIPT_PREFIX }}/apiserver/job.py
           fi
