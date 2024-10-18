@@ -8,8 +8,8 @@ on:
       - 'glue-job/baroque/staging/**'
   push:
     branches:
-      - 'feature/*'
-      - 'beta/*'
+      - 'feature/**'
+      - 'beta/**'
     paths:
       - 'glue-job/**'
 jobs:
