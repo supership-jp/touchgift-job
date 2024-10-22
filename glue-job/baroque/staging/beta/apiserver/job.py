@@ -6,6 +6,7 @@ from awsglue.dynamicframe import DynamicFrame
 from awsglue.job import Job
 from datetime import datetime, timedelta
 import pytz
+from pyspark.sql.functions import lit
 
 def apply(inputFrame, glueContext):
     frame = inputFrame.toDF()
