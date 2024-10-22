@@ -84,7 +84,10 @@ def apply(inputFrame, glueContext):
     """
 
     transformed_df = gc.sparkSession.sql(query)
-    transformed_df["ev"] = transformed_df["ev"].replace('coupon_draw', 'coupon_get_imp')
+    transformed_df = transformed_df.withColumn(
+        "ev",
+        when(transformed_df["ev"] == "coupon_draw", "coupon_get_imp").otherwise(transformed_df["ev"])
+    )
 
     return DynamicFrame.fromDF(transformed_df, gc)
 
