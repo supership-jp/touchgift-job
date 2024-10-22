@@ -17,6 +17,36 @@ def apply(inputFrame, glueContext):
 
     yesterday = (now - timedelta(1)).strftime('%Y%m%d')
 
+    # 存在しないカラムを追加
+    columns = [
+        'request_id',
+        'time',
+        'org_code',
+        'visitor_uuid',
+        'mid',
+        'message',
+        'dt',
+        'adid',
+        'idfa',
+        'fcm_token',
+        'store_id',
+        'os',
+        'os_version',
+        'device',
+        'app_name',
+        'network_type',
+        'mcc',
+        'mnc',
+        'lang',
+        'campaign_id',
+        'coupon_id',
+        'screen_id'
+    ]
+
+    for col in columns:
+        if col not in frame.columns:
+            frame = frame.withColumn(col, lit(None))
+
     frame.createOrReplaceTempView("application_table")
 
     query = f"""
