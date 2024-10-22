@@ -11,7 +11,7 @@ def apply(inputFrame, glueContext):
     frame = inputFrame.toDF()
     gc = glueContext
 
-    # タイムゾーンをJSTに設定
+    # JSTに変換
     jst = pytz.timezone('Asia/Tokyo')
     now = datetime.now(pytz.utc).astimezone(jst)
 
@@ -54,7 +54,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database="touchgift-datalake-beta",
+    database="touchgift-datalake-evserver-beta",
     table_name="application",
 )
 
