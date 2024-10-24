@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# makeで実行する想定
+
+echo "Run deploy (ecs update-service)"
+
+# --------
+# task-definition 登録
+# --------
+TASK_DEF_TMP_FILE=task-definition-tmp.json
+make -s rewrite-image-on-task-definition AWS_VAULT_CMD="${AWS_VAULT_CMD}" TAG=${TAG} ENV=${ENV} ENVIRONMENT_SUFFIX=${ENVIRONMENT_SUFFIX} > ./${TASK_DEF_TMP_FILE}
+if [ $? -ne 0 ]; then
+  echo "Failed to rewrite-image-on-task-definition." && exit 1
+fi
+
+TASK_DEF=$(make -s register-task-definition AWS_VAULT_CMD="${AWS_VAULT_CMD}" ENV=${ENV} TASK_DEF_FILE=file://${PWD}/${TASK_DEF_TMP_FILE})
+if [ $? -ne 0 ]; then
+  echo "Failed to register-task-definition." && exit 1
+fi
+rm ${TASK_DEF_TMP_FILE}
+if [ $? -ne 0 ]; then
+  echo "Failed to delete. file: ${TASK_DEF_TMP_FILE}" && exit 1
+fi
+TASK_DEF_ARN=$(echo "${TASK_DEF}" | jq -r ".taskDefinition.taskDefinitionArn")
+if [ $? -ne 0 ]; then
+  echo "Failed to get TASK_DEF_ARN. ${TASK_DEF_ARN}" && exit 1
+fi
+echo "TASK_DEF_ARN: ${TASK_DEF_ARN}"
+
+# --------
+# service更新
+# --------
+make update-service AWS_VAULT_CMD="${AWS_VAULT_CMD}" ENV=${ENV} ENVIRONMENT_SUFFIX=${ENVIRONMENT_SUFFIX} TASK_DEF_ARN=${TASK_DEF_ARN}

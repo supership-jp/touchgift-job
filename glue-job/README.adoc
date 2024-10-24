@@ -1,0 +1,44 @@
+= Glue-Job
+:TOC:
+
+== CI/CD, 動作確認
+
+**階層**
+
+[source,text]
+----
+baroque(組織)
+└── staging(環境) ex)staging, production
+    └── beta(workspace) ex) beta, e ②
+        └── evserver アプリケーション
+            └── job.py ①の部分
+----
+
+1. **コードのバージョン管理**
+
+- GitリポジトリにGlueジョブのスクリプト（例: `job.py`）を追加。①の部分
+
+2. **CI/CDツールの設定**
+- beta, featureのprefixがつくブランチにpushすればs3にdeployされる
+- GitHubActionsを使用 *codebuildはまだ実装していないので一旦githubactionsのみで簡潔させる
+- CI/CDパイプラインにおいて、以下のステージを設定:
+- **コードの取得**: Gitからコードを取得。
+- **S3へのデプロイ**: GlueジョブのスクリプトをS3にアップロード。②で設定しているworkspaceに配置される
+
+3. **テストの実行**
+- Glueジョブのテストをローカルで実行可能にするため、`aws-glue-libs`を使用したローカル環境を構築。
+- テスト環境でのジョブ実行:
+[source,bash]
+----
+## RunIDが取得できるので取得する
+make test-job WORKSPACE=(workspace) JOB_NAME=(job名) ENV=(環境名)
+----
+
+4. **テストの確認**
+[source,bash]
+----
+# 3で実行した後にジョブランIDはわかる
+make show-test-result WORKSPACE=beta JOB_NAME=(job名) RUN_ID=(run_id) ENV=(環境名) | grep -C 2 "テストが完了しました"
+# テスト完了というログがあれば成功
+# DataFrame constructor is internal. Do not directly use itこの警告は無視して良い。
+----

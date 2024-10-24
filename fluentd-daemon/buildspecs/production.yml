@@ -1,0 +1,37 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - WEBHOOK_EVENT=$GITHUB_EVENT_NAME
+      - |
+        case "$GITHUB_REF" in
+          refs/heads/master)
+            ENVIRONMENT_SUFFIX=e2
+          ;;
+          refs/heads/rc/*)
+            ENVIRONMENT_SUFFIX=rc1
+          ;;
+        esac
+      - echo "Config ENVIRONMENT_SUFFIX $ENVIRONMENT_SUFFIX"
+      - git status
+      - cd $CODEBUILD_SRC_DIR/$WORKING_DIR
+  build:
+    commands:
+      - aws --version
+      - echo "Build started on `date` $WEBHOOK_EVENT $GITHUB_REF"
+      - echo "GITHUB_EVENT_NAME $GITHUB_EVENT_NAME, GITHUB_SHA $GITHUB_SHA, GITHUB_REF $GITHUB_REF, GITHUB_RUN_ID $GITHUB_RUN_ID"
+      - echo Building the Docker image...
+      - |
+        case "$ENVIRONMENT_SUFFIX" in
+          rc*)
+            TAG=${GITHUB_SHA}.${GITHUB_RUN_ID}
+          ;;
+        esac
+        make build-image AWS_VAULT_CMD= TAG=${TAG} && \
+        echo "Pushing image && Deploy image ..."
+        make push-image AWS_VAULT_CMD= TAG=${TAG} && \
+        make run-deploy AWS_VAULT_CMD= ENV=production ENVIRONMENT_SUFFIX=${ENVIRONMENT_SUFFIX} TAG=${TAG}
+  post_build:
+    commands:
+      - echo Build completed on `date`
