@@ -431,7 +431,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 	coupons := []*models.Coupon{{ID: 1}}
 	gimmickURL := "https://example.com"
 	gimmickCode := "gimmick_code"
-	touchPoints := []*models.TouchPoint{{ID: "test", GroupID: 1}}
+	touchPoints := []*models.TouchPoint{{ID: "test", GroupID: 1, StoreID: "store1"}}
 	contentData := &models.DeliveryDataContent{
 		CampaignID: strconv.Itoa(campaignData.ID),
 		Coupons:    []models.DeliveryCouponData{{ID: 1}},
@@ -488,10 +488,10 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(touchPoints, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(touchPoints, nil),
 			campaignDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(deliveryData[0].CreateDeliveryDataCampaign(cc))).Return(nil),
-			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1})).Return(nil),
-			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
+			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1, StoreID: "store1"})).Return(nil),
+			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq("store1"), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
 			creativeDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(creatives[0].CreateDeliveryDataCreative())).Return(nil),
 			deliveryControlEventUsecase.EXPECT().PublishCreativeEvent(gomock.Eq(ctx), gomock.Eq(creatives[0].CreateDeliveryDataCreative()), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
 			contentDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(contentData)).Return(nil),
@@ -768,7 +768,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(nil, dbErr),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(nil, dbErr),
 			tx.EXPECT().Rollback().Return(nil),
 		)
 
@@ -824,7 +824,7 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(touchPoints, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(touchPoints, nil),
 			campaignDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(deliveryData[0].CreateDeliveryDataCampaign(cc))).Return(dbErr),
 			tx.EXPECT().Rollback().Return(nil),
 		)
@@ -881,9 +881,9 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(touchPoints, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(touchPoints, nil),
 			campaignDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(deliveryData[0].CreateDeliveryDataCampaign(cc))).Return(nil),
-			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1})).Return(dbErr),
+			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1, StoreID: "store1"})).Return(dbErr),
 			tx.EXPECT().Rollback().Return(nil),
 		)
 
@@ -939,10 +939,10 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(touchPoints, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(touchPoints, nil),
 			campaignDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(deliveryData[0].CreateDeliveryDataCampaign(cc))).Return(nil),
-			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1})).Return(nil),
-			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
+			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1, StoreID: "store1"})).Return(nil),
+			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq("store1"), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
 			creativeDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(creatives[0].CreateDeliveryDataCreative())).Return(dbErr),
 			tx.EXPECT().Rollback().Return(nil),
 		)
@@ -999,10 +999,10 @@ func TestDeliveryStart_Execute_DeliveryStart(t *testing.T) {
 			creativeRepository.EXPECT().GetCreativeByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&creativeCondition)).Return(creatives, nil),
 			contentRepository.EXPECT().GetGimmicksByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(&gimmickURL, &gimmickCode, nil),
 			contentRepository.EXPECT().GetCouponsByCampaignID(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&contentCondition)).Return(coupons, nil),
-			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1})).Return(touchPoints, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&repository.TouchPointByGroupIDCondition{GroupID: 1, Limit: 1000000})).Return(touchPoints, nil),
 			campaignDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(deliveryData[0].CreateDeliveryDataCampaign(cc))).Return(nil),
-			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1})).Return(nil),
-			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
+			touchPointDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(&models.DeliveryTouchPoint{ID: "test", GroupID: 1, StoreID: "store1"})).Return(nil),
+			deliveryControlEventUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq("test"), gomock.Eq(1), gomock.Eq("store1"), gomock.Eq(deliveryData[0].ID), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
 			creativeDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(creatives[0].CreateDeliveryDataCreative())).Return(nil),
 			deliveryControlEventUsecase.EXPECT().PublishCreativeEvent(gomock.Eq(ctx), gomock.Eq(creatives[0].CreateDeliveryDataCreative()), gomock.Eq(deliveryData[0].OrgCode), gomock.Eq("PUT")),
 			contentDataRepository.EXPECT().Put(gomock.Eq(ctx), gomock.Eq(contentData)).Return(dbErr),
