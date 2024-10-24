@@ -33,7 +33,7 @@ jobs:
           echo "DIRECTORY=${{ inputs.directory }}" >> $GITHUB_ENV
           if [[ "${{ github.ref }}" == refs/heads/rc/* ]]; then
             echo "WORKSPACE=rc" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == refs/heads/feature/* ]]; then
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
             echo "WORKSPACE=e" >> $GITHUB_ENV
           fi
       - name: Set Script Prefix
