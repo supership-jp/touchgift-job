@@ -411,11 +411,12 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		id := strconv.Itoa(deliveryData.ID)
 		touchPointCondition := repository.TouchPointByGroupIDCondition{
 			GroupID: deliveryData.GroupID,
-			Limit:   1000000,
+			Limit:   100000,
 		}
 		groupIDStr := strconv.Itoa(deliveryData.GroupID)
 		touchPointID := "test"
-		touchPoints := []*models.TouchPoint{{ID: touchPointID, GroupID: deliveryData.GroupID}}
+		storeID := "test_store"
+		touchPoints := []*models.TouchPoint{{ID: touchPointID, GroupID: deliveryData.GroupID, StoreID: storeID}}
 		// 何回呼ばれるか (Times)
 		// を定義する
 		gomock.InOrder(
@@ -427,7 +428,7 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, nil),
 			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&touchPointCondition)).Return(touchPoints, nil),
 			touchPointDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&touchPoints[0].ID), gomock.Eq(&groupIDStr)).Return(nil),
-			deliveryControlUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq(touchPointID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq("DELETE")),
+			deliveryControlUsecase.EXPECT().PublishDeliveryEvent(gomock.Eq(ctx), gomock.Eq(touchPointID), gomock.Eq(deliveryData.GroupID), gomock.Eq(storeID), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq("DELETE")),
 			tx.EXPECT().Commit().Return(nil),
 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.GroupID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
@@ -567,377 +568,385 @@ func TestDeliveryEnd_Execute_DeliveryEnd(t *testing.T) {
 		cancel()
 		deliveryEnd.Close()
 	})
+
+	t.Run("キャンペーンの削除に失敗した場合はロールバックして終了", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
+
+		// 必要なmockを作成
+		touchPointDataRepository := mock_repository.NewMockDeliveryDataTouchPointRepository(ctrl)
+		contentDataRepository := mock_repository.NewMockDeliveryDataContentRepository(ctrl)
+		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
+		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
+		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
+		tx := mock_repository.NewMockTransaction(ctrl)
+		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
+		timer := mock_usecase.NewMockTimer(ctrl)
+
+		// mockの処理を定義
+		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
+		// 引数に渡ると想定される値
+		octx := context.Background()
+		ctx, cancel := context.WithCancel(octx)
+		campaign := models.Campaign{
+			ID:        1,
+			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
+			UpdatedAt: time.Now(),
+		}
+		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
+		deliveryData := createEndTestCampaign(&campaign,
+			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
+			"terminate", campaign.UpdatedAt.Add(1*time.Second))
+
+		// テスト用の設定
+		configE := config.Env.DeliveryEnd
+		configUsecase := config.Env.DeliveryEndUsecase
+		// workerを1にする
+		configUsecase.NumberOfConcurrent = 1
+		configUsecase.NumberOfQueue = 1
+		deliveryEnd := NewDeliveryEnd(
+			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
+
+		current := time.Now()
+		condition := repository.CampaignCondition{
+			CampaignID: campaign.ID,
+		}
+		id := strconv.Itoa(deliveryData.ID)
+		// 何回呼ばれるか (Times)
+		// を定義する
+		gomock.InOrder(
+			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
+				process()
+			}),
+			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
+			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(deliveryData, nil),
+			// campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return([]*models.Campaign{deliveryData}, nil),
+			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Any()).Return(1, nil),
+			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(errors.New("Failed to delete")),
+			tx.EXPECT().Rollback().Return(nil),
+		)
+
+		// テストを実行する
+		// Workerを使って実行するので作成
+		deliveryEnd.CreateWorker(ctx)
+
+		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
+
+		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
+		// Workerを終了させる
+		cancel()
+		deliveryEnd.Close()
+	})
+
+	t.Run("contentの削除に失敗した場合はロールバックして終了", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
+
+		// 必要なmockを作成
+		touchPointDataRepository := mock_repository.NewMockDeliveryDataTouchPointRepository(ctrl)
+		contentDataRepository := mock_repository.NewMockDeliveryDataContentRepository(ctrl)
+		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
+		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
+		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
+		tx := mock_repository.NewMockTransaction(ctrl)
+		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
+		timer := mock_usecase.NewMockTimer(ctrl)
+
+		// mockの処理を定義
+		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
+		// 引数に渡ると想定される値
+		octx := context.Background()
+		ctx, cancel := context.WithCancel(octx)
+		campaign := models.Campaign{
+			ID:        1,
+			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
+			UpdatedAt: time.Now(),
+		}
+		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
+		deliveryData := createEndTestCampaign(&campaign,
+			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
+			"terminate", campaign.UpdatedAt.Add(1*time.Second))
+
+		// テスト用の設定
+		configE := config.Env.DeliveryEnd
+		configUsecase := config.Env.DeliveryEndUsecase
+		// workerを1にする
+		configUsecase.NumberOfConcurrent = 1
+		configUsecase.NumberOfQueue = 1
+		deliveryEnd := NewDeliveryEnd(
+			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
+
+		current := time.Now()
+		condition := repository.CampaignCondition{
+			CampaignID: campaign.ID,
+		}
+		id := strconv.Itoa(deliveryData.ID)
+		// 何回呼ばれるか (Times)
+		// を定義する
+		gomock.InOrder(
+			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
+				process()
+			}),
+			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
+			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(deliveryData, nil),
+			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Any()).Return(1, nil),
+			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(errors.New("Failed to delete")),
+			tx.EXPECT().Rollback().Return(nil),
+		)
+
+		// テストを実行する
+		// Workerを使って実行するので作成
+		deliveryEnd.CreateWorker(ctx)
+
+		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
+
+		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
+		// Workerを終了させる
+		cancel()
+		deliveryEnd.Close()
+	})
+
+	t.Run("グループに紐づくキャンペーン数の取得に失敗した場合はロールバックして終了", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
+
+		// 必要なmockを作成
+		touchPointDataRepository := mock_repository.NewMockDeliveryDataTouchPointRepository(ctrl)
+		contentDataRepository := mock_repository.NewMockDeliveryDataContentRepository(ctrl)
+		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
+		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
+		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
+		tx := mock_repository.NewMockTransaction(ctrl)
+		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
+		timer := mock_usecase.NewMockTimer(ctrl)
+
+		// mockの処理を定義
+		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
+		// 引数に渡ると想定される値
+		octx := context.Background()
+		ctx, cancel := context.WithCancel(octx)
+		campaign := models.Campaign{
+			ID:        1,
+			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
+			UpdatedAt: time.Now(),
+		}
+		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
+		deliveryData := createEndTestCampaign(&campaign,
+			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
+			"terminate", campaign.UpdatedAt.Add(1*time.Second))
+
+		// テスト用の設定
+		configE := config.Env.DeliveryEnd
+		configUsecase := config.Env.DeliveryEndUsecase
+		// workerを1にする
+		configUsecase.NumberOfConcurrent = 1
+		configUsecase.NumberOfQueue = 1
+		deliveryEnd := NewDeliveryEnd(
+			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
+
+		current := time.Now()
+		condition := repository.CampaignCondition{
+			CampaignID: campaign.ID,
+		}
+		id := strconv.Itoa(deliveryData.ID)
+		// 何回呼ばれるか (Times)
+		// を定義する
+		gomock.InOrder(
+			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
+				process()
+			}),
+			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
+			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(deliveryData, nil),
+			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Any()).Return(1, nil),
+			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, errors.New("Failed to get count")),
+			tx.EXPECT().Rollback().Return(nil),
+		)
+
+		// テストを実行する
+		// Workerを使って実行するので作成
+		deliveryEnd.CreateWorker(ctx)
+
+		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
+
+		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
+		// Workerを終了させる
+		cancel()
+		deliveryEnd.Close()
+	})
+
+	t.Run("グループに紐づくタッチポイントの取得に失敗した場合はロールバックして終了", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
+
+		// 必要なmockを作成
+		touchPointDataRepository := mock_repository.NewMockDeliveryDataTouchPointRepository(ctrl)
+		contentDataRepository := mock_repository.NewMockDeliveryDataContentRepository(ctrl)
+		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
+		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
+		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
+		tx := mock_repository.NewMockTransaction(ctrl)
+		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
+		timer := mock_usecase.NewMockTimer(ctrl)
+
+		// mockの処理を定義
+		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
+		// 引数に渡ると想定される値
+		octx := context.Background()
+		ctx, cancel := context.WithCancel(octx)
+		campaign := models.Campaign{
+			ID:        1,
+			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
+			UpdatedAt: time.Now(),
+		}
+		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
+		deliveryData := createEndTestCampaign(&campaign,
+			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
+			"terminate", campaign.UpdatedAt.Add(1*time.Second))
+
+		// テスト用の設定
+		configE := config.Env.DeliveryEnd
+		configUsecase := config.Env.DeliveryEndUsecase
+		// workerを1にする
+		configUsecase.NumberOfConcurrent = 1
+		configUsecase.NumberOfQueue = 1
+		deliveryEnd := NewDeliveryEnd(
+			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
+
+		current := time.Now()
+		condition := repository.CampaignCondition{
+			CampaignID: campaign.ID,
+		}
+		touchPointCondition := repository.TouchPointByGroupIDCondition{
+			GroupID: deliveryData.GroupID,
+			Limit:   100000,
+		}
+		id := strconv.Itoa(deliveryData.ID)
+		// 何回呼ばれるか (Times)
+		// を定義する
+		gomock.InOrder(
+			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
+				process()
+			}),
+			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
+			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(deliveryData, nil),
+			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Any()).Return(1, nil),
+			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&touchPointCondition)).Return(nil, errors.New("Failed to get touch point")),
+			tx.EXPECT().Rollback().Return(nil),
+		)
+
+		// テストを実行する
+		// Workerを使って実行するので作成
+		deliveryEnd.CreateWorker(ctx)
+
+		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
+
+		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
+		// Workerを終了させる
+		cancel()
+		deliveryEnd.Close()
+	})
+
+	t.Run("タッチポイントの削除に失敗した場合はロールバックして終了", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
+
+		// 必要なmockを作成
+		touchPointDataRepository := mock_repository.NewMockDeliveryDataTouchPointRepository(ctrl)
+		contentDataRepository := mock_repository.NewMockDeliveryDataContentRepository(ctrl)
+		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
+		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
+		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
+		tx := mock_repository.NewMockTransaction(ctrl)
+		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
+		touchPointRepository := mock_repository.NewMockTouchPointRepository(ctrl)
+		timer := mock_usecase.NewMockTimer(ctrl)
+
+		// mockの処理を定義
+		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
+		// 引数に渡ると想定される値
+		octx := context.Background()
+		ctx, cancel := context.WithCancel(octx)
+		campaign := models.Campaign{
+			ID:        1,
+			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
+			UpdatedAt: time.Now(),
+		}
+		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
+		deliveryData := createEndTestCampaign(&campaign,
+			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
+			"terminate", campaign.UpdatedAt.Add(1*time.Second))
+
+		// テスト用の設定
+		configE := config.Env.DeliveryEnd
+		configUsecase := config.Env.DeliveryEndUsecase
+		// workerを1にする
+		configUsecase.NumberOfConcurrent = 1
+		configUsecase.NumberOfQueue = 1
+		deliveryEnd := NewDeliveryEnd(
+			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
+			deliveryControlUsecase, campaignRepository, campaignDataRepository, contentDataRepository, touchPointDataRepository, touchPointRepository)
+
+		current := time.Now()
+		condition := repository.CampaignCondition{
+			CampaignID: campaign.ID,
+		}
+		touchPointCondition := repository.TouchPointByGroupIDCondition{
+			GroupID: deliveryData.GroupID,
+			Limit:   100000,
+		}
+		id := strconv.Itoa(deliveryData.ID)
+		groupIDStr := strconv.Itoa(deliveryData.GroupID)
+		touchPointID := "test"
+		storeID := "test_store"
+		touchPoints := []*models.TouchPoint{{ID: touchPointID, GroupID: deliveryData.GroupID, StoreID: storeID}}
+		// 何回呼ばれるか (Times)
+		// を定義する
+		gomock.InOrder(
+			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
+				process()
+			}),
+			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
+			campaignRepository.EXPECT().GetDeliveryToStart(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(&condition)).Return(deliveryData, nil),
+			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Any()).Return(1, nil),
+			campaignDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			contentDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&id)).Return(nil),
+			campaignRepository.EXPECT().GetDeliveryCampaignCountByGroupID(gomock.Eq(ctx), gomock.Eq(deliveryData.GroupID)).Return(0, nil),
+			touchPointRepository.EXPECT().GetTouchPointByGroupID(gomock.Eq(ctx), gomock.Eq(&touchPointCondition)).Return(touchPoints, nil),
+			touchPointDataRepository.EXPECT().Delete(gomock.Eq(ctx), gomock.Eq(&touchPoints[0].ID), gomock.Eq(&groupIDStr)).Return(errors.New("Failed to delete")),
+			tx.EXPECT().Rollback().Return(nil),
+		)
+
+		// テストを実行する
+		// Workerを使って実行するので作成
+		deliveryEnd.CreateWorker(ctx)
+
+		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
+
+		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
+		// Workerを終了させる
+		cancel()
+		deliveryEnd.Close()
+	})
 }
-
-// // DeliveryEndのExecuteのテスト (直近終了予定)
-// func TestDeliveryEnd_Execute_DeliveryMostRecentlyEnd(t *testing.T) {
-// 	// テスト用のLoggerを作成
-// 	logger := NewTestLogger(t)
-// 	t.Run("直近終了予定のキャンペーンがterminateの場合はendedに更新してdelivery_dataを削除して終了", func(t *testing.T) {
-
-// 		// mockを使用する準備
-// 		ctrl := gomock.NewController(t)
-// 		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
-
-// 		// 必要なmockを作成
-// 		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
-// 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
-// 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
-// 		tx := mock_repository.NewMockTransaction(ctrl)
-// 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
-// 		timer := mock_usecase.NewMockTimer(ctrl)
-
-// 		// mockの処理を定義
-// 		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
-// 		// 引数に渡ると想定される値
-// 		octx := context.Background()
-// 		ctx, cancel := context.WithCancel(octx)
-// 		campaign := models.Campaign{
-// 			ID:        1,
-// 			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
-// 			UpdatedAt: time.Now(),
-// 		}
-// 		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
-// 		deliveryData := createEndTestCampaign(&campaign,
-// 			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
-// 			"terminate", campaign.UpdatedAt.Add(1*time.Second))
-
-// 		// テスト用の設定
-// 		configE := config.Env.DeliveryEnd
-// 		configUsecase := config.Env.DeliveryEndUsecase
-// 		// workerを1にする
-// 		configUsecase.NumberOfConcurrent = 1
-// 		configUsecase.NumberOfQueue = 1
-// 		deliveryEnd := NewDeliveryEnd(
-// 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-// 			deliveryControlUsecase, campaignRepository, campaignDataRepository)
-
-// 		current := time.Now()
-// 		status := "ended"
-// 		condition := repository.CampaignCondition{
-// 			CampaignID: campaign.ID,
-// 		}
-// 		updateCondition := &repository.UpdateCondition{
-// 			CampaignID: deliveryData.ID,
-// 			Status:     status,
-// 			UpdatedAt:  time.Time{},
-// 		}
-// 		// 何回呼ばれるか (Times)
-// 		// を定義する
-// 		gomock.InOrder(
-// 			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
-// 				process()
-// 			}),
-// 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-// 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
-// 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(nil),
-// 			tx.EXPECT().Commit().Return(nil),
-// 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
-// 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
-// 			),
-// 		)
-
-// 		// テストを実行する
-// 		// Workerを使って実行するので作成
-// 		deliveryEnd.CreateWorker(ctx)
-
-// 		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
-
-// 		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
-// 		// Workerを終了させる
-// 		cancel()
-// 		deliveryEnd.Close()
-// 	})
-
-// 	t.Run("直近終了予定のキャンペーンがterminateからendedの更新に失敗した場合はロールバックして終了", func(t *testing.T) {
-
-// 		// mockを使用する準備
-// 		ctrl := gomock.NewController(t)
-// 		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
-
-// 		// 必要なmockを作成
-// 		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
-// 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
-// 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
-// 		tx := mock_repository.NewMockTransaction(ctrl)
-// 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
-// 		timer := mock_usecase.NewMockTimer(ctrl)
-
-// 		// mockの処理を定義
-// 		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
-// 		// 引数に渡ると想定される値
-// 		octx := context.Background()
-// 		ctx, cancel := context.WithCancel(octx)
-// 		campaign := models.Campaign{
-// 			ID:        1,
-// 			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
-// 			UpdatedAt: time.Now(),
-// 		}
-// 		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
-// 		deliveryData := createEndTestCampaign(&campaign,
-// 			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
-// 			"terminate", campaign.UpdatedAt.Add(1*time.Second))
-
-// 		// テスト用の設定
-// 		configE := config.Env.DeliveryEnd
-// 		configUsecase := config.Env.DeliveryEndUsecase
-// 		// workerを1にする
-// 		configUsecase.NumberOfConcurrent = 1
-// 		configUsecase.NumberOfQueue = 1
-// 		deliveryEnd := NewDeliveryEnd(
-// 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-// 			deliveryControlUsecase, campaignRepository, campaignDataRepository)
-
-// 		current := time.Now()
-// 		status := "ended"
-// 		condition := repository.CampaignCondition{
-// 			CampaignID: campaign.ID,
-// 		}
-// 		updateCondition := &repository.UpdateCondition{
-// 			CampaignID: deliveryData.ID,
-// 			Status:     status,
-// 			UpdatedAt:  time.Time{},
-// 		}
-// 		// 何回呼ばれるか (Times)
-// 		// を定義する
-// 		gomock.InOrder(
-// 			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
-// 				process()
-// 			}),
-// 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-// 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
-// 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(errors.New("Failed to update")),
-// 			tx.EXPECT().Rollback().Return(nil),
-// 		)
-
-// 		// テストを実行する
-// 		// Workerを使って実行するので作成
-// 		deliveryEnd.CreateWorker(ctx)
-
-// 		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
-
-// 		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
-// 		// Workerを終了させる
-// 		cancel()
-// 		deliveryEnd.Close()
-// 	})
-
-// 	t.Run("直近終了予定のキャンペーンの削除に失敗した場合はロールバックして終了", func(t *testing.T) {
-
-// 		// mockを使用する準備
-// 		ctrl := gomock.NewController(t)
-// 		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
-
-// 		// 必要なmockを作成
-// 		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
-// 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
-// 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
-// 		tx := mock_repository.NewMockTransaction(ctrl)
-// 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
-// 		timer := mock_usecase.NewMockTimer(ctrl)
-
-// 		// mockの処理を定義
-// 		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
-// 		// 引数に渡ると想定される値
-// 		octx := context.Background()
-// 		ctx, cancel := context.WithCancel(octx)
-// 		campaign := models.Campaign{
-// 			ID:        1,
-// 			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
-// 			UpdatedAt: time.Now(),
-// 		}
-// 		// config.Env.DeliveryEnd.TaskInterval が 1分のため、59*time.Second
-// 		deliveryData := createEndTestCampaign(&campaign,
-// 			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(59 * time.Second), Valid: true},
-// 			"terminate", campaign.UpdatedAt.Add(1*time.Second))
-
-// 		// テスト用の設定
-// 		configE := config.Env.DeliveryEnd
-// 		configUsecase := config.Env.DeliveryEndUsecase
-// 		// workerを1にする
-// 		configUsecase.NumberOfConcurrent = 1
-// 		configUsecase.NumberOfQueue = 1
-// 		deliveryEnd := NewDeliveryEnd(
-// 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-// 			deliveryControlUsecase, campaignRepository, campaignDataRepository)
-
-// 		current := time.Now()
-// 		status := "ended"
-// 		condition := repository.CampaignCondition{
-// 			CampaignID: campaign.ID,
-// 		}
-// 		updateCondition := &repository.UpdateCondition{
-// 			CampaignID: deliveryData.ID,
-// 			Status:     status,
-// 			UpdatedAt:  time.Time{},
-// 		}
-// 		// 何回呼ばれるか (Times)
-// 		// を定義する
-// 		gomock.InOrder(
-// 			timer.EXPECT().ExecuteAtTime(gomock.Eq(ctx), gomock.Eq(current), gomock.Any()).Do(func(ctx context.Context, specifiedTime time.Time, process func()) {
-// 				process()
-// 			}),
-// 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-// 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
-// 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(errors.New("Failed to delete")),
-// 			tx.EXPECT().Rollback().Return(nil),
-// 		)
-
-// 		// テストを実行する
-// 		// Workerを使って実行するので作成
-// 		deliveryEnd.CreateWorker(ctx)
-
-// 		deliveryEnd.Reserve(ctx, current, &campaign) // 即時実行させる
-
-// 		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
-// 		// Workerを終了させる
-// 		cancel()
-// 		deliveryEnd.Close()
-// 	})
-
-// }
-
-// // DeliveryEndのExecuteのテスト (今後終了予定)
-// func TestDeliveryEnd_Execute_DeliveryEndFuture(t *testing.T) {
-// 	// テスト用のLoggerを作成
-// 	logger := NewTestLogger(t)
-// 	t.Run("今後終了予定のキャンペーンがterminateの場合はendedに更新して終了", func(t *testing.T) {
-// 		// mockを使用する準備
-// 		ctrl := gomock.NewController(t)
-// 		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
-
-// 		// 必要なmockを作成
-// 		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
-// 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
-// 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
-// 		tx := mock_repository.NewMockTransaction(ctrl)
-// 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
-// 		timer := NewTimer(logger)
-
-// 		// mockの処理を定義
-// 		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
-// 		// 引数に渡ると想定される値
-// 		octx := context.Background()
-// 		ctx, cancel := context.WithCancel(octx)
-// 		campaign := models.Campaign{
-// 			ID:        1,
-// 			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
-// 			UpdatedAt: time.Now(),
-// 		}
-// 		// config.Env.DeliveryEnd.TaskInterval が 1分のため、5*time.Minute
-// 		deliveryData := createEndTestCampaign(&campaign,
-// 			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(5 * time.Minute), Valid: true},
-// 			"terminate", campaign.UpdatedAt.Add(1*time.Second))
-// 		status := "ended"
-// 		condition := repository.CampaignCondition{
-// 			CampaignID: campaign.ID,
-// 		}
-// 		updateCondition := &repository.UpdateCondition{
-// 			CampaignID: deliveryData.ID,
-// 			Status:     status,
-// 			UpdatedAt:  time.Time{},
-// 		}
-// 		// 何回呼ばれるか (Times)
-// 		// を定義する
-// 		gomock.InOrder(
-// 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-// 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
-// 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(nil),
-// 			tx.EXPECT().Commit().Return(nil),
-// 			deliveryControlUsecase.EXPECT().PublishCampaignEvent(
-// 				gomock.Eq(ctx), gomock.Eq(deliveryData.ID), gomock.Eq(deliveryData.OrgCode), gomock.Eq(deliveryData.Status), gomock.Eq(status), gomock.Eq(""),
-// 			),
-// 		)
-
-// 		// テスト用の設定
-// 		configE := config.Env.DeliveryEnd
-// 		configUsecase := config.Env.DeliveryEndUsecase
-// 		// workerを1にする
-// 		configUsecase.NumberOfConcurrent = 1
-// 		configUsecase.NumberOfQueue = 1
-
-// 		// テストを実行する
-// 		deliveryEnd := NewDeliveryEnd(
-// 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-// 			deliveryControlUsecase, campaignRepository, campaignDataRepository)
-// 		// Workerを使って実行するので作成
-// 		deliveryEnd.CreateWorker(ctx)
-
-// 		deliveryEnd.Reserve(ctx, time.Now(), &campaign) // 即時実行させる
-
-// 		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
-// 		// Workerを終了させる
-// 		cancel()
-// 		deliveryEnd.Close()
-// 	})
-
-// 	t.Run("今後終了予定のキャンペーンがありterminateからendedの更新に失敗した場合はロールバックして終了", func(t *testing.T) {
-// 		// mockを使用する準備
-// 		ctrl := gomock.NewController(t)
-// 		defer ctrl.Finish() // 定義したmockの処理が想定どおり呼ばれているかチェックが行われる
-
-// 		// 必要なmockを作成
-// 		campaignDataRepository := mock_repository.NewMockDeliveryDataCampaignRepository(ctrl)
-// 		campaignRepository := mock_repository.NewMockCampaignRepository(ctrl)
-// 		transactionHandler := mock_repository.NewMockTransactionHandler(ctrl)
-// 		tx := mock_repository.NewMockTransaction(ctrl)
-// 		deliveryControlUsecase := mock_usecase.NewMockDeliveryControlEvent(ctrl)
-// 		timer := NewTimer(logger)
-
-// 		// mockの処理を定義
-// 		// テスト対象のexecuteは、 campaignDataRepository.Delete を使っているのでその処理を定義する
-// 		// 引数に渡ると想定される値
-// 		octx := context.Background()
-// 		ctx, cancel := context.WithCancel(octx)
-// 		campaign := models.Campaign{
-// 			ID:        1,
-// 			EndAt:     sql.NullTime{Time: time.Now(), Valid: true},
-// 			UpdatedAt: time.Now(),
-// 		}
-// 		// config.Env.DeliveryEnd.TaskInterval が 1分のため、5*time.Minute
-// 		deliveryData := createEndTestCampaign(&campaign,
-// 			campaign.EndAt.Time.Add(-5*time.Minute), sql.NullTime{Time: campaign.EndAt.Time.Add(5 * time.Minute), Valid: true},
-// 			"terminate", campaign.UpdatedAt.Add(1*time.Second))
-// 		status := "ended"
-// 		condition := repository.CampaignCondition{
-// 			CampaignID: campaign.ID,
-// 		}
-// 		updateCondition := &repository.UpdateCondition{
-// 			CampaignID: deliveryData.ID,
-// 			Status:     status,
-// 			UpdatedAt:  time.Time{},
-// 		}
-// 		// 何回呼ばれるか (Times)
-// 		// を定義する
-// 		gomock.InOrder(
-// 			transactionHandler.EXPECT().Begin(gomock.Eq(ctx)).Return(tx, nil),
-// 			campaignRepository.EXPECT().GetCampaignToEnd(gomock.Eq(ctx), gomock.Eq(&condition)).Return(deliveryData, nil),
-// 			campaignRepository.EXPECT().UpdateStatus(gomock.Eq(ctx), gomock.Eq(tx), gomock.Eq(updateCondition)).Return(errors.New("Failed to update")),
-// 			tx.EXPECT().Rollback().Return(nil),
-// 		)
-
-// 		// テスト用の設定
-// 		configE := config.Env.DeliveryEnd
-// 		configUsecase := config.Env.DeliveryEndUsecase
-// 		// workerを1にする
-// 		configUsecase.NumberOfConcurrent = 1
-// 		configUsecase.NumberOfQueue = 1
-
-// 		// テストを実行する
-// 		deliveryEnd := NewDeliveryEnd(
-// 			logger, metrics.GetMonitor(), &configE, &configUsecase, transactionHandler, timer,
-// 			deliveryControlUsecase, campaignRepository, campaignDataRepository)
-// 		// Workerを使って実行するので作成
-// 		deliveryEnd.CreateWorker(ctx)
-
-// 		deliveryEnd.Reserve(ctx, time.Now(), &campaign) // 即時実行させる
-
-// 		time.Sleep(100 * time.Millisecond) // 非同期で処理が実行されるので待つ
-// 		// Workerを終了させる
-// 		cancel()
-// 		deliveryEnd.Close()
-// 	})
-// }
 
 func createEndTestCampaign(campaign *models.Campaign, startAt time.Time, endAt sql.NullTime, status string, updatedAt time.Time) *models.Campaign {
 	return &models.Campaign{
