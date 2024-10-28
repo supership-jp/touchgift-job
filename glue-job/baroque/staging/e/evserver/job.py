@@ -54,7 +54,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 dyf = glueContext.create_dynamic_frame.from_catalog(
-    database="touchgift-datalake",
+    database="touchgift-datalake-evserver",
     table_name="application",
 )
 
