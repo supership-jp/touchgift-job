@@ -14,7 +14,7 @@ phases:
       - WEBHOOK_EVENT=$GITHUB_EVENT_NAME
       - |
         case "$GITHUB_REF" in
-          refs/heads/master)
+          refs/heads/main)
             ENVIRONMENT_SUFFIX=e1
           ;;
           refs/heads/rc/*)
