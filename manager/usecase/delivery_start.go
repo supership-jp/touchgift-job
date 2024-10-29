@@ -216,6 +216,11 @@ func (d *deliveryStart) start(
 	if err != nil {
 		return errors.Wrap(err, "Failed to get startcampaign")
 	}
+	if startCampaign == nil {
+		// 配信データが取得できない場合は何もしない
+		d.logger.Debug().Int("id", reservedData.ID).Msg("No delivery data")
+		return nil
+	}
 
 	// warmup以外のキャンペーンは処理しないためエラーを返す
 	if startCampaign.Status != codes.StatusWarmup {

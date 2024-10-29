@@ -118,6 +118,9 @@ func (c *CampaignRepository) GetDeliveryToStart(ctx context.Context,
 		c.logger.Error().Msgf("Error getting deliveries: %v", err)
 		return nil, err
 	}
+	if len(campaigns) == 0 {
+		return nil, nil
+	}
 	campaign := campaigns[0]
 	return &campaign, nil
 }
