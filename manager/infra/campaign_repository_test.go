@@ -300,6 +300,136 @@ func TestCampaignRepository_UpdateStatus(t *testing.T) {
 	})
 }
 
+func TestCampaignRepository_GetCampaignCreative(t *testing.T) {
+	logger := GetLogger()
+	sqlHandler := NewSQLHandler(logger)
+	defer sqlHandler.Close()
+}
+
+func TestCampaignRepository_DeliveryCampaignCountByGroupID(t *testing.T) {
+	logger := GetLogger()
+	sqlHandler := NewSQLHandler(logger)
+	defer sqlHandler.Close()
+
+	t.Run("Groupに紐づく配信中のキャンペーンがないため0を返す", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+		actual, err := campaignRepository.GetDeliveryCampaignCountByGroupID(ctx, 1)
+		if assert.NoError(t, err) {
+			assert.Equal(t, actual, 0)
+		}
+	})
+
+	t.Run("Groupに紐づく配信中のキャンペーンが1件あるため1を返す", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)
+		rdbUtil.InsertStore("ORG001", "S001", "東京本店", "100-0001", "13", "東京都千代田区丸の内1-1-1")
+		groupID := rdbUtil.InsertStoreGroup("グループA", "ORG001", 1)
+		rdbUtil.InsertCampaign(
+			"ORG001",              // organizationCode
+			"started",             // status
+			"Project X",           // name
+			"2006-06-01 18:41:11", // startAt
+			time.Now().Local().Add(time.Duration(1)*time.Hour).Format("2006-01-02 15:04:05"), // endAt
+			1,       // lastUpdatedBy
+			groupID, // storeGroupId
+		)
+		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+		actual, err := campaignRepository.GetDeliveryCampaignCountByGroupID(ctx, groupID)
+		if assert.NoError(t, err) {
+			assert.Equal(t, actual, 0)
+		}
+	})
+}
+
+func TestCampaignRepository_GetDeliveryToStart(t *testing.T) {
+	logger := GetLogger()
+	sqlHandler := NewSQLHandler(logger)
+	defer sqlHandler.Close()
+
+	t.Run("空データのためnilを返す", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+		actuals, err := campaignRepository.GetDeliveryToStart(ctx, tx, &repository.CampaignCondition{
+			CampaignID: 1,
+			Status:     "configured",
+		})
+		if assert.NoError(t, err) {
+			assert.Nil(t, actuals)
+		}
+	})
+
+	t.Run("IDとstatusが一致したキャンペーンを返す", func(t *testing.T) {
+		// mockを使用する準備
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ctx := context.Background()
+		// トランザクションを開始(トランザクション内でテストする)
+		tx, err := sqlHandler.Begin(ctx)
+		if !assert.NoError(t, err) {
+			return
+		}
+		// ロールバックする(テストデータは不要なので)
+		defer func() {
+			err := tx.Rollback()
+			assert.NoError(t, err)
+		}()
+		id, err := createStartCampaignData(ctx, t, tx, time.Now().Local().Add(time.Duration(-1)*time.Hour).Format("2006-01-02 15:04:05"))
+		assert.NoError(t, err)
+		campaignRepository := NewCampaignRepository(logger, sqlHandler)
+		actuals, err := campaignRepository.GetDeliveryToStart(ctx, tx, &repository.CampaignCondition{
+			CampaignID: *id,
+			Status:     "started",
+		})
+		if assert.NoError(t, err) {
+			assert.Equal(t, *id, actuals.ID)
+		}
+	})
+}
+
 // TODO: 時間を現在時刻を基準に
 func createStartCampaignData(ctx context.Context, t testing.TB, tx repository.Transaction, startAt string) (*int, error) {
 	rdbUtil := NewTouchGiftRDBUtil(ctx, t, tx)

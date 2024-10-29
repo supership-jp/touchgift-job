@@ -252,6 +252,10 @@ func (d *deliveryEnd) end(ctx context.Context, startTime time.Time, reservedData
 	if err != nil {
 		return errors.Wrap(err, "Failed to get deliveryData")
 	}
+	if deliveryData == nil {
+		d.logger.Debug().Int("campaign_id", reservedData.ID).Msg("Campaign not found")
+		return nil
+	}
 
 	// terminate以外はエラーを返す
 	if deliveryData.Status != codes.StatusTerminate {
