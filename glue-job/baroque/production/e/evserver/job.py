@@ -34,6 +34,7 @@ def apply(inputFrame, glueContext):
     from application_table
     where
         dt = '{yesterday}'
+        and org_code = 'baroque'
         and request_id is not null
         and request_id != '';
     """
