@@ -79,6 +79,7 @@ def apply(inputFrame, glueContext):
         dt = '{yesterday}'
         and request_id is not null
         and request_id != ''
+        and org_code = 'baroque'
         and api = 'application'
         and (message = 'touch' or message = 'coupon_draw' or message = 'screen_imp');
     """
