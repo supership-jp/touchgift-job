@@ -24,7 +24,7 @@ func (c *CreativeRepository) GetCreativeByCampaignID(ctx context.Context, tx rep
 	query := `
 	SELECT
 		creative.id as id,
-		creative.click_url as link,
+		IFNULL(creative.click_url, '') as link,
 		COALESCE(banner.height, video.height) AS height,
 		COALESCE(banner.width, video.width) AS width,
 		COALESCE(banner.img_url, video.video_url) AS url,
