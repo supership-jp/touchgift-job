@@ -17,9 +17,9 @@ DYNAMODB_ENDPOINT = http://localhost:8000
 DYNAMODB_ENDPOINT_OPTS = --endpoint-url $(DYNAMODB_ENDPOINT)
 DYNAMODB_OPTIONS = $(DYNAMODB_ENDPOINT_OPTS) --profile $(AWS_PROFILE)
 
-# リリース前に1.0.0をECRに上げてしまったので1.0としている
+# リリース前に1.0.0をECRに上げてしまったので1.0.0.0としている
 # 本来は *.*.* でバージョン管理する
-CURRENT_TAG = 1.0
+CURRENT_TAG = 1.0.0.0
 TAG = $(CURRENT_TAG)
 ifndef TAG
 override TAG = $(CURRENT_TAG)

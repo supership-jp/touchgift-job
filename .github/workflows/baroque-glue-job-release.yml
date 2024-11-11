@@ -1,4 +1,4 @@
-name: baroque-glue-job
+name: baroque-glue-job-release
 on:
   push:
     branches:
